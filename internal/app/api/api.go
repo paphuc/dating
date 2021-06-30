@@ -4,8 +4,10 @@ import (
 	"net/http"
 
 	memberhandler "dating/internal/app/api/handler/member"
+	userhandler "dating/internal/app/api/handler/user"
 	"dating/internal/app/db"
 	"dating/internal/app/member"
+	"dating/internal/app/user"
 	"dating/internal/pkg/glog"
 	"dating/internal/pkg/health"
 	"dating/internal/pkg/middleware"
@@ -41,9 +43,11 @@ func Init(conns *InfraConns) (http.Handler, error) {
 	logger := glog.New()
 
 	var memberRepo member.Repository
+	var userRepo user.Repository
 	switch conns.Databases.Type {
 	case db.TypeMongoDB:
 		memberRepo = member.NewMongoRepository(conns.Databases.MongoDB)
+		userRepo = user.NewMongoRepository(conns.Databases.MongoDB)
 	default:
 		panic("database type not supported: " + conns.Databases.Type)
 	}
@@ -51,6 +55,10 @@ func Init(conns *InfraConns) (http.Handler, error) {
 	memberLogger := logger.WithField("package", "member")
 	memberSrv := member.NewService(memberRepo, memberLogger)
 	memberHandler := memberhandler.New(memberSrv, memberLogger)
+
+	userLogger := logger.WithField("package", "user")
+	userSrv := user.NewService(userRepo, userLogger)
+	userHandler := userhandler.New(userSrv, userLogger)
 
 	routes := []route{
 		// infra
@@ -65,10 +73,24 @@ func Init(conns *InfraConns) (http.Handler, error) {
 			method:  get,
 			handler: memberHandler.Get,
 		},
+		//service sign up
+		route{
+			path:    "/signup",
+			method:  post,
+			handler: userHandler.SignUp,
+		},
+		route{
+			path:    "/login",
+			method:  post,
+			handler: userHandler.Login,
+		},
 	}
 
 	loggingMW := middleware.Logging(logger.WithField("package", "middleware"))
 	r := mux.NewRouter()
+
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
+
 	r.Use(middleware.RequestID)
 	r.Use(middleware.StatusResponseWriter)
 	r.Use(loggingMW)

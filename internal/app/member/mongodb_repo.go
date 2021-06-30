@@ -30,6 +30,7 @@ func (r *MongoRepository) FindByID(ctx context.Context, id string) (*types.Membe
 	if err := r.collection(s).Find(bson.M{"id": id}).One(&member); err != nil {
 		return nil, errors.Wrap(err, "failed to find the given member from database")
 	}
+
 	return member, nil
 }
 
