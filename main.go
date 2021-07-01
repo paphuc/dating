@@ -37,7 +37,7 @@ func main() {
 	var conf srvConfig
 	envconfig.Load(&conf)
 	logger := glog.New()
-
+	fmt.Println(conf)
 	conns := initInfraConns(&conf, logger)
 	defer conns.Close()
 
@@ -47,6 +47,7 @@ func main() {
 		logger.Panicf("failed to init routing, err: %v", err)
 	}
 	addr := fmt.Sprintf("%s:%d", conf.HTTP.Address, conf.HTTP.Port)
+
 	httpServer := http.Server{
 		Addr:              addr,
 		Handler:           router,

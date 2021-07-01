@@ -12,3 +12,5 @@
 *.out
 
 dating
+#folder  
+vendor/
