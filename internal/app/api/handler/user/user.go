@@ -2,12 +2,12 @@ package userhandler
 
 import (
 	"context"
-	"dating/internal/app/types"
+	"encoding/json"
+	"net/http"
+
+	"dating/internal/app/api/types"
 	"dating/internal/pkg/glog"
 	"dating/internal/pkg/respond"
-	"encoding/json"
-	"fmt"
-	"net/http"
 )
 
 type (
@@ -50,10 +50,11 @@ func (h *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
 	respond.JSON(w, http.StatusOK, user)
 }
 
+// Post handler  login HTTP request
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	var UserLogin types.UserLogin
 	err := json.NewDecoder(r.Body).Decode(&UserLogin)
-	fmt.Println(UserLogin)
+
 	if err != nil {
 		respond.Error(w, err, http.StatusInternalServerError)
 		return

@@ -1,8 +1,9 @@
-package user
+package userservices
 
 import (
 	"context"
-	"dating/internal/app/types"
+
+	"dating/internal/app/api/types"
 	"dating/internal/pkg/glog"
 )
 
