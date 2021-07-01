@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"dating/internal/app/api"
+	"dating/internal/app/config"
 	"dating/internal/app/db"
 	"dating/internal/app/db/mongodb"
 	envconfig "dating/internal/pkg/config/env"
@@ -40,6 +42,13 @@ func main() {
 	fmt.Println(conf)
 	conns := initInfraConns(&conf, logger)
 	defer conns.Close()
+
+	configPath := flag.String("config", "configs", "set configs path, default as: 'configs'")
+	// error message
+	config.EM.ConfigPath = *configPath
+	if err := config.EM.Init(); err != nil {
+		logger.Errorf("failed to load error messages, err: %v", err)
+	}
 
 	logger.Infof("initializing HTTP routing...")
 	router, err := api.Init(conns)
