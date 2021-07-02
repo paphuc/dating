@@ -2,15 +2,20 @@ package userservices
 
 import (
 	"context"
+	"time"
 
 	"dating/internal/app/api/types"
 	"dating/internal/pkg/glog"
+	"dating/internal/pkg/jwt"
+
+	"github.com/pkg/errors"
 )
 
 // Repository is an interface of a user repository
 type Repository interface {
-	SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*types.UserResponseSignUp, error)
-	Login(ctx context.Context, UserLogin types.UserLogin) (*types.UserResponseSignUp, error)
+	FindByID(ctx context.Context, id string) (*types.UserResGetInfo, error)
+	FindByEmail(ctx context.Context, email string) (*types.User, error)
+	Insert(ctx context.Context, User types.User) error
 }
 
 // Service is an user service
@@ -29,8 +34,81 @@ func NewService(r Repository, l glog.Logger) *Service {
 
 // Post basic info user for sign up
 func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*types.UserResponseSignUp, error) {
-	return s.repo.SignUp(ctx, UserSignUp)
+
+	if _, err := s.repo.FindByEmail(ctx, UserSignUp.Email); err == nil {
+		return nil, errors.Wrap(errors.New("email email exits"), "email exits, can't insert user")
+	}
+
+	UserSignUp.Password, _ = jwt.HashPassword(UserSignUp.Password)
+
+	if err := s.repo.Insert(ctx, types.User{
+		Name:     UserSignUp.Name,
+		Email:    UserSignUp.Email,
+		Password: UserSignUp.Password,
+		CreateAt: time.Now()}); err != nil {
+		return nil, errors.Wrap(err, "can't insert user")
+	}
+
+	user, error := s.repo.FindByEmail(ctx, UserSignUp.Email)
+
+	if error != nil {
+		return nil, errors.Wrap(error, "can't insert user")
+	}
+
+	var tokenString string
+	tokenString, err := jwt.GenToken(types.UserFieldInToken{
+		ID:    user.ID,
+		Name:  user.Name,
+		Email: user.Email,
+	})
+
+	if err != nil {
+		return nil, errors.Wrap(err, "can't insert user")
+	}
+
+	return &types.UserResponseSignUp{
+		Name:  UserSignUp.Name,
+		Email: UserSignUp.Email,
+		Token: tokenString}, nil
+
 }
+
+// Post basic info user for login
 func (s *Service) Login(ctx context.Context, UserLogin types.UserLogin) (*types.UserResponseSignUp, error) {
-	return s.repo.Login(ctx, UserLogin)
+
+	user, err := s.repo.FindByEmail(ctx, UserLogin.Email)
+	if err != nil {
+		return nil, errors.Wrap(errors.New("not found email exits"), "email not exists, can't find user")
+	}
+
+	if !jwt.IsCorrectPassword(UserLogin.Password, user.Password) {
+		return nil, errors.Wrap(errors.New("password incorrect"), "password incorrect")
+	}
+
+	var tokenString string
+	tokenString, error := jwt.GenToken(types.UserFieldInToken{
+		ID:    user.ID,
+		Name:  user.Name,
+		Email: user.Email})
+
+	if error != nil {
+		return nil, errors.Wrap(error, "can't insert user")
+	}
+
+	return &types.UserResponseSignUp{
+		Name:  user.Name,
+		Email: user.Email,
+		Token: tokenString}, nil
+}
+
+// Get basic info for a user
+func (s *Service) FindByID(ctx context.Context, id string) (*types.UserResGetInfo, error) {
+	var user *types.UserResGetInfo
+
+	user, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find the given user from database")
+	}
+
+	return user, nil
 }

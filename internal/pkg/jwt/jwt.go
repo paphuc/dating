@@ -17,6 +17,7 @@ var (
 func GenToken(user types.UserFieldInToken) (string, error) {
 	expirationTime := time.Now().Add(120 * time.Minute)
 	claims := &types.Claims{
+		ID:    user.ID,
 		Email: user.Email,
 		Name:  user.Name,
 		StandardClaims: jwt.StandardClaims{

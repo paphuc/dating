@@ -3,8 +3,6 @@ package user
 import (
 	"context"
 	"dating/internal/app/api/types"
-	"dating/internal/pkg/jwt"
-	"time"
 
 	mgo "github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
@@ -25,78 +23,36 @@ func NewMongoRepository(s *mgo.Session) *MongoRepository {
 	}
 }
 
-//  This method helps to register new member
-func (r *MongoRepository) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*types.UserResponseSignUp, error) {
+// this method helps insert user
+func (r *MongoRepository) Insert(ctx context.Context, user types.User) error {
 	s := r.session.Clone()
 	defer s.Close()
-	var user types.User
 
-	//check email exists
-	if err := r.collection(s).Find(bson.M{"email": UserSignUp.Email}).One(&user); err == nil {
-		return nil, errors.Wrap(errors.New("email email exits"), "email exits, can't insert user")
-	}
+	err := r.collection(s).Insert(user)
 
-	UserSignUp.Password, _ = jwt.HashPassword(UserSignUp.Password)
-	user.CreateAt = time.Now()
-
-	if err := r.collection(s).Insert(types.User{
-		Name:     UserSignUp.Name,
-		Email:    UserSignUp.Email,
-		Password: UserSignUp.Password,
-		CreateAt: time.Now()}); err != nil {
-		return nil, errors.Wrap(err, "can't insert user")
-	}
-
-	error := r.collection(s).Find(bson.M{"email": UserSignUp.Email}).One(&user)
-	if error != nil {
-		return nil, errors.Wrap(error, "err insert user")
-	}
-
-	var tokenString string
-	tokenString, err := jwt.GenToken(types.UserFieldInToken{
-		ID:    user.ID,
-		Name:  user.Name,
-		Email: user.Email,
-	})
-
-	if err != nil {
-		return nil, errors.Wrap(err, "can't insert user")
-	}
-
-	return &types.UserResponseSignUp{
-		Name:  UserSignUp.Name,
-		Email: UserSignUp.Email,
-		Token: tokenString}, nil
+	return err
 }
 
-// This method helps user login
-func (r *MongoRepository) Login(ctx context.Context, UserLogin types.UserLogin) (*types.UserResponseSignUp, error) {
+// this method helps get user with email
+func (r *MongoRepository) FindByEmail(ctx context.Context, email string) (*types.User, error) {
 	s := r.session.Clone()
 	defer s.Close()
-	var user types.User
-	if err := r.collection(s).Find(bson.M{"email": UserLogin.Email}).One(&user); err != nil {
-		return nil, errors.Wrap(errors.New("not found email exits"), "email not exists, can't find user")
-	}
-	// isCorrectPassword true
-	if !jwt.IsCorrectPassword(UserLogin.Password, user.Password) {
-		return nil, errors.Wrap(errors.New("password incorrect"), "password incorrect")
-	}
 
-	var tokenString string
-	tokenString, err := jwt.GenToken(types.UserFieldInToken{
-		ID:    user.ID,
-		Name:  user.Name,
-		Email: user.Email})
+	var user *types.User
+	err := r.collection(s).Find(bson.M{"email": email}).One(&user)
 
-	if err != nil {
-		return nil, errors.Wrap(err, "can't insert user")
-	}
+	return user, err
+}
 
-	return &types.UserResponseSignUp{
-		Name:  user.Name,
-		Email: user.Email,
-		Token: tokenString}, nil
+// This method helps get basic info user
+func (r *MongoRepository) FindByID(ctx context.Context, id string) (*types.UserResGetInfo, error) {
+	s := r.session.Clone()
+	defer s.Close()
 
+	var user *types.UserResGetInfo
+	err := r.collection(s).Find(bson.M{"_id": id}).One(&user)
+
+	return user, err
 }
 
 func (r *MongoRepository) collection(s *mgo.Session) *mgo.Collection {
