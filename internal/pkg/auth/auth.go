@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"dating/internal/pkg/jwt"
 	"net/http"
 	"strings"
 )
@@ -19,4 +20,9 @@ func ExtractToken(r *http.Request) string {
 	tokenpath := splitted[1]
 
 	return tokenpath
+}
+
+func IsAuthorized(tokenpath string) (map[string]interface{}, error) {
+	claimMap, err := jwt.IsAuthorized(tokenpath)
+	return claimMap, err
 }

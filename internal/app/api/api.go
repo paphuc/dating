@@ -72,6 +72,17 @@ func Init(conns *InfraConns) (http.Handler, error) {
 			method:  post,
 			handler: userHandler.Login,
 		},
+		route{
+			path:        "/getme",
+			method:      get,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     userHandler.GetMe,
+		},
+		route{
+			path:    "/getuser/{id:[a-z0-9-\\-]+}",
+			method:  get,
+			handler: userHandler.FindById,
+		},
 	}
 
 	loggingMW := middleware.Logging(logger.WithField("package", "middleware"))

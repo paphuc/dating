@@ -50,7 +50,7 @@ func (r *MongoRepository) FindByID(ctx context.Context, id string) (*types.UserR
 	defer s.Close()
 
 	var user *types.UserResGetInfo
-	err := r.collection(s).Find(bson.M{"_id": id}).One(&user)
+	err := r.collection(s).FindId(bson.ObjectIdHex(id)).One(&user)
 
 	return user, err
 }
