@@ -99,16 +99,15 @@ func (r *MongoRepository) Login(ctx context.Context, UserLogin types.UserLogin) 
 
 }
 
-func (r *MongoRepository) FindByID(ctx context.Context, id string) (*types.User, error) {
+// This method helps get basic info user
+func (r *MongoRepository) FindByID(ctx context.Context, id string) (*types.UserResGetInfo, error) {
 	s := r.session.Clone()
 	defer s.Close()
 
-	var user *types.User
-	if err := r.collection(s).Find(bson.M{"_id": id}).One(&user); err != nil {
-		return nil, errors.Wrap(err, "failed to find the given user from database")
-	}
+	var user *types.UserResGetInfo
+	err := r.collection(s).Find(bson.M{"_id": id}).One(&user)
 
-	return user, nil
+	return user, err
 }
 
 func (r *MongoRepository) collection(s *mgo.Session) *mgo.Collection {

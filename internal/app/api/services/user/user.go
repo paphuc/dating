@@ -5,13 +5,15 @@ import (
 
 	"dating/internal/app/api/types"
 	"dating/internal/pkg/glog"
+
+	"github.com/pkg/errors"
 )
 
 // Repository is an interface of a user repository
 type Repository interface {
 	SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*types.UserResponseSignUp, error)
 	Login(ctx context.Context, UserLogin types.UserLogin) (*types.UserResponseSignUp, error)
-	FindByID(ctx context.Context, id string) (*types.User, error)
+	FindByID(ctx context.Context, id string) (*types.UserResGetInfo, error)
 }
 
 // Service is an user service
@@ -37,6 +39,13 @@ func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*typ
 func (s *Service) Login(ctx context.Context, UserLogin types.UserLogin) (*types.UserResponseSignUp, error) {
 	return s.repo.Login(ctx, UserLogin)
 }
-func (s *Service) FindByID(ctx context.Context, id string) (*types.User, error) {
-	return s.repo.FindByID(ctx, id)
+
+// Get basic info for a user
+func (s *Service) FindByID(ctx context.Context, id string) (*types.UserResGetInfo, error) {
+	var user *types.UserResGetInfo
+	user, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find the given user from database")
+	}
+	return user, nil
 }
