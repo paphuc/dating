@@ -114,7 +114,8 @@ func (s *Service) FindUserById(ctx context.Context, id string) (*types.UserResGe
 
 	//check id correct
 	if !bson.IsObjectIdHex(id) {
-		return nil, errors.New("Id incorrect to find the given user from database")
+		s.logger.Errorf("Id user incorrect,it isn't ObjectIdHex")
+		return nil, errors.New("Id incorrect to find the given user from database, it isn't ObjectIdHex")
 	}
 
 	user, err := s.repo.FindByID(ctx, id)

@@ -26,10 +26,10 @@ type ErrorMessage struct {
 		DataNotFound ErrorCode
 	}
 	Invalid_value struct {
-		Request                  ErrorCode
-		Incorrect_password_email ErrorCode
-		Email_exists             ErrorCode
-		Failed_authentication    ErrorCode
+		Request                ErrorCode
+		IncorrectPasswordEmail ErrorCode
+		EmailExists            ErrorCode
+		FailedAuthentication   ErrorCode
 	}
 }
 
