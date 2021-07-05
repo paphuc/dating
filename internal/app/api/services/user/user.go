@@ -87,7 +87,8 @@ func (s *Service) Login(ctx context.Context, UserLogin types.UserLogin) (*types.
 	}
 
 	if !jwt.IsCorrectPassword(UserLogin.Password, user.Password) {
-		return nil, errors.Wrap(errors.New("Password incorrect"), "Password incorrect")
+		s.logger.Errorf("Password incorrect", UserLogin.Email)
+		return nil, errors.Wrap(errors.New("Password isn't like password from database"), "Password incorrect")
 	}
 
 	var tokenString string
@@ -108,7 +109,7 @@ func (s *Service) Login(ctx context.Context, UserLogin types.UserLogin) (*types.
 }
 
 // Get basic info for a user
-func (s *Service) FindByID(ctx context.Context, id string) (*types.UserResGetInfo, error) {
+func (s *Service) FindUserById(ctx context.Context, id string) (*types.UserResGetInfo, error) {
 	var user *types.UserResGetInfo
 
 	//check id correct
@@ -119,7 +120,8 @@ func (s *Service) FindByID(ctx context.Context, id string) (*types.UserResGetInf
 	user, err := s.repo.FindByID(ctx, id)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "Failed to find the given user from database")
+		s.logger.Errorf("Not found id user", err)
+		return nil, errors.Wrap(err, "Failed to find id user from database")
 	}
 	s.logger.Infof("Find id completed ", id)
 	return user, nil

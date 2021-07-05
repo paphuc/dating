@@ -81,7 +81,7 @@ func Init(conns *InfraConns) (http.Handler, error) {
 		route{
 			path:    "/users/{id:[a-z0-9-\\-]+}",
 			method:  get,
-			handler: userHandler.FindById,
+			handler: userHandler.GetUserByID,
 		},
 		route{
 			path:        "/update",

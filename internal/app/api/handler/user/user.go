@@ -18,7 +18,7 @@ type (
 	service interface {
 		SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*types.UserResponseSignUp, error)
 		Login(ctx context.Context, UserLogin types.UserLogin) (*types.UserResponseSignUp, error)
-		FindByID(ctx context.Context, id string) (*types.UserResGetInfo, error)
+		FindUserById(ctx context.Context, id string) (*types.UserResGetInfo, error)
 		UpdateUserByID(ctx context.Context, User types.User) error
 	}
 	// Handler is user web handler
@@ -85,7 +85,7 @@ func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
 	// get id from token
 	idUser := token["_id"].(string)
 
-	user, err := h.srv.FindByID(r.Context(), idUser)
+	user, err := h.srv.FindUserById(r.Context(), idUser)
 	if err != nil {
 		respond.JSON(w, http.StatusUnauthorized, config.EM.Invalid_value.Request)
 	}
@@ -93,10 +93,10 @@ func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
 	respond.JSON(w, http.StatusOK, user)
 }
 
-// Post handler get information of the user by id
-func (h *Handler) FindById(w http.ResponseWriter, r *http.Request) {
+// Get handler get information of the user by id
+func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 
-	user, err := h.srv.FindByID(r.Context(), mux.Vars(r)["id"])
+	user, err := h.srv.FindUserById(r.Context(), mux.Vars(r)["id"])
 	if err != nil {
 		respond.JSON(w, http.StatusUnauthorized, config.EM.Invalid_value.Request)
 	}
