@@ -17,6 +17,7 @@ type Repository interface {
 	FindByID(ctx context.Context, id string) (*types.UserResGetInfo, error)
 	FindByEmail(ctx context.Context, email string) (*types.User, error)
 	Insert(ctx context.Context, User types.User) error
+	UpdateByID(ctx context.Context, User types.User) error
 }
 
 // Service is an user service
@@ -43,20 +44,17 @@ func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*typ
 
 	UserSignUp.Password, _ = jwt.HashPassword(UserSignUp.Password)
 
-	if err := s.repo.Insert(ctx, types.User{
+	user := types.User{
+		ID:       bson.NewObjectId(),
 		Name:     UserSignUp.Name,
 		Email:    UserSignUp.Email,
 		Password: UserSignUp.Password,
-		CreateAt: time.Now()}); err != nil {
+		CreateAt: time.Now(),
+		UpdateAt: time.Now()}
+
+	if err := s.repo.Insert(ctx, user); err != nil {
 		s.logger.Errorf("Can't insert user", err)
 		return nil, errors.Wrap(err, "Can't insert user")
-	}
-
-	user, error := s.repo.FindByEmail(ctx, UserSignUp.Email)
-
-	if error != nil {
-		s.logger.Errorf("Can't find user after insert ", error)
-		return nil, errors.Wrap(error, "Can't insert user")
 	}
 
 	var tokenString string
@@ -67,10 +65,11 @@ func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*typ
 	})
 
 	if err != nil {
-		s.logger.Errorf("Can't gen token after insert", error)
+		s.logger.Errorf("Can't gen token after insert", err)
 		return nil, errors.Wrap(err, "Can't insert user")
 	}
 	s.logger.Infof("Register completed", UserSignUp)
+
 	return &types.UserResponseSignUp{
 		Name:  UserSignUp.Name,
 		Email: UserSignUp.Email,
@@ -84,11 +83,11 @@ func (s *Service) Login(ctx context.Context, UserLogin types.UserLogin) (*types.
 	user, err := s.repo.FindByEmail(ctx, UserLogin.Email)
 	if err != nil {
 		s.logger.Errorf("Not found email exits", err)
-		return nil, errors.Wrap(errors.New("Not found email exits"), "email not exists, can't find user")
+		return nil, errors.Wrap(errors.New("Not found email exits"), "Email not exists, can't find user")
 	}
 
 	if !jwt.IsCorrectPassword(UserLogin.Password, user.Password) {
-		return nil, errors.Wrap(errors.New("password incorrect"), "password incorrect")
+		return nil, errors.Wrap(errors.New("Password incorrect"), "Password incorrect")
 	}
 
 	var tokenString string
@@ -101,7 +100,7 @@ func (s *Service) Login(ctx context.Context, UserLogin types.UserLogin) (*types.
 		s.logger.Errorf("Can not gen token", error)
 		return nil, errors.Wrap(error, "Can't gen token")
 	}
-	s.logger.Infof("login completed ", user.Email)
+	s.logger.Infof("Login completed ", user.Email)
 	return &types.UserResponseSignUp{
 		Name:  user.Name,
 		Email: user.Email,
@@ -114,14 +113,27 @@ func (s *Service) FindByID(ctx context.Context, id string) (*types.UserResGetInf
 
 	//check id correct
 	if !bson.IsObjectIdHex(id) {
-		return nil, errors.New("id error to find the given user from database")
+		return nil, errors.New("Id incorrect to find the given user from database")
 	}
 
 	user, err := s.repo.FindByID(ctx, id)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find the given user from database")
+		return nil, errors.Wrap(err, "Failed to find the given user from database")
 	}
-	s.logger.Infof("find id completed ", id)
+	s.logger.Infof("Find id completed ", id)
 	return user, nil
+}
+
+// Post update info for a user
+func (s *Service) UpdateByID(ctx context.Context, user types.User) error {
+
+	err := s.repo.UpdateByID(ctx, user)
+
+	if err != nil {
+		s.logger.Errorf("failed when update user by id", err)
+		return err
+	}
+	s.logger.Infof("updated user is completed ")
+	return err
 }

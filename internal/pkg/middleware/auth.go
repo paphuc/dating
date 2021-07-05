@@ -17,7 +17,7 @@ func Auth(h http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 		claimMap, err := auth.IsAuthorized(tokenpath)
-		// fmt.Println(claimMap)
+
 		if err != nil {
 			respond.Error(w, err, http.StatusUnauthorized)
 			return

@@ -13,6 +13,9 @@ error:
     email_exists:
       code: "302"
       message: "Email address is exists. Please try again with other email. (IVEE)"
+    failed_authentication:
+      code: "402"
+      message: "Failed to authentication user. (IVFA)"
   database:
     database:
       code: "103"

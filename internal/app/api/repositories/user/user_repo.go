@@ -55,6 +55,16 @@ func (r *MongoRepository) FindByID(ctx context.Context, id string) (*types.UserR
 	return user, err
 }
 
+//  This method helps update info user
+func (r *MongoRepository) UpdateByID(ctx context.Context, user types.User) error {
+	s := r.session.Clone()
+	defer s.Close()
+
+	err := r.collection(s).UpdateId(user.ID, user)
+
+	return err
+}
+
 func (r *MongoRepository) collection(s *mgo.Session) *mgo.Collection {
 	return s.DB("").C("users")
 }

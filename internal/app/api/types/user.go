@@ -11,10 +11,10 @@ type User struct {
 	Name     string          `json:"name" bson:"name"`
 	Email    string          `json:"email" bson:"email"`
 	Password string          `json:"password" bson:"password"`
-	Avatars  []string        `json:"avatar" bson:"avatars"` // arr path image
+	Photos   []string        `json:"photos" bson:"photos"` // arr path image
 	Gender   string          `json:"gender" bson:"gender"`
 	Country  string          `json:"country" bson:"country"`
-	Hobby    []Hobby         `json:"hobby" bson:"hobby"`
+	Hobby    []bson.ObjectId `json:"hobby" bson:"hobby"`
 	About    string          `json:"about" bson:"about"`
 	LikeID   []bson.ObjectId `json:"like_id" bson:"like_id"`
 	MatchID  []bson.ObjectId `json:"match_id" bson:"match_id"`
@@ -26,7 +26,7 @@ type UserResGetInfo struct {
 	ID       bson.ObjectId   `json:"_id" bson:"_id,omitempty"`
 	Name     string          `json:"name" bson:"name"`
 	Email    string          `json:"email" bson:"email"`
-	Avatars  []string        `json:"avatar" bson:"avatars"` // arr path image
+	Photos   []string        `json:"photos" bson:"photos"` // arr path image
 	Gender   string          `json:"gender" bson:"gender"`
 	Country  string          `json:"country" bson:"country"`
 	Hobby    []Hobby         `json:"hobby" bson:"hobby"`

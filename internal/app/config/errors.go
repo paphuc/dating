@@ -29,6 +29,7 @@ type ErrorMessage struct {
 		Request                  ErrorCode
 		Incorrect_password_email ErrorCode
 		Email_exists             ErrorCode
+		Failed_authentication    ErrorCode
 	}
 }
 

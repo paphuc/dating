@@ -16,7 +16,7 @@ var (
 
 //Generate token for login or sign up
 func GenToken(user types.UserFieldInToken) (string, error) {
-	expirationTime := time.Now().Add(120 * time.Minute)
+	expirationTime := time.Now().Add(120 * time.Hour)
 	claims := &types.Claims{
 		ID:    user.ID,
 		Email: user.Email,
@@ -32,7 +32,7 @@ func IsAuthorized(tokenpath string) (map[string]interface{}, error) {
 
 	token, err := jwt.Parse(tokenpath, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("can't authorized token")
+			return nil, errors.New("Can't authorized token")
 		}
 		return jwtKey, nil
 	})
