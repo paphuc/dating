@@ -25,7 +25,7 @@ type ErrorMessage struct {
 		Database     ErrorCode
 		DataNotFound ErrorCode
 	}
-	Invalid_value struct {
+	InvalidValue struct {
 		Request                ErrorCode
 		IncorrectPasswordEmail ErrorCode
 		EmailExists            ErrorCode

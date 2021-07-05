@@ -12,13 +12,13 @@ func Auth(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenpath := auth.ExtractToken(r)
 		if tokenpath == "" {
-			respond.JSON(w, http.StatusUnauthorized, config.EM.Invalid_value.FailedAuthentication)
+			respond.JSON(w, http.StatusUnauthorized, config.EM.InvalidValue.FailedAuthentication)
 			return
 		}
 		claimMap, err := auth.IsAuthorized(tokenpath)
 
 		if err != nil {
-			respond.JSON(w, http.StatusUnauthorized, config.EM.Invalid_value.FailedAuthentication)
+			respond.JSON(w, http.StatusUnauthorized, config.EM.InvalidValue.FailedAuthentication)
 			return
 		}
 		ctx := context.WithValue(r.Context(), "props", claimMap)

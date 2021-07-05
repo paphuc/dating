@@ -43,14 +43,14 @@ func (h *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&userSignup)
 
 	if err != nil {
-		respond.JSON(w, http.StatusInternalServerError, config.EM.Invalid_value.Request)
+		respond.JSON(w, http.StatusInternalServerError, config.EM.InvalidValue.Request)
 		return
 	}
 
 	user, err := h.srv.SignUp(r.Context(), userSignup)
 
 	if err != nil {
-		respond.JSON(w, http.StatusConflict, config.EM.Invalid_value.EmailExists)
+		respond.JSON(w, http.StatusConflict, config.EM.InvalidValue.EmailExists)
 		return
 	}
 
@@ -63,13 +63,13 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&UserLogin)
 
 	if err != nil {
-		respond.JSON(w, http.StatusUnauthorized, config.EM.Invalid_value.IncorrectPasswordEmail)
+		respond.JSON(w, http.StatusUnauthorized, config.EM.InvalidValue.IncorrectPasswordEmail)
 		return
 	}
 
 	user, err := h.srv.Login(r.Context(), UserLogin)
 	if err != nil {
-		respond.JSON(w, http.StatusUnauthorized, config.EM.Invalid_value.IncorrectPasswordEmail)
+		respond.JSON(w, http.StatusUnauthorized, config.EM.InvalidValue.IncorrectPasswordEmail)
 		return
 	}
 	respond.JSON(w, http.StatusOK, user)
@@ -80,14 +80,14 @@ func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
 
 	token, ok := r.Context().Value("props").(map[string]interface{})
 	if !ok {
-		respond.JSON(w, http.StatusUnauthorized, config.EM.Invalid_value.FailedAuthentication)
+		respond.JSON(w, http.StatusUnauthorized, config.EM.InvalidValue.FailedAuthentication)
 	}
 	// get id from token
 	idUser := token["_id"].(string)
 
 	user, err := h.srv.FindUserById(r.Context(), idUser)
 	if err != nil {
-		respond.JSON(w, http.StatusUnauthorized, config.EM.Invalid_value.Request)
+		respond.JSON(w, http.StatusUnauthorized, config.EM.InvalidValue.Request)
 	}
 
 	respond.JSON(w, http.StatusOK, user)
@@ -98,7 +98,7 @@ func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.srv.FindUserById(r.Context(), mux.Vars(r)["id"])
 	if err != nil {
-		respond.JSON(w, http.StatusUnauthorized, config.EM.Invalid_value.Request)
+		respond.JSON(w, http.StatusUnauthorized, config.EM.InvalidValue.Request)
 	}
 
 	respond.JSON(w, http.StatusOK, user)
@@ -111,13 +111,13 @@ func (h *Handler) UpdateUserByID(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&user)
 
 	if err != nil {
-		respond.JSON(w, http.StatusInternalServerError, config.EM.Invalid_value.Request)
+		respond.JSON(w, http.StatusInternalServerError, config.EM.InvalidValue.Request)
 		return
 	}
 
 	token, ok := r.Context().Value("props").(map[string]interface{})
 	if !ok {
-		respond.JSON(w, http.StatusUnauthorized, config.EM.Invalid_value.FailedAuthentication)
+		respond.JSON(w, http.StatusUnauthorized, config.EM.InvalidValue.FailedAuthentication)
 	}
 
 	// get id,email from token
@@ -128,7 +128,7 @@ func (h *Handler) UpdateUserByID(w http.ResponseWriter, r *http.Request) {
 	error := h.srv.UpdateUserByID(r.Context(), user)
 
 	if error != nil {
-		respond.JSON(w, http.StatusUnauthorized, config.EM.Invalid_value.Request)
+		respond.JSON(w, http.StatusUnauthorized, config.EM.InvalidValue.Request)
 	}
 	respond.JSON(w, http.StatusOK, config.EM.Success)
 }

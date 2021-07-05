@@ -2,8 +2,9 @@ package user
 
 import (
 	"context"
-	"dating/internal/app/api/types"
 	"time"
+
+	"dating/internal/app/api/types"
 
 	mgo "github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
