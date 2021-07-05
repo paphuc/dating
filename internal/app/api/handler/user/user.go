@@ -19,7 +19,7 @@ type (
 		SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*types.UserResponseSignUp, error)
 		Login(ctx context.Context, UserLogin types.UserLogin) (*types.UserResponseSignUp, error)
 		FindByID(ctx context.Context, id string) (*types.UserResGetInfo, error)
-		UpdateByID(ctx context.Context, User types.User) error
+		UpdateUserByID(ctx context.Context, User types.User) error
 	}
 	// Handler is user web handler
 	Handler struct {
@@ -75,7 +75,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	respond.JSON(w, http.StatusOK, user)
 }
 
-// Post handler get your own information
+// Get handler get your own information
 func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
 
 	token, ok := r.Context().Value("props").(map[string]interface{})
@@ -93,7 +93,7 @@ func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
 	respond.JSON(w, http.StatusOK, user)
 }
 
-// Post handler get infomation of the user by id
+// Post handler get information of the user by id
 func (h *Handler) FindById(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.srv.FindByID(r.Context(), mux.Vars(r)["id"])
@@ -104,11 +104,12 @@ func (h *Handler) FindById(w http.ResponseWriter, r *http.Request) {
 	respond.JSON(w, http.StatusOK, user)
 }
 
-// Post handler update infomation of the user by id
-func (h *Handler) UpdateByID(w http.ResponseWriter, r *http.Request) {
+// Post handler update information of the user by id
+func (h *Handler) UpdateUserByID(w http.ResponseWriter, r *http.Request) {
 
 	var user types.User
 	err := json.NewDecoder(r.Body).Decode(&user)
+
 	if err != nil {
 		respond.JSON(w, http.StatusInternalServerError, config.EM.Invalid_value.Request)
 		return
@@ -124,7 +125,7 @@ func (h *Handler) UpdateByID(w http.ResponseWriter, r *http.Request) {
 	user.ID = bson.ObjectIdHex(idUser)
 	user.Email = token["email"].(string)
 
-	error := h.srv.UpdateByID(r.Context(), user)
+	error := h.srv.UpdateUserByID(r.Context(), user)
 
 	if error != nil {
 		respond.JSON(w, http.StatusUnauthorized, config.EM.Invalid_value.Request)

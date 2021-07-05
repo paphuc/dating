@@ -17,7 +17,7 @@ type Repository interface {
 	FindByID(ctx context.Context, id string) (*types.UserResGetInfo, error)
 	FindByEmail(ctx context.Context, email string) (*types.User, error)
 	Insert(ctx context.Context, User types.User) error
-	UpdateByID(ctx context.Context, User types.User) error
+	UpdateUserByID(ctx context.Context, User types.User) error
 }
 
 // Service is an user service
@@ -126,9 +126,9 @@ func (s *Service) FindByID(ctx context.Context, id string) (*types.UserResGetInf
 }
 
 // Post update info for a user
-func (s *Service) UpdateByID(ctx context.Context, user types.User) error {
+func (s *Service) UpdateUserByID(ctx context.Context, user types.User) error {
 
-	err := s.repo.UpdateByID(ctx, user)
+	err := s.repo.UpdateUserByID(ctx, user)
 
 	if err != nil {
 		s.logger.Errorf("failed when update user by id", err)

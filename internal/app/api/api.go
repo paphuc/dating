@@ -73,21 +73,21 @@ func Init(conns *InfraConns) (http.Handler, error) {
 			handler: userHandler.Login,
 		},
 		route{
-			path:        "/getme",
+			path:        "/me",
 			method:      get,
 			middlewares: []middlewareFunc{middleware.Auth},
 			handler:     userHandler.GetMe,
 		},
 		route{
-			path:    "/getuser/{id:[a-z0-9-\\-]+}",
+			path:    "/users/{id:[a-z0-9-\\-]+}",
 			method:  get,
 			handler: userHandler.FindById,
 		},
 		route{
 			path:        "/update",
-			method:      post,
+			method:      put,
 			middlewares: []middlewareFunc{middleware.Auth},
-			handler:     userHandler.UpdateByID,
+			handler:     userHandler.UpdateUserByID,
 		},
 	}
 

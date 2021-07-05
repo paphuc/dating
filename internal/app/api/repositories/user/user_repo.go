@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"dating/internal/app/api/types"
+	"time"
 
 	mgo "github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
@@ -56,11 +57,26 @@ func (r *MongoRepository) FindByID(ctx context.Context, id string) (*types.UserR
 }
 
 //  This method helps update info user
-func (r *MongoRepository) UpdateByID(ctx context.Context, user types.User) error {
+func (r *MongoRepository) UpdateUserByID(ctx context.Context, user types.User) error {
 	s := r.session.Clone()
 	defer s.Close()
 
-	err := r.collection(s).UpdateId(user.ID, user)
+	updatedUser := bson.M{"$set": bson.M{
+		"name":         user.Name,
+		"age":          user.Age,
+		"relationship": user.Relationship,
+		"lookingFor":   user.LookingFor,
+		"media":        user.Media,
+		"gender":       user.Gender,
+		"country":      user.Country,
+		"hobby":        user.Hobby,
+		"sex":          user.Sex,
+		"about":        user.About,
+		"like_id":      user.LikeID,
+		"match_id":     user.MatchID,
+		"updated_at":   time.Now(),
+	}}
+	err := r.collection(s).UpdateId(user.ID, updatedUser)
 
 	return err
 }
