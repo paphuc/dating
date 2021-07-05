@@ -3,16 +3,24 @@ error:
     code: "01"
     message: "OK"
      
-  invalid:
+  invalid_value:
     request:
       code: "102"
-      message: "System cannot process this request at the moment. Please try again later."
-
-  internal:
+      message: "System cannot process this request at the moment. Please try again later. (IVR)"
+    incorrect_password_email:
+      code: "202"
+      message: "Incorrect password or email address. Please try again. (IVIPE)"
+    email_exists:
+      code: "302"
+      message: "Email address is exists. Please try again with other email. (IVEE)"
+    failed_authentication:
+      code: "402"
+      message: "Failed to authentication user. (IVFA)"
+  database:
     database:
       code: "103"
-      message: "System cannot process your request at the moment. Please try again later."
+      message: "System cannot process your request at the moment. Please try again later. (DBG)"
 
     data_not_found:
-      code: "104"
-      message: "Data not found in database"
+      code: "203"
+      message: "Data not found in database. (DBNF)"

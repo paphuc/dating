@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	userhandler "dating/internal/app/api/handler/user"
-	user "dating/internal/app/api/repositories"
+	user "dating/internal/app/api/repositories/user"
 	userService "dating/internal/app/api/services/user"
 
 	"dating/internal/app/db"
@@ -71,6 +71,24 @@ func Init(conns *InfraConns) (http.Handler, error) {
 			path:    "/login",
 			method:  post,
 			handler: userHandler.Login,
+		},
+		route{
+			path:        "/me",
+			method:      get,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     userHandler.GetMe,
+		},
+		route{
+			path:        "/users/{id:[a-z0-9-\\-]+}",
+			method:      get,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     userHandler.GetUserByID,
+		},
+		route{
+			path:        "/update",
+			method:      put,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     userHandler.UpdateUserByID,
 		},
 	}
 

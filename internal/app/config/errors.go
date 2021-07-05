@@ -21,12 +21,15 @@ type ErrorMessage struct {
 	vn         *viper.Viper
 	ConfigPath string
 	Success    ErrorCode
-	Internal   struct {
+	Database   struct {
 		Database     ErrorCode
 		DataNotFound ErrorCode
 	}
-	Invalid struct {
-		Request ErrorCode
+	InvalidValue struct {
+		Request                ErrorCode
+		IncorrectPasswordEmail ErrorCode
+		EmailExists            ErrorCode
+		FailedAuthentication   ErrorCode
 	}
 }
 
