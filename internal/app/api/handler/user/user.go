@@ -21,7 +21,8 @@ type (
 		Login(ctx context.Context, UserLogin types.UserLogin) (*types.UserResponseSignUp, error)
 		FindUserById(ctx context.Context, id string) (*types.UserResGetInfo, error)
 		UpdateUserByID(ctx context.Context, User types.User) error
-		GetListUsers(ctx context.Context, page int) ([]*types.UserResGetInfo, error)
+		GetUsersByPage(ctx context.Context, page int) ([]*types.UserResGetInfo, error)
+		GetAllUsers(ctx context.Context) ([]*types.UserResGetInfo, error)
 	}
 	// Handler is user web handler
 	Handler struct {
@@ -87,6 +88,7 @@ func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	user, err := h.srv.FindUserById(r.Context(), mux.Vars(r)["id"])
 	if err != nil {
 		respond.JSON(w, http.StatusUnauthorized, h.em.InvalidValue.Request)
+		return
 	}
 
 	respond.JSON(w, http.StatusOK, user)
@@ -106,6 +108,7 @@ func (h *Handler) UpdateUserByID(w http.ResponseWriter, r *http.Request) {
 	error := h.srv.UpdateUserByID(r.Context(), user)
 	if error != nil {
 		respond.JSON(w, http.StatusUnauthorized, h.em.InvalidValue.Request)
+		return
 	}
 
 	respond.JSON(w, http.StatusOK, h.em.Success)
@@ -117,14 +120,25 @@ func (h *Handler) GetListUsersByPage(w http.ResponseWriter, r *http.Request) {
 	page, err := strconv.ParseInt(mux.Vars(r)["page"], 10, 64)
 	fmt.Println(page)
 	if err != nil {
-		fmt.Println(err)
 		respond.JSON(w, http.StatusUnauthorized, h.em.InvalidValue.Request)
 		return
 	}
 
-	userList, err := h.srv.GetListUsers(r.Context(), int(page))
+	userList, err := h.srv.GetUsersByPage(r.Context(), int(page))
 	if err != nil {
-		fmt.Println(err)
+		respond.JSON(w, http.StatusUnauthorized, h.em.InvalidValue.Request)
+		return
+	}
+
+	respond.JSON(w, http.StatusOK, userList)
+}
+
+// Post handler update information of the user by id
+func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
+
+	userList, err := h.srv.GetAllUsers(r.Context())
+
+	if err != nil {
 		respond.JSON(w, http.StatusUnauthorized, h.em.InvalidValue.Request)
 		return
 	}

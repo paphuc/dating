@@ -25,9 +25,6 @@ func Auth(h http.HandlerFunc) http.HandlerFunc {
 			respond.JSON(w, http.StatusUnauthorized, "Failed to authentication user. (IVFA)")
 			return
 		}
-		// add value in to context
-		// ctx := context.WithValue(r.Context(), "props", claimMap)
-		// r = r.WithContext(ctx)
 
 		h.ServeHTTP(w, r)
 	})

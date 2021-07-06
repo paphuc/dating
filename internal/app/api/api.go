@@ -84,13 +84,19 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			handler:     userHandler.GetUserByID,
 		},
 		route{
-			path:        "/update",
+			path:        "/users/update",
 			method:      put,
 			middlewares: []middlewareFunc{middleware.Auth},
 			handler:     userHandler.UpdateUserByID,
 		},
 		route{
-			path:        "/users/all/{page:[0-9]}",
+			path:        "/users/list/all",
+			method:      get,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     userHandler.GetAllUsers,
+		},
+		route{
+			path:        "/users/list/{page:[0-9]+}",
 			method:      get,
 			middlewares: []middlewareFunc{middleware.Auth},
 			handler:     userHandler.GetListUsersByPage,

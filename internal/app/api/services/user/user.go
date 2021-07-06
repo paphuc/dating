@@ -19,7 +19,8 @@ type Repository interface {
 	FindByEmail(ctx context.Context, email string) (*types.User, error)
 	Insert(ctx context.Context, User types.User) error
 	UpdateUserByID(ctx context.Context, User types.User) error
-	FindAllUsers(ctx context.Context, page int) ([]*types.UserResGetInfo, error)
+	GetUsersByPage(ctx context.Context, page int) ([]*types.UserResGetInfo, error)
+	GetAllUsers(ctx context.Context) ([]*types.UserResGetInfo, error)
 }
 
 // Service is an user service
@@ -147,15 +148,28 @@ func (s *Service) UpdateUserByID(ctx context.Context, user types.User) error {
 	return err
 }
 
-// Get list user page
-func (s *Service) GetListUsers(ctx context.Context, page int) ([]*types.UserResGetInfo, error) {
+// Get list users by page
+func (s *Service) GetUsersByPage(ctx context.Context, page int) ([]*types.UserResGetInfo, error) {
 
-	listUsers, err := s.repo.FindAllUsers(ctx, page)
+	listUsers, err := s.repo.GetUsersByPage(ctx, page)
 
 	if err != nil {
 		s.logger.Errorf("Failed when get list users by page", err)
 		return nil, err
 	}
 	s.logger.Infof("get list users by page is completed ", page)
+	return listUsers, err
+}
+
+// Get all users
+func (s *Service) GetAllUsers(ctx context.Context) ([]*types.UserResGetInfo, error) {
+
+	listUsers, err := s.repo.GetAllUsers(ctx)
+
+	if err != nil {
+		s.logger.Errorf("Failed when get all users ", err)
+		return nil, err
+	}
+	s.logger.Infof("get all users is completed ")
 	return listUsers, err
 }
