@@ -3,14 +3,15 @@ package userhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"dating/internal/app/api/types"
 	"dating/internal/app/config"
 	"dating/internal/pkg/glog"
 	"dating/internal/pkg/respond"
 
-	"github.com/globalsign/mgo/bson"
 	"github.com/gorilla/mux"
 )
 
@@ -20,6 +21,7 @@ type (
 		Login(ctx context.Context, UserLogin types.UserLogin) (*types.UserResponseSignUp, error)
 		FindUserById(ctx context.Context, id string) (*types.UserResGetInfo, error)
 		UpdateUserByID(ctx context.Context, User types.User) error
+		GetListUsers(ctx context.Context, page int) ([]*types.UserResGetInfo, error)
 	}
 	// Handler is user web handler
 	Handler struct {
@@ -79,24 +81,6 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	respond.JSON(w, http.StatusOK, user)
 }
 
-// Get handler get your own information
-func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
-
-	token, ok := r.Context().Value("props").(map[string]interface{})
-	if !ok {
-		respond.JSON(w, http.StatusUnauthorized, h.em.InvalidValue.FailedAuthentication)
-	}
-	// get id from token
-	idUser := token["_id"].(string)
-
-	user, err := h.srv.FindUserById(r.Context(), idUser)
-	if err != nil {
-		respond.JSON(w, http.StatusUnauthorized, h.em.InvalidValue.Request)
-	}
-
-	respond.JSON(w, http.StatusOK, user)
-}
-
 // Get handler get information of the user by id
 func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 
@@ -119,20 +103,31 @@ func (h *Handler) UpdateUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, ok := r.Context().Value("props").(map[string]interface{})
-	if !ok {
-		respond.JSON(w, http.StatusUnauthorized, h.em.InvalidValue.FailedAuthentication)
-	}
-
-	// get id,email from token
-	idUser := token["_id"].(string)
-	user.ID = bson.ObjectIdHex(idUser)
-	user.Email = token["email"].(string)
-
 	error := h.srv.UpdateUserByID(r.Context(), user)
-
 	if error != nil {
 		respond.JSON(w, http.StatusUnauthorized, h.em.InvalidValue.Request)
 	}
+
 	respond.JSON(w, http.StatusOK, h.em.Success)
+}
+
+// Post handler update information of the user by id
+func (h *Handler) GetListUsersByPage(w http.ResponseWriter, r *http.Request) {
+
+	page, err := strconv.ParseInt(mux.Vars(r)["page"], 10, 64)
+	fmt.Println(page)
+	if err != nil {
+		fmt.Println(err)
+		respond.JSON(w, http.StatusUnauthorized, h.em.InvalidValue.Request)
+		return
+	}
+
+	userList, err := h.srv.GetListUsers(r.Context(), int(page))
+	if err != nil {
+		fmt.Println(err)
+		respond.JSON(w, http.StatusUnauthorized, h.em.InvalidValue.Request)
+		return
+	}
+
+	respond.JSON(w, http.StatusOK, userList)
 }

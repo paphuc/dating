@@ -19,6 +19,7 @@ type Repository interface {
 	FindByEmail(ctx context.Context, email string) (*types.User, error)
 	Insert(ctx context.Context, User types.User) error
 	UpdateUserByID(ctx context.Context, User types.User) error
+	FindAllUsers(ctx context.Context, page int) ([]*types.UserResGetInfo, error)
 }
 
 // Service is an user service
@@ -144,4 +145,17 @@ func (s *Service) UpdateUserByID(ctx context.Context, user types.User) error {
 	}
 	s.logger.Infof("updated user is completed ")
 	return err
+}
+
+// Get list user page
+func (s *Service) GetListUsers(ctx context.Context, page int) ([]*types.UserResGetInfo, error) {
+
+	listUsers, err := s.repo.FindAllUsers(ctx, page)
+
+	if err != nil {
+		s.logger.Errorf("Failed when get list users by page", err)
+		return nil, err
+	}
+	s.logger.Infof("get list users by page is completed ", page)
+	return listUsers, err
 }
