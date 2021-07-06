@@ -30,8 +30,8 @@ func (ps *PagingNSorting) Init(page, size string) error {
 		return err
 	}
 
-	ps.Page = int(sizeInt)
-	ps.Size = int(pageInt)
+	ps.Page = int(pageInt)
+	ps.Size = int(sizeInt)
 
 	return nil
 }
