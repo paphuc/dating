@@ -6,6 +6,7 @@ import (
 	userhandler "dating/internal/app/api/handler/user"
 	user "dating/internal/app/api/repositories/user"
 	userService "dating/internal/app/api/services/user"
+	"dating/internal/app/config"
 
 	"dating/internal/app/db"
 	"dating/internal/pkg/glog"
@@ -39,20 +40,24 @@ const (
 )
 
 // Init init all handlers
-func Init(conns *InfraConns) (http.Handler, error) {
+func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 	logger := glog.New()
 
 	var userRepo userService.Repository
-	switch conns.Databases.Type {
+	switch conns.Database.Type {
 	case db.TypeMongoDB:
-		userRepo = user.NewMongoRepository(conns.Databases.MongoDB)
+		s, err := config.Dial(&conns.Database.Mongo, logger)
+		if err != nil {
+			logger.Panicf("failed to dial to target server, err: %v", err)
+		}
+		userRepo = user.NewMongoRepository(s)
 	default:
-		panic("database type not supported: " + conns.Databases.Type)
+		panic("database type not supported: " + conns.Database.Type)
 	}
 
 	userLogger := logger.WithField("package", "user")
-	userSrv := userService.NewService(userRepo, userLogger)
-	userHandler := userhandler.New(userSrv, userLogger)
+	userSrv := userService.NewService(conns, &em, userRepo, userLogger)
+	userHandler := userhandler.New(conns, &em, userSrv, userLogger)
 
 	routes := []route{
 		// infra
@@ -111,9 +116,4 @@ func Init(conns *InfraConns) (http.Handler, error) {
 	}
 
 	return r, nil
-}
-
-// Close close all underlying connections
-func (c *InfraConns) Close() {
-	c.Databases.Close()
 }

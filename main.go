@@ -7,62 +7,44 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"time"
 
 	"dating/internal/app/api"
 	"dating/internal/app/config"
-	"dating/internal/app/db"
-	"dating/internal/app/db/mongodb"
-	envconfig "dating/internal/pkg/config/env"
 	"dating/internal/pkg/glog"
 	"dating/internal/pkg/health"
 )
 
-type (
-	srvConfig struct {
-		DB struct {
-			Type    string `envconfig:"DB_TYPE" default:"mongodb"`
-			MongoDB mongodb.Config
-		}
-		HTTP struct {
-			Address           string        `envconfig:"HTTP_ADDRESS" default:""`
-			Port              int           `envconfig:"PORT" default:"8080"`
-			ReadTimeout       time.Duration `envconfig:"HTTP_READ_TIMEOUT" default:"5m"`
-			WriteTimeout      time.Duration `envconfig:"HTTP_WRITE_TIMEOUT" default:"5m"`
-			ReadHeaderTimeout time.Duration `envconfig:"HTTP_READ_HEADER_TIMEOUT" default:"30s"`
-			ShutdownTimeout   time.Duration `envconfig:"HTTP_SHUTDOWN_TIMEOUT" default:"10s"`
-		}
-	}
-)
-
 func main() {
-	var conf srvConfig
-	envconfig.Load(&conf)
 	logger := glog.New()
-	fmt.Println(conf)
-	conns := initInfraConns(&conf, logger)
-	defer conns.Close()
-
+	stage := flag.String("stage", "dev", "set working environment")
 	configPath := flag.String("config", "configs", "set configs path, default as: 'configs'")
+
 	// error message
-	config.EM.ConfigPath = *configPath
-	if err := config.EM.Init(); err != nil {
+	em := config.ErrorMessage{ConfigPath: *configPath}
+	if err := em.Init(); err != nil {
 		logger.Errorf("failed to load error messages, err: %v", err)
 	}
 
+	// configs
+	conf, err := config.New(*configPath, *stage)
+	if err != nil {
+		logger.Errorf("failed to load config, err: %v", err)
+	}
+	// envconfig.Load(&conf)
+
 	logger.Infof("initializing HTTP routing...")
-	router, err := api.Init(conns)
+	router, err := api.Init(conf, em)
 	if err != nil {
 		logger.Panicf("failed to init routing, err: %v", err)
 	}
-	addr := fmt.Sprintf("%s:%d", conf.HTTP.Address, conf.HTTP.Port)
+	addr := fmt.Sprintf("%s:%d", conf.HTTPServer.Address, conf.HTTPServer.Port)
 
 	httpServer := http.Server{
 		Addr:              addr,
 		Handler:           router,
-		ReadTimeout:       conf.HTTP.ReadTimeout,
-		WriteTimeout:      conf.HTTP.WriteTimeout,
-		ReadHeaderTimeout: conf.HTTP.ReadHeaderTimeout,
+		ReadTimeout:       conf.HTTPServer.ReadTimeout,
+		WriteTimeout:      conf.HTTPServer.WriteTimeout,
+		ReadHeaderTimeout: conf.HTTPServer.ReadHeaderTimeout,
 	}
 
 	logger.Infof("starting HTTP server...")
@@ -80,27 +62,11 @@ func main() {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt, os.Kill)
 	<-signals
-	ctx, cancel := context.WithTimeout(context.Background(), conf.HTTP.ShutdownTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), conf.HTTPServer.ShutdownTimeout)
 	defer cancel()
 	logger.Infof("shutting down http server...")
 	if err := httpServer.Shutdown(ctx); err != nil {
 		logger.Errorf("http server shutdown with error: %v", err)
 	}
 	// shutdown background services goes here
-}
-
-// initInfraConns init underlying infrastructure connections
-func initInfraConns(conf *srvConfig, l glog.Logger) *api.InfraConns {
-	conns := &api.InfraConns{}
-	conns.Databases.Type = conf.DB.Type
-
-	switch conf.DB.Type {
-	case db.TypeMongoDB:
-		s, err := mongodb.Dial(&conf.DB.MongoDB, l)
-		if err != nil {
-			l.Panicf("failed to dial to target server, err: %v", err)
-		}
-		conns.Databases.MongoDB = s
-	}
-	return conns
 }
