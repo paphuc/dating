@@ -15,14 +15,13 @@ var (
 )
 
 //Generate token for login or sign up
-func GenToken(user types.UserFieldInToken) (string, error) {
-	expirationTime := time.Now().Add(120 * time.Hour)
+func GenToken(user types.UserFieldInToken, duration time.Duration) (string, error) {
 	claims := &types.Claims{
 		ID:    user.ID,
 		Email: user.Email,
 		Name:  user.Name,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
+			ExpiresAt: time.Now().Add(duration).Unix(),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

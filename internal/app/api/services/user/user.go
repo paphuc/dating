@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"dating/internal/app/api/types"
+	"dating/internal/app/config"
 	"dating/internal/pkg/glog"
 	"dating/internal/pkg/jwt"
 
@@ -22,13 +23,17 @@ type Repository interface {
 
 // Service is an user service
 type Service struct {
+	conf   *config.Configs
+	em     *config.ErrorMessage
 	repo   Repository
 	logger glog.Logger
 }
 
 // NewService returns a new user service
-func NewService(r Repository, l glog.Logger) *Service {
+func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.Logger) *Service {
 	return &Service{
+		conf:   c,
+		em:     e,
 		repo:   r,
 		logger: l,
 	}
@@ -62,7 +67,7 @@ func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*typ
 		ID:    user.ID,
 		Name:  user.Name,
 		Email: user.Email,
-	})
+	}, s.conf.Jwt.Duration)
 
 	if err != nil {
 		s.logger.Errorf("Can't gen token after insert", err)
@@ -95,7 +100,7 @@ func (s *Service) Login(ctx context.Context, UserLogin types.UserLogin) (*types.
 	tokenString, error := jwt.GenToken(types.UserFieldInToken{
 		ID:    user.ID,
 		Name:  user.Name,
-		Email: user.Email})
+		Email: user.Email}, s.conf.Jwt.Duration)
 
 	if error != nil {
 		s.logger.Errorf("Can not gen token", error)

@@ -1,0 +1,20 @@
+http_server:
+  addresses: ""
+  port: "8080"
+  read_timeout: 60s
+  write_timeout: 60s
+  read_header_timeout: 60s
+  shutdown_timeout: 60s
+
+database:
+  type: mongodb
+  mongo:
+    addresses:
+    - "127.0.0.1:27017"
+    timeout: 5s
+    username: ""
+    password: ""
+    database: "dating"
+
+jwt:
+  duration: 3d
