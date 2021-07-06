@@ -90,16 +90,10 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			handler:     userHandler.UpdateUserByID,
 		},
 		route{
-			path:        "/users/list/all",
+			path:        "/users",
 			method:      get,
 			middlewares: []middlewareFunc{middleware.Auth},
-			handler:     userHandler.GetAllUsers,
-		},
-		route{
-			path:        "/users/list/{page:[0-9]+}",
-			method:      get,
-			middlewares: []middlewareFunc{middleware.Auth},
-			handler:     userHandler.GetListUsersByPage,
+			handler:     userHandler.GetListUsers,
 		},
 	}
 

@@ -83,15 +83,17 @@ func (r *MongoRepository) UpdateUserByID(ctx context.Context, user types.User) e
 }
 
 // This method helps get all user by page
-func (r *MongoRepository) GetUsersByPage(ctx context.Context, page int) ([]*types.UserResGetInfo, error) {
+func (r *MongoRepository) GetListUsers(ctx context.Context, page, size int) ([]*types.UserResGetInfo, error) {
 	s := r.session.Clone()
 	defer s.Close()
 
 	var result []*types.UserResGetInfo
-	err := r.collection(s).Find(nil).Skip((page - 1) * 6).Limit(6).All(&result)
+	err := r.collection(s).Find(nil).Skip((page - 1) * size).Limit(size).All(&result)
 
 	return result, err
 }
+
+// This method helps get all user
 func (r *MongoRepository) GetAllUsers(ctx context.Context) ([]*types.UserResGetInfo, error) {
 	s := r.session.Clone()
 	defer s.Close()
@@ -102,6 +104,15 @@ func (r *MongoRepository) GetAllUsers(ctx context.Context) ([]*types.UserResGetI
 	return result, err
 }
 
+// This method helps count number users in collection
+func (r *MongoRepository) CountUser(ctx context.Context) (int, error) {
+	s := r.session.Clone()
+	defer s.Close()
+
+	number, err := r.collection(s).Count()
+
+	return number, err
+}
 func (r *MongoRepository) collection(s *mgo.Session) *mgo.Collection {
 	return s.DB("").C("users")
 }

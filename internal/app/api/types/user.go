@@ -59,7 +59,14 @@ type UserResponseSignUp struct {
 	Email string `json:"email"`
 	Token string `json:"token"`
 }
+type GetListUsersResponse struct {
+	TotalItems       int               `json:"totalItems"`
+	TotalPages       int               `json:"totalPages"`
+	CurrentPage      int               `json:"currentPage"`
+	SizeItemsPerPage int               `json:"sizeItemsPerPage"`
+	ListUsers        []*UserResGetInfo `json:"listUsers"`
+}
 type UserLogin struct {
-	Email    string `json:"email" bson:"email"`
-	Password string `json:"password" bson:"password"`
+	Email    string `json:"email" bson:"email" validate:"required,email"`
+	Password string `json:"password" bson:"password" validate:"required"`
 }

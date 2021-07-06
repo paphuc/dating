@@ -3,7 +3,6 @@ package userhandler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -21,8 +20,8 @@ type (
 		Login(ctx context.Context, UserLogin types.UserLogin) (*types.UserResponseSignUp, error)
 		FindUserById(ctx context.Context, id string) (*types.UserResGetInfo, error)
 		UpdateUserByID(ctx context.Context, User types.User) error
-		GetUsersByPage(ctx context.Context, page int) ([]*types.UserResGetInfo, error)
-		GetAllUsers(ctx context.Context) ([]*types.UserResGetInfo, error)
+		GetListUsers(ctx context.Context, page, size int) (*types.GetListUsersResponse, error)
+		GetAllUsers(ctx context.Context) (*types.GetListUsersResponse, error)
 	}
 	// Handler is user web handler
 	Handler struct {
@@ -115,33 +114,42 @@ func (h *Handler) UpdateUserByID(w http.ResponseWriter, r *http.Request) {
 }
 
 // Post handler update information of the user by id
-func (h *Handler) GetListUsersByPage(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetListUsers(w http.ResponseWriter, r *http.Request) {
 
-	page, err := strconv.ParseInt(mux.Vars(r)["page"], 10, 64)
-	fmt.Println(page)
+	pageParameter := r.URL.Query().Get("page")
+	sizeParameter := r.URL.Query().Get("size")
+
+	// get all user
+	if pageParameter == "" && sizeParameter == "" {
+		userList, err := h.srv.GetAllUsers(r.Context())
+		if err != nil {
+			respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
+			return
+		}
+		respond.JSON(w, http.StatusOK, userList)
+		return
+	}
+
+	size, err := strconv.ParseInt(sizeParameter, 10, 64)
+	if err != nil {
+		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
+		return
+	}
+
+	if pageParameter == "" {
+		pageParameter = "1" // default page = 1
+	}
+
+	page, err := strconv.ParseInt(pageParameter, 10, 64)
+	if err != nil {
+		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
+		return
+	}
+
+	userList, err := h.srv.GetListUsers(r.Context(), int(page), int(size))
 	if err != nil {
 		respond.JSON(w, http.StatusUnauthorized, h.em.InvalidValue.Request)
 		return
 	}
-
-	userList, err := h.srv.GetUsersByPage(r.Context(), int(page))
-	if err != nil {
-		respond.JSON(w, http.StatusUnauthorized, h.em.InvalidValue.Request)
-		return
-	}
-
-	respond.JSON(w, http.StatusOK, userList)
-}
-
-// Post handler update information of the user by id
-func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
-
-	userList, err := h.srv.GetAllUsers(r.Context())
-
-	if err != nil {
-		respond.JSON(w, http.StatusUnauthorized, h.em.InvalidValue.Request)
-		return
-	}
-
 	respond.JSON(w, http.StatusOK, userList)
 }
