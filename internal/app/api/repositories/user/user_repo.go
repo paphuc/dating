@@ -83,12 +83,12 @@ func (r *MongoRepository) UpdateUserByID(ctx context.Context, user types.User) e
 }
 
 // This method helps get all user by page
-func (r *MongoRepository) GetListUsers(ctx context.Context, page, size int) ([]*types.UserResGetInfo, error) {
+func (r *MongoRepository) GetListUsers(ctx context.Context, ps types.PagingNSorting) ([]*types.UserResGetInfo, error) {
 	s := r.session.Clone()
 	defer s.Close()
 
 	var result []*types.UserResGetInfo
-	err := r.collection(s).Find(nil).Skip((page - 1) * size).Limit(size).All(&result)
+	err := r.collection(s).Find(nil).Skip((ps.Page - 1) * ps.Size).Limit(ps.Size).All(&result)
 
 	return result, err
 }

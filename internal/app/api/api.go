@@ -84,7 +84,7 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			handler:     userHandler.GetUserByID,
 		},
 		route{
-			path:        "/users/update",
+			path:        "/users",
 			method:      put,
 			middlewares: []middlewareFunc{middleware.Auth},
 			handler:     userHandler.UpdateUserByID,

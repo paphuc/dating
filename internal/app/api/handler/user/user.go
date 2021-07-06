@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"dating/internal/app/api/types"
 	"dating/internal/app/config"
@@ -20,8 +19,7 @@ type (
 		Login(ctx context.Context, UserLogin types.UserLogin) (*types.UserResponseSignUp, error)
 		FindUserById(ctx context.Context, id string) (*types.UserResGetInfo, error)
 		UpdateUserByID(ctx context.Context, User types.User) error
-		GetListUsers(ctx context.Context, page, size int) (*types.GetListUsersResponse, error)
-		GetAllUsers(ctx context.Context) (*types.GetListUsersResponse, error)
+		GetListUsers(ctx context.Context, page, size string) (*types.GetListUsersResponse, error)
 	}
 	// Handler is user web handler
 	Handler struct {
@@ -119,34 +117,7 @@ func (h *Handler) GetListUsers(w http.ResponseWriter, r *http.Request) {
 	pageParameter := r.URL.Query().Get("page")
 	sizeParameter := r.URL.Query().Get("size")
 
-	// get all user
-	if pageParameter == "" && sizeParameter == "" {
-		userList, err := h.srv.GetAllUsers(r.Context())
-		if err != nil {
-			respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
-			return
-		}
-		respond.JSON(w, http.StatusOK, userList)
-		return
-	}
-
-	size, err := strconv.ParseInt(sizeParameter, 10, 64)
-	if err != nil {
-		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
-		return
-	}
-
-	if pageParameter == "" {
-		pageParameter = "1" // default page = 1
-	}
-
-	page, err := strconv.ParseInt(pageParameter, 10, 64)
-	if err != nil {
-		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
-		return
-	}
-
-	userList, err := h.srv.GetListUsers(r.Context(), int(page), int(size))
+	userList, err := h.srv.GetListUsers(r.Context(), pageParameter, sizeParameter)
 	if err != nil {
 		respond.JSON(w, http.StatusUnauthorized, h.em.InvalidValue.Request)
 		return

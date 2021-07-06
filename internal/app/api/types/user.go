@@ -35,6 +35,7 @@ type UserResGetInfo struct {
 	LookingFor   string          `json:"lookingFor" bson:"lookingFor"`
 	Media        []string        `json:"media" bson:"media"` // arr path media
 	Gender       string          `json:"gender" bson:"gender"`
+	Sex          string          `json:"sex" bson:"sex"`
 	Country      string          `json:"country" bson:"country"`
 	Hobby        []string        `json:"hobby" bson:"hobby"`
 	About        string          `json:"about" bson:"about"`
@@ -60,11 +61,11 @@ type UserResponseSignUp struct {
 	Token string `json:"token"`
 }
 type GetListUsersResponse struct {
-	TotalItems       int               `json:"totalItems"`
-	TotalPages       int               `json:"totalPages"`
-	CurrentPage      int               `json:"currentPage"`
-	SizeItemsPerPage int               `json:"sizeItemsPerPage"`
-	ListUsers        []*UserResGetInfo `json:"listUsers"`
+	TotalItems      int               `json:"totalItems"`
+	TotalPages      int               `json:"totalPages"`
+	CurrentPage     int               `json:"currentPage"`
+	MaxItemsPerPage int               `json:"maxItemsPerPage"`
+	ListUsers       []*UserResGetInfo `json:"listUsers"`
 }
 type UserLogin struct {
 	Email    string `json:"email" bson:"email" validate:"required,email"`

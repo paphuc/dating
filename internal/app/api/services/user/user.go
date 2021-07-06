@@ -19,8 +19,7 @@ type Repository interface {
 	FindByEmail(ctx context.Context, email string) (*types.User, error)
 	Insert(ctx context.Context, User types.User) error
 	UpdateUserByID(ctx context.Context, User types.User) error
-	GetListUsers(ctx context.Context, page, size int) ([]*types.UserResGetInfo, error)
-	GetAllUsers(ctx context.Context) ([]*types.UserResGetInfo, error)
+	GetListUsers(ctx context.Context, ps types.PagingNSorting) ([]*types.UserResGetInfo, error)
 	CountUser(ctx context.Context) (int, error)
 }
 
@@ -150,7 +149,15 @@ func (s *Service) UpdateUserByID(ctx context.Context, user types.User) error {
 }
 
 // Get list users by page
-func (s *Service) GetListUsers(ctx context.Context, page, size int) (*types.GetListUsersResponse, error) {
+func (s *Service) GetListUsers(ctx context.Context, page, size string) (*types.GetListUsersResponse, error) {
+
+	var pagingNSorting types.PagingNSorting
+	err := pagingNSorting.Init(page, size)
+
+	if err != nil {
+		s.logger.Errorf("Failed url parameters when get list users", err)
+		return nil, err
+	}
 
 	var listUsersResponse types.GetListUsersResponse
 
@@ -160,16 +167,20 @@ func (s *Service) GetListUsers(ctx context.Context, page, size int) (*types.GetL
 		return nil, err
 	}
 
-	listUsersResponse.CurrentPage = page
-	listUsersResponse.SizeItemsPerPage = size
+	listUsersResponse.CurrentPage = pagingNSorting.Page
+	listUsersResponse.MaxItemsPerPage = pagingNSorting.Size
 	listUsersResponse.TotalItems = numberUsers
-	listUsersResponse.TotalPages = int(numberUsers / size)
+	listUsersResponse.TotalPages = int(numberUsers / pagingNSorting.Size)
 	// ex: total: 5, size: 2 => 3 page
-	if numberUsers%size != 0 {
+	if numberUsers%pagingNSorting.Size != 0 {
 		listUsersResponse.TotalPages += 1
 	}
 
-	listUsers, err := s.repo.GetListUsers(ctx, page, size)
+	if pagingNSorting.Size > numberUsers {
+		listUsersResponse.MaxItemsPerPage = numberUsers
+	}
+
+	listUsers, err := s.repo.GetListUsers(ctx, pagingNSorting)
 
 	if err != nil {
 		s.logger.Errorf("Failed when get list users by page", err)
@@ -178,33 +189,6 @@ func (s *Service) GetListUsers(ctx context.Context, page, size int) (*types.GetL
 
 	listUsersResponse.ListUsers = append(listUsersResponse.ListUsers, listUsers...)
 
-	s.logger.Infof("get list users by page is completed, page: ", page)
-	return &listUsersResponse, err
-}
-
-// Get all users
-func (s *Service) GetAllUsers(ctx context.Context) (*types.GetListUsersResponse, error) {
-
-	var listUsersResponse types.GetListUsersResponse
-	numberUsers, err := s.repo.CountUser(ctx)
-	if err != nil {
-		s.logger.Errorf("Failed when get number users", err)
-		return nil, err
-	}
-
-	listUsersResponse.CurrentPage = numberUsers
-	listUsersResponse.SizeItemsPerPage = 1
-	listUsersResponse.TotalItems = numberUsers
-	listUsersResponse.TotalPages = 1
-
-	listUsers, err := s.repo.GetAllUsers(ctx)
-	if err != nil {
-		s.logger.Errorf("Failed when get all users ", err)
-		return nil, err
-	}
-
-	listUsersResponse.ListUsers = append(listUsersResponse.ListUsers, listUsers...)
-
-	s.logger.Infof("get all users is completed ")
+	s.logger.Infof("get list users by page is completed, page: ", pagingNSorting)
 	return &listUsersResponse, err
 }
