@@ -35,6 +35,7 @@ type UserResGetInfo struct {
 	LookingFor   string          `json:"lookingFor" bson:"lookingFor"`
 	Media        []string        `json:"media" bson:"media"` // arr path media
 	Gender       string          `json:"gender" bson:"gender"`
+	Sex          string          `json:"sex" bson:"sex"`
 	Country      string          `json:"country" bson:"country"`
 	Hobby        []string        `json:"hobby" bson:"hobby"`
 	About        string          `json:"about" bson:"about"`
@@ -59,7 +60,12 @@ type UserResponseSignUp struct {
 	Email string `json:"email"`
 	Token string `json:"token"`
 }
+
+type GetListUsersResponse struct {
+	Pagination
+	ListUsers []*UserResGetInfo `json:"listUsers"`
+}
 type UserLogin struct {
-	Email    string `json:"email" bson:"email"`
-	Password string `json:"password" bson:"password"`
+	Email    string `json:"email" bson:"email" validate:"required,email"`
+	Password string `json:"password" bson:"password" validate:"required"`
 }

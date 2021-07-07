@@ -19,6 +19,8 @@ type Repository interface {
 	FindByEmail(ctx context.Context, email string) (*types.User, error)
 	Insert(ctx context.Context, User types.User) error
 	UpdateUserByID(ctx context.Context, User types.User) error
+	GetListUsers(ctx context.Context, ps types.PagingNSorting) ([]*types.UserResGetInfo, error)
+	CountUser(ctx context.Context) (int, error)
 }
 
 // Service is an user service
@@ -144,4 +146,49 @@ func (s *Service) UpdateUserByID(ctx context.Context, user types.User) error {
 	}
 	s.logger.Infof("updated user is completed ")
 	return err
+}
+
+// Get list users by page
+func (s *Service) GetListUsers(ctx context.Context, page, size string) (*types.GetListUsersResponse, error) {
+
+	var pagingNSorting types.PagingNSorting
+
+	if err := pagingNSorting.Init(page, size); err != nil {
+		s.logger.Errorf("Failed url parameters when get list users", err)
+		return nil, errors.Wrap(err, "Failed url parameters when get list users")
+	}
+
+	var listUsersResponse types.GetListUsersResponse
+
+	numberUsers, err := s.repo.CountUser(ctx)
+	if err != nil {
+		s.logger.Errorf("Failed when get number users", err)
+		return nil, errors.Wrap(err, "Failed when get number users")
+	}
+
+	listUsersResponse.CurrentPage = pagingNSorting.Page
+	listUsersResponse.MaxItemsPerPage = pagingNSorting.Size
+	listUsersResponse.TotalItems = numberUsers
+	listUsersResponse.TotalPages = int(numberUsers / pagingNSorting.Size)
+	// ex: total: 5, size: 2 => 3 page
+	if numberUsers%pagingNSorting.Size != 0 {
+		listUsersResponse.TotalPages += 1
+	}
+
+	if pagingNSorting.Size > numberUsers {
+		listUsersResponse.MaxItemsPerPage = numberUsers
+	}
+
+	listUsers, err := s.repo.GetListUsers(ctx, pagingNSorting)
+
+	if err != nil {
+		s.logger.Errorf("Failed when get list users by page", err)
+		return nil, errors.Wrap(err, "Failed when get list users by page")
+	}
+
+	listUsersResponse.ListUsers = append(listUsersResponse.ListUsers, listUsers...)
+
+	s.logger.Infof("get list users by page is completed, page: ", pagingNSorting)
+
+	return &listUsersResponse, nil
 }

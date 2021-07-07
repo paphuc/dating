@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 
 	"dating/internal/pkg/auth"
@@ -19,15 +18,14 @@ func Auth(h http.HandlerFunc) http.HandlerFunc {
 			respond.JSON(w, http.StatusUnauthorized, "Failed to authentication user. (IVFA)")
 			return
 		}
-		claimMap, err := auth.IsAuthorized(tokenpath)
+		_, err := auth.IsAuthorized(tokenpath)
+
 		if err != nil {
 			logger.Infof("Not authorized, error: ", err)
 			respond.JSON(w, http.StatusUnauthorized, "Failed to authentication user. (IVFA)")
 			return
 		}
-		ctx := context.WithValue(r.Context(), "props", claimMap)
 
-		r = r.WithContext(ctx)
 		h.ServeHTTP(w, r)
 	})
 }

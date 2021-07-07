@@ -78,22 +78,22 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			handler: userHandler.Login,
 		},
 		route{
-			path:        "/me",
-			method:      get,
-			middlewares: []middlewareFunc{middleware.Auth},
-			handler:     userHandler.GetMe,
-		},
-		route{
 			path:        "/users/{id:[a-z0-9-\\-]+}",
 			method:      get,
 			middlewares: []middlewareFunc{middleware.Auth},
 			handler:     userHandler.GetUserByID,
 		},
 		route{
-			path:        "/update",
+			path:        "/users",
 			method:      put,
 			middlewares: []middlewareFunc{middleware.Auth},
 			handler:     userHandler.UpdateUserByID,
+		},
+		route{
+			path:        "/users",
+			method:      get,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     userHandler.GetListUsers,
 		},
 	}
 

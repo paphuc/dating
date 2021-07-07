@@ -17,4 +17,4 @@ database:
     database: "dating"
 
 jwt:
-  duration: 3d
+  duration: 24h
