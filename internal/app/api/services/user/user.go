@@ -152,9 +152,8 @@ func (s *Service) UpdateUserByID(ctx context.Context, user types.User) error {
 func (s *Service) GetListUsers(ctx context.Context, page, size string) (*types.GetListUsersResponse, error) {
 
 	var pagingNSorting types.PagingNSorting
-	err := pagingNSorting.Init(page, size)
 
-	if err != nil {
+	if err := pagingNSorting.Init(page, size); err != nil {
 		s.logger.Errorf("Failed url parameters when get list users", err)
 		return nil, errors.Wrap(err, "Failed url parameters when get list users")
 	}
