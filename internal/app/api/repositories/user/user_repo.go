@@ -93,17 +93,6 @@ func (r *MongoRepository) GetListUsers(ctx context.Context, ps types.PagingNSort
 	return result, err
 }
 
-// This method helps get all user
-func (r *MongoRepository) GetAllUsers(ctx context.Context) ([]*types.UserResGetInfo, error) {
-	s := r.session.Clone()
-	defer s.Close()
-
-	var result []*types.UserResGetInfo
-	err := r.collection(s).Find(nil).All(&result)
-
-	return result, err
-}
-
 // This method helps count number users in collection
 func (r *MongoRepository) CountUser(ctx context.Context) (int, error) {
 	s := r.session.Clone()
