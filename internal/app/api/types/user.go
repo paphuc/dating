@@ -60,12 +60,10 @@ type UserResponseSignUp struct {
 	Email string `json:"email"`
 	Token string `json:"token"`
 }
+
 type GetListUsersResponse struct {
-	TotalItems      int               `json:"totalItems"`
-	TotalPages      int               `json:"totalPages"`
-	CurrentPage     int               `json:"currentPage"`
-	MaxItemsPerPage int               `json:"maxItemsPerPage"`
-	ListUsers       []*UserResGetInfo `json:"listUsers"`
+	Pagination
+	ListUsers []*UserResGetInfo `json:"listUsers"`
 }
 type UserLogin struct {
 	Email    string `json:"email" bson:"email" validate:"required,email"`

@@ -156,7 +156,7 @@ func (s *Service) GetListUsers(ctx context.Context, page, size string) (*types.G
 
 	if err != nil {
 		s.logger.Errorf("Failed url parameters when get list users", err)
-		return nil, err
+		return nil, errors.Wrap(err, "Failed url parameters when get list users")
 	}
 
 	var listUsersResponse types.GetListUsersResponse
@@ -164,7 +164,7 @@ func (s *Service) GetListUsers(ctx context.Context, page, size string) (*types.G
 	numberUsers, err := s.repo.CountUser(ctx)
 	if err != nil {
 		s.logger.Errorf("Failed when get number users", err)
-		return nil, err
+		return nil, errors.Wrap(err, "Failed when get number users")
 	}
 
 	listUsersResponse.CurrentPage = pagingNSorting.Page
@@ -184,11 +184,12 @@ func (s *Service) GetListUsers(ctx context.Context, page, size string) (*types.G
 
 	if err != nil {
 		s.logger.Errorf("Failed when get list users by page", err)
-		return nil, err
+		return nil, errors.Wrap(err, "Failed when get list users by page")
 	}
 
 	listUsersResponse.ListUsers = append(listUsersResponse.ListUsers, listUsers...)
 
 	s.logger.Infof("get list users by page is completed, page: ", pagingNSorting)
-	return &listUsersResponse, err
+
+	return &listUsersResponse, nil
 }
