@@ -21,6 +21,7 @@ services:
       - 8080:8080
     environment: 
       - MONGODB_ADDRS=mongodb:27017
+      - MONGODB_DATABASE=dating
     volumes:
       - .:/go/src/dating
     working_dir: /go/src/dating
