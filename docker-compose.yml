@@ -11,7 +11,7 @@ services:
       # You can replace /opt/data/mongo_home by any path to
       # a directory on your machine.
       # MongoDB will use that directory to store all the data.
-      - ./data/db:/data/db
+      - ./data
     restart: always
 
   backend:
