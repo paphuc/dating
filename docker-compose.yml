@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    hostname: dating-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      # You can replace /opt/data/mongo_home by any path to
+      # a directory on your machine.
+      # MongoDB will use that directory to store all the data.
+      - ./data/db:/data/db
+    restart: always
+
+  backend:
+    image: golang:1.16-alpine
+    hostname: dating-backend
+    ports:
+      - 8080:8080
+    environment: 
+      - MONGODB_ADDRS=mongodb:27017
+    volumes:
+      - .:/go/src/dating
+    working_dir: /go/src/dating
+    command: go run main.go
+    depends_on:
+      - mongodb
+    restart: always
