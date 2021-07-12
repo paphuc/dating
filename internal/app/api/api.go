@@ -10,6 +10,7 @@ import (
 
 	"dating/internal/app/db"
 	"dating/internal/pkg/glog"
+	"dating/internal/pkg/health"
 	"dating/internal/pkg/middleware"
 
 	"github.com/gorilla/handlers"
@@ -59,6 +60,12 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 	userHandler := userhandler.New(conns, &em, userSrv, userLogger)
 
 	routes := []route{
+		// infra
+		route{
+			path:    "/readiness",
+			method:  get,
+			handler: health.Readiness().ServeHTTP,
+		},
 		// services
 		route{
 			path:    "/signup",
