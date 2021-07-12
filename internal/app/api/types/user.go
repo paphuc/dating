@@ -7,17 +7,17 @@ import (
 )
 
 type User struct {
-	ID           bson.ObjectId   `json:"_id" bson:"_id,omitempty"`
-	Name         string          `json:"name" bson:"name"`
+	ID           bson.ObjectId   `json:"_id" bson:"_id,omitempty" validate:"required"`
+	Name         string          `json:"name" bson:"name" validate:"required"`
 	Email        string          `json:"email" bson:"email"`
-	Age          int             `json:"age" bson:"age"`
-	Relationship string          `json:"relationship" bson:"relationship"`
+	Age          int             `json:"age" bson:"age" validate:"required"`
+	Relationship string          `json:"relationship" bson:"relationship" `
 	LookingFor   string          `json:"lookingFor" bson:"lookingFor"`
 	Password     string          `json:"password" bson:"password"`
 	Media        []string        `json:"media" bson:"media"` // arr path media
-	Gender       string          `json:"gender" bson:"gender"`
+	Gender       string          `json:"gender" bson:"gender" validate:"required"`
 	Sex          string          `json:"sex" bson:"sex"`
-	Country      string          `json:"country" bson:"country"`
+	Country      string          `json:"country" bson:"country" validate:"required"`
 	Hobby        []string        `json:"hobby" bson:"hobby"`
 	About        string          `json:"about" bson:"about"`
 	LikeID       []bson.ObjectId `json:"like_id" bson:"like_id"`
@@ -46,9 +46,9 @@ type UserResGetInfo struct {
 }
 
 type UserSignUp struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Name     string `json:"name" validate:"required"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,gte=8"`
 }
 type UserFieldInToken struct {
 	ID    bson.ObjectId `json:"_id" bson:"_id,omitempty"`

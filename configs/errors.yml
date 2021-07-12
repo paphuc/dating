@@ -16,6 +16,9 @@ error:
     failed_authentication:
       code: "402"
       message: "Failed to authentication user. (IVFA)"
+    validation_failed:
+      code: "502"
+      message: "Form validation errors.The request could not be understood by the server due to malformed syntax (IVFA)"
   database:
     database:
       code: "103"
