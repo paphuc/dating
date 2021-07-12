@@ -7,19 +7,19 @@ import (
 )
 
 type User struct {
-	ID           bson.ObjectId   `json:"_id" bson:"_id,omitempty"`
-	Name         string          `json:"name" bson:"name"`
-	Email        string          `json:"email" bson:"email"`
-	Age          int             `json:"age" bson:"age"`
-	Relationship string          `json:"relationship" bson:"relationship"`
-	LookingFor   string          `json:"lookingFor" bson:"lookingFor"`
+	ID           bson.ObjectId   `json:"_id" bson:"_id,omitempty" validate:"required"`
+	Name         string          `json:"name" bson:"name" validate:"required"`
+	Email        string          `json:"email" bson:"email" validate:"omitempty,email"`
+	Birthday     time.Time       `json:"birthday" bson:"birthday" validate:"required"`
+	Relationship string          `json:"relationship" bson:"relationship" validate:"omitempty,max=60" `
+	LookingFor   string          `json:"looking_for" bson:"looking_for" validate:"omitempty,max=60"`
 	Password     string          `json:"password" bson:"password"`
 	Media        []string        `json:"media" bson:"media"` // arr path media
-	Gender       string          `json:"gender" bson:"gender"`
-	Sex          string          `json:"sex" bson:"sex"`
-	Country      string          `json:"country" bson:"country"`
+	Gender       string          `json:"gender" bson:"gender" validate:"required"`
+	Sex          string          `json:"sex" bson:"sex" validate:"omitempty,max=60"`
+	Country      string          `json:"country" bson:"country" validate:"required,max=60"`
 	Hobby        []string        `json:"hobby" bson:"hobby"`
-	About        string          `json:"about" bson:"about"`
+	About        string          `json:"about" bson:"about" validate:"omitempty,max=256"`
 	LikeID       []bson.ObjectId `json:"like_id" bson:"like_id"`
 	MatchID      []bson.ObjectId `json:"match_id" bson:"match_id"`
 	CreateAt     time.Time       `json:"created_at" bson:"created_at"`
@@ -28,17 +28,17 @@ type User struct {
 
 type UserResGetInfo struct {
 	ID           bson.ObjectId   `json:"_id" bson:"_id,omitempty"`
-	Name         string          `json:"name" bson:"name"`
+	Name         string          `json:"name" bson:"name" validate:"omitempty,max=60"`
 	Email        string          `json:"email" bson:"email"`
-	Age          int             `json:"age" bson:"age"`
-	Relationship string          `json:"relationship" bson:"relationship"`
-	LookingFor   string          `json:"lookingFor" bson:"lookingFor"`
+	Birthday     time.Time       `json:"birthday" bson:"birthday"`
+	Relationship string          `json:"relationship" bson:"relationship" validate:"omitempty,max=60"`
+	LookingFor   string          `json:"looking_for" bson:"looking_for" validate:"omitempty,max=60"`
 	Media        []string        `json:"media" bson:"media"` // arr path media
-	Gender       string          `json:"gender" bson:"gender"`
-	Sex          string          `json:"sex" bson:"sex"`
-	Country      string          `json:"country" bson:"country"`
+	Gender       string          `json:"gender" bson:"gender" validate:"omitempty,max=60"`
+	Sex          string          `json:"sex" bson:"sex" validate:"omitempty,max=60"`
+	Country      string          `json:"country" bson:"country" validate:"omitempty,max=60"`
 	Hobby        []string        `json:"hobby" bson:"hobby"`
-	About        string          `json:"about" bson:"about"`
+	About        string          `json:"about" bson:"about" validate:"omitempty,max=256"`
 	LikeID       []bson.ObjectId `json:"like_id" bson:"like_id"`
 	MatchID      []bson.ObjectId `json:"match_id" bson:"match_id"`
 	CreateAt     time.Time       `json:"created_at" bson:"created_at"`
@@ -46,9 +46,9 @@ type UserResGetInfo struct {
 }
 
 type UserSignUp struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Name     string `json:"name" validate:"required,max=60"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,gte=8"`
 }
 type UserFieldInToken struct {
 	ID    bson.ObjectId `json:"_id" bson:"_id,omitempty"`

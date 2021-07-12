@@ -23,7 +23,7 @@ type (
 		Databases db.Connections
 	}
 
-	middlewareFunc = func(http.HandlerFunc) http.HandlerFunc
+	middlewareFunc = func(http.HandlerFunc, *config.ErrorMessage) http.HandlerFunc
 	route          struct {
 		path        string
 		method      string
@@ -110,7 +110,7 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 	for _, rt := range routes {
 		h := rt.handler
 		for _, mdw := range rt.middlewares {
-			h = mdw(h)
+			h = mdw(h, &em)
 		}
 		r.Path(rt.path).Methods(rt.method).HandlerFunc(h)
 	}

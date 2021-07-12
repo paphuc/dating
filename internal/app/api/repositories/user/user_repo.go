@@ -64,9 +64,9 @@ func (r *MongoRepository) UpdateUserByID(ctx context.Context, user types.User) e
 
 	updatedUser := bson.M{"$set": bson.M{
 		"name":         user.Name,
-		"age":          user.Age,
+		"birthday":     user.Birthday,
 		"relationship": user.Relationship,
-		"lookingFor":   user.LookingFor,
+		"looking_for":  user.LookingFor,
 		"media":        user.Media,
 		"gender":       user.Gender,
 		"country":      user.Country,
