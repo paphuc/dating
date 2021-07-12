@@ -81,8 +81,8 @@ type (
 
 	// Config hold MongoDB configuration information
 	MongoDB struct {
-		Addresses []string      `mapstructure:"addresses"`
-		Database  string        `mapstructure:"database"`
+		Addresses []string      `envconfig:"MONGODB_ADDRS" default:"127.0.0.1:27017" mapstructure:"addresses"`
+		Database  string        `envconfig:"MONGODB_DATABASE" default:"dating" mapstructure:"database"`
 		Username  string        `mapstructure:"username"`
 		Password  string        `mapstructure:"password"`
 		Timeout   time.Duration `mapstructure:"timout"`

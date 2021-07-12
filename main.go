@@ -10,6 +10,7 @@ import (
 
 	"dating/internal/app/api"
 	"dating/internal/app/config"
+	envconfig "dating/internal/pkg/config/env"
 	"dating/internal/pkg/glog"
 	"dating/internal/pkg/health"
 )
@@ -32,6 +33,15 @@ func main() {
 	}
 	// envconfig.Load(&conf)
 
+	var mongoConf config.MongoDB
+	envconfig.Load(&mongoConf)
+	if mongoConf.Addresses != nil {
+		conf.Database.Mongo.Addresses = mongoConf.Addresses
+	}
+
+	if mongoConf.Database != "" {
+		conf.Database.Mongo.Database = mongoConf.Database
+	}
 	logger.Infof("initializing HTTP routing...")
 	router, err := api.Init(conf, em)
 	if err != nil {
