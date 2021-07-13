@@ -165,5 +165,5 @@ func (r *MongoRepository) GetListMatchedInfo(ctx context.Context, idUser string)
 }
 
 func (r *MongoRepository) collection(s *mgo.Session) *mgo.Collection {
-	return s.DB("").C("matches")
+	return s.DB("").C("matchs")
 }

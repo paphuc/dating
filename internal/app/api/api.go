@@ -111,6 +111,12 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			middlewares: []middlewareFunc{middleware.Auth},
 			handler:     matchHandler.InsertMatches,
 		},
+		route{
+			path:        "/users/matchs",
+			method:      delete,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     matchHandler.UnMatches,
+		},
 	}
 
 	loggingMW := middleware.Logging(logger.WithField("package", "middleware"))

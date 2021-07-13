@@ -16,6 +16,7 @@ import (
 type (
 	service interface {
 		InsertMatches(ctx context.Context, Match types.MatchRequest) (*types.Match, error)
+		UnMatched(ctx context.Context, Match types.MatchRequest) error
 	}
 	// Handler is user web handler
 	Handler struct {
@@ -63,4 +64,29 @@ func (h *Handler) InsertMatches(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond.JSON(w, http.StatusOK, match)
+}
+
+// Post handler  post sign up HTTP request
+func (h *Handler) UnMatches(w http.ResponseWriter, r *http.Request) {
+
+	var matchRequest types.MatchRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&matchRequest); err != nil {
+		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.ValidationFailed)
+		return
+	}
+
+	if err := validate.Struct(matchRequest); err != nil {
+		h.logger.Errorf("Failed when validate field matchRequest", err)
+		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.ValidationFailed)
+		return
+	}
+
+	err := h.srv.UnMatched(r.Context(), matchRequest)
+	if err != nil {
+		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
+		return
+	}
+
+	respond.JSON(w, http.StatusOK, h.em.Success)
 }

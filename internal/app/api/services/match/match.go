@@ -79,3 +79,30 @@ func (s *Service) InsertMatches(ctx context.Context, matchreq types.MatchRequest
 	s.logger.Infof("Match completed", matchreq)
 	return matchcheckBA, nil
 }
+
+func (s *Service) UnMatched(ctx context.Context, matchreq types.MatchRequest) error {
+	// check user A like user B
+	matchcheckAB, err := s.repo.FindALikeB(ctx, matchreq.UserID.Hex(), matchreq.TargetUserID.Hex())
+	if err != nil {
+		// check user B like user A
+		matchcheckBA, err := s.repo.FindALikeB(ctx, matchreq.TargetUserID.Hex(), matchreq.UserID.Hex())
+		if err != nil {
+			s.logger.Errorf("UserA haven't liked B", err)
+			return err
+		}
+		if err := s.repo.DeleteMatch(ctx, matchcheckBA.ID.Hex()); err != nil {
+			s.logger.Errorf("Can't del match", err)
+			return err
+		}
+		s.logger.Infof("Unmatch completed", matchreq)
+		return nil
+	}
+	// B liked A
+	if err := s.repo.DeleteMatch(ctx, matchcheckAB.ID.Hex()); err != nil {
+		s.logger.Errorf("Can't del match", err)
+		return err
+	}
+
+	s.logger.Infof("Unmatch completed", matchreq)
+	return nil
+}
