@@ -115,7 +115,7 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			path:        "/users/matchs",
 			method:      delete,
 			middlewares: []middlewareFunc{middleware.Auth},
-			handler:     matchHandler.UnMatches,
+			handler:     matchHandler.UnMatch,
 		},
 	}
 

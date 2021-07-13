@@ -67,7 +67,7 @@ func (h *Handler) InsertMatches(w http.ResponseWriter, r *http.Request) {
 }
 
 // Post handler  post sign up HTTP request
-func (h *Handler) UnMatches(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UnMatch(w http.ResponseWriter, r *http.Request) {
 
 	var matchRequest types.MatchRequest
 
