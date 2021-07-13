@@ -73,8 +73,6 @@ func (r *MongoRepository) UpdateUserByID(ctx context.Context, user types.User) e
 		"hobby":        user.Hobby,
 		"sex":          user.Sex,
 		"about":        user.About,
-		"like_id":      user.LikeID,
-		"match_id":     user.MatchID,
 		"updated_at":   time.Now(),
 	}}
 	err := r.collection(s).UpdateId(user.ID, updatedUser)
