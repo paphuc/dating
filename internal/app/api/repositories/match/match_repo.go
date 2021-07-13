@@ -2,6 +2,7 @@ package match
 
 import (
 	"context"
+	"time"
 
 	"dating/internal/app/api/types"
 
@@ -35,11 +36,11 @@ func (r *MongoRepository) Insert(ctx context.Context, match types.Match) error {
 }
 
 // this method helps insert match
-func (r *MongoRepository) DeleteMatch(ctx context.Context, match types.Match) error {
+func (r *MongoRepository) DeleteMatch(ctx context.Context, id string) error {
 	s := r.session.Clone()
 	defer s.Close()
 
-	err := r.collection(s).RemoveId(match.ID)
+	err := r.collection(s).RemoveId(bson.ObjectIdHex(id))
 
 	return err
 }
@@ -79,6 +80,24 @@ func (r *MongoRepository) UpdateMatchByID(ctx context.Context, id string) error 
 	updatedUser := bson.M{"$set": bson.M{"match": true}}
 	err := r.collection(s).UpdateId(bson.ObjectIdHex(id), updatedUser)
 
+	return err
+}
+
+// this method help get Upsert match
+func (r *MongoRepository) UpsertMatch(ctx context.Context, match types.Match) error {
+	s := r.session.Clone()
+	defer s.Close()
+	filter := bson.M{
+		"user_id":        match.UserID,
+		"target_user_id": match.TargetUserID,
+	}
+	updatedMath := bson.M{"$set": bson.M{
+		"user_id":        match.UserID,
+		"target_user_id": match.TargetUserID,
+		"match":          false,
+		"created_at":     time.Now(),
+	}}
+	_, err := r.collection(s).Upsert(filter, updatedMath)
 	return err
 }
 
