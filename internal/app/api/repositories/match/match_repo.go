@@ -35,7 +35,7 @@ func (r *MongoRepository) Insert(ctx context.Context, match types.Match) error {
 	return err
 }
 
-// this method helps insert match
+// This method helps insert match
 func (r *MongoRepository) DeleteMatch(ctx context.Context, id string) error {
 	s := r.session.Clone()
 	defer s.Close()
@@ -56,7 +56,24 @@ func (r *MongoRepository) FindByID(ctx context.Context, id string) (*types.Match
 	return match, err
 }
 
-// this method help get record when user A like user B
+// This method help check A vs B by Match
+func (r *MongoRepository) CheckAB(ctx context.Context, idUser, idTargetUser string, matched bool) (*types.Match, error) {
+	s := r.session.Clone()
+	defer s.Close()
+
+	filter := bson.M{
+		"user_id":        bson.ObjectIdHex(idUser),
+		"target_user_id": bson.ObjectIdHex(idTargetUser),
+		"match":          matched,
+	}
+
+	var match *types.Match
+	err := r.collection(s).Find(filter).One(&match)
+
+	return match, err
+}
+
+// this method help get record when user A liked user B
 func (r *MongoRepository) FindALikeB(ctx context.Context, idUser, idTargetUser string) (*types.Match, error) {
 	s := r.session.Clone()
 	defer s.Close()
@@ -66,6 +83,28 @@ func (r *MongoRepository) FindALikeB(ctx context.Context, idUser, idTargetUser s
 		"target_user_id": bson.ObjectIdHex(idTargetUser),
 	}
 
+	var match *types.Match
+	err := r.collection(s).Find(filter).One(&match)
+
+	return match, err
+}
+func (r *MongoRepository) FindAMatchB(ctx context.Context, idUser, idTargetUser string) (*types.Match, error) {
+	s := r.session.Clone()
+	defer s.Close()
+
+	filter := bson.M{
+		"$or": []interface{}{
+			bson.M{
+				"user_id":        bson.ObjectIdHex(idUser),
+				"target_user_id": bson.ObjectIdHex(idTargetUser),
+			},
+			bson.M{
+				"user_id":        bson.ObjectIdHex(idTargetUser),
+				"target_user_id": bson.ObjectIdHex(idUser),
+			},
+		},
+		"match": true,
+	}
 	var match *types.Match
 	err := r.collection(s).Find(filter).One(&match)
 

@@ -15,10 +15,11 @@ import (
 
 type (
 	service interface {
-		InsertMatches(ctx context.Context, Match types.MatchRequest) (*types.Match, error)
-		UnMatched(ctx context.Context, Match types.MatchRequest) error
+		InsertMatch(ctx context.Context, Match types.MatchRequest) (*types.Match, error)
+		Unlike(ctx context.Context, Match types.MatchRequest) error
+		UnMatch(ctx context.Context, matchreq types.MatchRequest) error
 	}
-	// Handler is user web handler
+	// Handler is match web handler
 	Handler struct {
 		conf   *config.Configs
 		em     *config.ErrorMessage
@@ -31,7 +32,7 @@ var (
 	validate = validator.New()
 )
 
-// New returns new res api user handler
+// New returns new res api match handler
 func New(c *config.Configs, e *config.ErrorMessage, s service, l glog.Logger) *Handler {
 	return &Handler{
 		conf:   c,
@@ -41,8 +42,8 @@ func New(c *config.Configs, e *config.ErrorMessage, s service, l glog.Logger) *H
 	}
 }
 
-// Post handler  post sign up HTTP request
-func (h *Handler) InsertMatches(w http.ResponseWriter, r *http.Request) {
+// Put handler  post insert match HTTP request
+func (h *Handler) InsertMatch(w http.ResponseWriter, r *http.Request) {
 
 	var matchRequest types.MatchRequest
 
@@ -57,7 +58,7 @@ func (h *Handler) InsertMatches(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	match, err := h.srv.InsertMatches(r.Context(), matchRequest)
+	match, err := h.srv.InsertMatch(r.Context(), matchRequest)
 	if err != nil {
 		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
 		return
@@ -66,7 +67,32 @@ func (h *Handler) InsertMatches(w http.ResponseWriter, r *http.Request) {
 	respond.JSON(w, http.StatusOK, match)
 }
 
-// Post handler  post sign up HTTP request
+// Del handler  post unlike HTTP request
+func (h *Handler) Unlike(w http.ResponseWriter, r *http.Request) {
+
+	var matchRequest types.MatchRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&matchRequest); err != nil {
+		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.ValidationFailed)
+		return
+	}
+
+	if err := validate.Struct(matchRequest); err != nil {
+		h.logger.Errorf("Failed when validate field matchRequest", err)
+		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.ValidationFailed)
+		return
+	}
+
+	err := h.srv.Unlike(r.Context(), matchRequest)
+	if err != nil {
+		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
+		return
+	}
+
+	respond.JSON(w, http.StatusOK, h.em.Success)
+}
+
+// Del handler  unMatch HTTP request
 func (h *Handler) UnMatch(w http.ResponseWriter, r *http.Request) {
 
 	var matchRequest types.MatchRequest
@@ -82,7 +108,7 @@ func (h *Handler) UnMatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.srv.UnMatched(r.Context(), matchRequest)
+	err := h.srv.UnMatch(r.Context(), matchRequest)
 	if err != nil {
 		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
 		return

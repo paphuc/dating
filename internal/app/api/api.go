@@ -109,13 +109,19 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			path:        "/users/matchs",
 			method:      put,
 			middlewares: []middlewareFunc{middleware.Auth},
-			handler:     matchHandler.InsertMatches,
+			handler:     matchHandler.InsertMatch,
 		},
 		route{
 			path:        "/users/matchs",
 			method:      delete,
 			middlewares: []middlewareFunc{middleware.Auth},
 			handler:     matchHandler.UnMatch,
+		},
+		route{
+			path:        "/users/likes",
+			method:      delete,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     matchHandler.Unlike,
 		},
 	}
 
