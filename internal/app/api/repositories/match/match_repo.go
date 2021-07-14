@@ -64,7 +64,7 @@ func (r *MongoRepository) CheckAB(ctx context.Context, idUser, idTargetUser stri
 	filter := bson.M{
 		"user_id":        bson.ObjectIdHex(idUser),
 		"target_user_id": bson.ObjectIdHex(idTargetUser),
-		"match":          matched,
+		"matched":        matched,
 	}
 
 	var match *types.Match
@@ -103,7 +103,7 @@ func (r *MongoRepository) FindAMatchB(ctx context.Context, idUser, idTargetUser 
 				"target_user_id": bson.ObjectIdHex(idUser),
 			},
 		},
-		"match": true,
+		"matched": true,
 	}
 	var match *types.Match
 	err := r.collection(s).Find(filter).One(&match)
@@ -116,7 +116,7 @@ func (r *MongoRepository) UpdateMatchByID(ctx context.Context, id string) error 
 	s := r.session.Clone()
 	defer s.Close()
 
-	updatedUser := bson.M{"$set": bson.M{"match": true}}
+	updatedUser := bson.M{"$set": bson.M{"matched": true}}
 	err := r.collection(s).UpdateId(bson.ObjectIdHex(id), updatedUser)
 
 	return err
@@ -133,7 +133,7 @@ func (r *MongoRepository) UpsertMatch(ctx context.Context, match types.Match) er
 	updatedMath := bson.M{"$set": bson.M{
 		"user_id":        match.UserID,
 		"target_user_id": match.TargetUserID,
-		"match":          false,
+		"matched":        false,
 		"created_at":     time.Now(),
 	}}
 	_, err := r.collection(s).Upsert(filter, updatedMath)
@@ -147,7 +147,7 @@ func (r *MongoRepository) GetListLiked(ctx context.Context, idUser string) ([]*t
 
 	filter := bson.M{
 		"user_id": bson.ObjectIdHex(idUser),
-		"match":   false,
+		"matched": false,
 	}
 	var match []*types.Match
 	err := r.collection(s).Find(filter).All(&match)
@@ -165,7 +165,7 @@ func (r *MongoRepository) GetListMatched(ctx context.Context, idUser string) ([]
 			bson.M{"user_id": bson.ObjectIdHex(idUser)},
 			bson.M{"target_user_id": bson.ObjectIdHex(idUser)},
 		},
-		"match": true,
+		"matched": true,
 	}
 	var match []*types.Match
 	err := r.collection(s).Find(filter).All(&match)
@@ -183,7 +183,7 @@ func (r *MongoRepository) GetListMatchedInfo(ctx context.Context, idUser string)
 			bson.M{"user_id": bson.ObjectIdHex(idUser)},
 			bson.M{"target_user_id": bson.ObjectIdHex(idUser)},
 		},
-		"match": true,
+		"matched": true,
 	}
 
 	query := []bson.M{

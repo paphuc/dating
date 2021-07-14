@@ -53,7 +53,7 @@ func (s *Service) InsertMatch(ctx context.Context, matchreq types.MatchRequest) 
 		match := types.Match{
 			UserID:       matchreq.UserID,
 			TargetUserID: matchreq.TargetUserID,
-			Match:        false,
+			Matched:      false,
 			CreateAt:     time.Now(),
 		}
 
@@ -67,7 +67,7 @@ func (s *Service) InsertMatch(ctx context.Context, matchreq types.MatchRequest) 
 		return &match, nil
 	}
 	// B liked A
-	if matchcheckBA.Match {
+	if matchcheckBA.Matched {
 		s.logger.Infof("B, A matched before", matchreq)
 		return matchcheckBA, nil
 	}
@@ -76,7 +76,7 @@ func (s *Service) InsertMatch(ctx context.Context, matchreq types.MatchRequest) 
 		return nil, errors.Wrap(err, "Can't update match")
 	}
 
-	matchcheckBA.Match = true
+	matchcheckBA.Matched = true
 
 	s.logger.Infof("Match completed", matchreq)
 	return matchcheckBA, nil
