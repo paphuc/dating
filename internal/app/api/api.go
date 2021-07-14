@@ -107,7 +107,7 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 		},
 		route{
 			path:        "/matches",
-			method:      put,
+			method:      post,
 			middlewares: []middlewareFunc{middleware.Auth},
 			handler:     matchHandler.InsertMatch,
 		},

@@ -41,7 +41,7 @@ func New(c *config.Configs, e *config.ErrorMessage, s service, l glog.Logger) *H
 	}
 }
 
-// Put handler  post insert match HTTP request
+// Put handler post insert match HTTP request
 func (h *Handler) InsertMatch(w http.ResponseWriter, r *http.Request) {
 
 	var matchRequest types.MatchRequest
