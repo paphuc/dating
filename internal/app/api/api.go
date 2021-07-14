@@ -106,10 +106,16 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			handler:     userHandler.GetListUsers,
 		},
 		route{
-			path:        "/users/matchs",
-			method:      put,
+			path:        "/matches",
+			method:      post,
 			middlewares: []middlewareFunc{middleware.Auth},
-			handler:     matchHandler.InsertMatches,
+			handler:     matchHandler.InsertMatch,
+		},
+		route{
+			path:        "/matches",
+			method:      delete,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     matchHandler.DeleteMatched,
 		},
 	}
 

@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Repository is an interface of a user repository
+// Repository is an interface of a match repository
 type Repository interface {
 	Insert(ctx context.Context, Match types.Match) error
 	FindByID(ctx context.Context, id string) (*types.Match, error)
@@ -21,9 +21,11 @@ type Repository interface {
 	GetListMatched(ctx context.Context, idUser string) ([]*types.Match, error)
 	DeleteMatch(ctx context.Context, id string) error
 	UpsertMatch(ctx context.Context, match types.Match) error
+	CheckAB(ctx context.Context, idUser, idTargetUser string, matched bool) (*types.Match, error)
+	FindAMatchB(ctx context.Context, idUser, idTargetUser string) (*types.Match, error)
 }
 
-// Service is an user service
+// Service is an match service
 type Service struct {
 	conf   *config.Configs
 	em     *config.ErrorMessage
@@ -31,7 +33,7 @@ type Service struct {
 	logger glog.Logger
 }
 
-// NewService returns a new user service
+// NewService returns a new match service
 func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.Logger) *Service {
 	return &Service{
 		conf:   c,
@@ -41,8 +43,8 @@ func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.
 	}
 }
 
-// Post basic info user for sign up > A like B
-func (s *Service) InsertMatches(ctx context.Context, matchreq types.MatchRequest) (*types.Match, error) {
+// Post basic, user match someone
+func (s *Service) InsertMatch(ctx context.Context, matchreq types.MatchRequest) (*types.Match, error) {
 
 	// check user B like user A
 	matchcheckBA, err := s.repo.FindALikeB(ctx, matchreq.TargetUserID.Hex(), matchreq.UserID.Hex())
@@ -51,7 +53,7 @@ func (s *Service) InsertMatches(ctx context.Context, matchreq types.MatchRequest
 		match := types.Match{
 			UserID:       matchreq.UserID,
 			TargetUserID: matchreq.TargetUserID,
-			Match:        false,
+			Matched:      false,
 			CreateAt:     time.Now(),
 		}
 
@@ -65,7 +67,7 @@ func (s *Service) InsertMatches(ctx context.Context, matchreq types.MatchRequest
 		return &match, nil
 	}
 	// B liked A
-	if matchcheckBA.Match {
+	if matchcheckBA.Matched {
 		s.logger.Infof("B, A matched before", matchreq)
 		return matchcheckBA, nil
 	}
@@ -74,8 +76,50 @@ func (s *Service) InsertMatches(ctx context.Context, matchreq types.MatchRequest
 		return nil, errors.Wrap(err, "Can't update match")
 	}
 
-	matchcheckBA.Match = true
+	matchcheckBA.Matched = true
 
 	s.logger.Infof("Match completed", matchreq)
 	return matchcheckBA, nil
+}
+
+// Post basic help user unlike someone
+func (s *Service) unlike(ctx context.Context, matchreq types.MatchRequest) error {
+	// check user A like user B
+	matchcheckAB, err := s.repo.CheckAB(ctx, matchreq.UserID.Hex(), matchreq.TargetUserID.Hex(), false)
+	if err != nil {
+		s.logger.Errorf("UserA haven't liked B", err)
+		return err
+	}
+	if err := s.repo.DeleteMatch(ctx, matchcheckAB.ID.Hex()); err != nil {
+		s.logger.Errorf("Can't del like", err)
+		return err
+	}
+
+	s.logger.Infof("Unlike completed", matchreq)
+	return nil
+}
+
+// Post basic help user unMatch someone
+func (s *Service) unmatched(ctx context.Context, matchreq types.MatchRequest) error {
+	// check user A matched user B
+	matchcheckAB, err := s.repo.FindAMatchB(ctx, matchreq.UserID.Hex(), matchreq.TargetUserID.Hex())
+	if err != nil {
+		s.logger.Errorf("A B have not matched before", err)
+		return err
+	}
+	if err := s.repo.DeleteMatch(ctx, matchcheckAB.ID.Hex()); err != nil {
+		s.logger.Errorf("Can't del match", err)
+		return err
+	}
+
+	s.logger.Infof("Unmatched completed", matchreq)
+	return nil
+}
+
+// post check matched unlike or unmatch
+func (s *Service) DeleteMatch(ctx context.Context, matchreq types.MatchRequest) error {
+	if matchreq.Matched {
+		return s.unmatched(ctx, matchreq)
+	}
+	return s.unlike(ctx, matchreq)
 }
