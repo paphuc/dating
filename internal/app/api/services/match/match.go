@@ -100,7 +100,7 @@ func (s *Service) Unlike(ctx context.Context, matchreq types.MatchRequest) error
 }
 
 // Post basic help user unMatch someone
-func (s *Service) UnMatch(ctx context.Context, matchreq types.MatchRequest) error {
+func (s *Service) Unmatched(ctx context.Context, matchreq types.MatchRequest) error {
 	// check user A matched user B
 	matchcheckAB, err := s.repo.FindAMatchB(ctx, matchreq.UserID.Hex(), matchreq.TargetUserID.Hex())
 	if err != nil {
@@ -112,6 +112,6 @@ func (s *Service) UnMatch(ctx context.Context, matchreq types.MatchRequest) erro
 		return err
 	}
 
-	s.logger.Infof("Unmatch completed", matchreq)
+	s.logger.Infof("Unmatched completed", matchreq)
 	return nil
 }
