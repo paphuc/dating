@@ -83,7 +83,7 @@ func (s *Service) InsertMatch(ctx context.Context, matchreq types.MatchRequest) 
 }
 
 // Post basic help user unlike someone
-func (s *Service) Unlike(ctx context.Context, matchreq types.MatchRequest) error {
+func (s *Service) unlike(ctx context.Context, matchreq types.MatchRequest) error {
 	// check user A like user B
 	matchcheckAB, err := s.repo.CheckAB(ctx, matchreq.UserID.Hex(), matchreq.TargetUserID.Hex(), false)
 	if err != nil {
@@ -100,7 +100,7 @@ func (s *Service) Unlike(ctx context.Context, matchreq types.MatchRequest) error
 }
 
 // Post basic help user unMatch someone
-func (s *Service) Unmatched(ctx context.Context, matchreq types.MatchRequest) error {
+func (s *Service) unmatched(ctx context.Context, matchreq types.MatchRequest) error {
 	// check user A matched user B
 	matchcheckAB, err := s.repo.FindAMatchB(ctx, matchreq.UserID.Hex(), matchreq.TargetUserID.Hex())
 	if err != nil {
@@ -114,4 +114,12 @@ func (s *Service) Unmatched(ctx context.Context, matchreq types.MatchRequest) er
 
 	s.logger.Infof("Unmatched completed", matchreq)
 	return nil
+}
+
+// post check matched unlike or unmatch
+func (s *Service) DeleteMatch(ctx context.Context, matchreq types.MatchRequest) error {
+	if matchreq.Matched {
+		return s.unmatched(ctx, matchreq)
+	}
+	return s.unlike(ctx, matchreq)
 }

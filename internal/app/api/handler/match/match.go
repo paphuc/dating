@@ -16,8 +16,7 @@ import (
 type (
 	service interface {
 		InsertMatch(ctx context.Context, Match types.MatchRequest) (*types.Match, error)
-		Unlike(ctx context.Context, Match types.MatchRequest) error
-		Unmatched(ctx context.Context, matchreq types.MatchRequest) error
+		DeleteMatch(ctx context.Context, matchreq types.MatchRequest) error
 	}
 	// Handler is match web handler
 	Handler struct {
@@ -68,7 +67,7 @@ func (h *Handler) InsertMatch(w http.ResponseWriter, r *http.Request) {
 }
 
 // Del handler unMatch or unlike by matched HTTP request
-func (h *Handler) Unmatched(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteMatched(w http.ResponseWriter, r *http.Request) {
 
 	var unmatchRequest types.MatchRequest
 
@@ -82,19 +81,8 @@ func (h *Handler) Unmatched(w http.ResponseWriter, r *http.Request) {
 		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.ValidationFailed)
 		return
 	}
-	// matched in body is True, unmatch
-	if unmatchRequest.Matched {
-		err := h.srv.Unmatched(r.Context(), unmatchRequest)
-		if err != nil {
-			respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
-			return
-		}
-		respond.JSON(w, http.StatusOK, h.em.Success)
-		return
-	}
 
-	// matched in body is True, unmatch
-	err := h.srv.Unlike(r.Context(), unmatchRequest)
+	err := h.srv.DeleteMatch(r.Context(), unmatchRequest)
 	if err != nil {
 		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
 		return
