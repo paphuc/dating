@@ -162,17 +162,18 @@ func (s *Service) GetMatched(ctx context.Context, idUser, matchedParameter strin
 
 	if matched {
 		list, err := s.listMatched(ctx, idUser)
-
+		s.logger.Infof("Get list matched completed", idUser)
 		return list, err
 	}
 
 	list, err := s.listLiked(ctx, idUser)
+	s.logger.Infof("Get list liked completed", idUser)
 	return list, err
 }
 
 // convert []*types.UserResGetInfo to []types.UserResGetInfo - if empty return []
 func (s *Service) convertPointerArrayToArray(list []*types.UserResGetInfo) []types.UserResGetInfo {
-	//return [] when list not found
+
 	listUsers := []types.UserResGetInfo{}
 	for _, user := range list {
 		listUsers = append(listUsers, *user)
