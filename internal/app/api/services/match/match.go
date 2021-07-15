@@ -2,12 +2,14 @@ package matchservices
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"dating/internal/app/api/types"
 	"dating/internal/app/config"
 	"dating/internal/pkg/glog"
 
+	"github.com/globalsign/mgo/bson"
 	"github.com/pkg/errors"
 )
 
@@ -23,6 +25,8 @@ type Repository interface {
 	UpsertMatch(ctx context.Context, match types.Match) error
 	CheckAB(ctx context.Context, idUser, idTargetUser string, matched bool) (*types.Match, error)
 	FindAMatchB(ctx context.Context, idUser, idTargetUser string) (*types.Match, error)
+	GetListlikedInfo(ctx context.Context, idUser string) ([]*types.UserResGetInfo, error)
+	GetListMatchedInfo(ctx context.Context, idUser string) ([]*types.UserResGetInfo, error)
 }
 
 // Service is an match service
@@ -122,4 +126,56 @@ func (s *Service) DeleteMatch(ctx context.Context, matchreq types.MatchRequest) 
 		return s.unmatched(ctx, matchreq)
 	}
 	return s.unlike(ctx, matchreq)
+}
+
+// get list user liked
+func (s *Service) listLiked(ctx context.Context, userID string) ([]types.UserResGetInfo, error) {
+	list, err := s.repo.GetListlikedInfo(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return s.convertPointerArrayToArray(list), err
+}
+
+// get list user matched
+func (s *Service) listMatched(ctx context.Context, userID string) ([]types.UserResGetInfo, error) {
+	list, err := s.repo.GetListMatchedInfo(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return s.convertPointerArrayToArray(list), err
+}
+
+// get list matched or liked
+func (s *Service) GetMatched(ctx context.Context, idUser, matchedParameter string) ([]types.UserResGetInfo, error) {
+
+	matched, err := strconv.ParseBool(matchedParameter)
+	if err != nil {
+		s.logger.Errorf("Failed url parameters when get list users", err)
+		return nil, errors.Wrap(err, "Failed url parameters when get list users")
+	}
+
+	if !bson.IsObjectIdHex(idUser) {
+		s.logger.Errorf("Id user incorrect,it isn't ObjectIdHex")
+		return nil, errors.New("Id user incorrect to find list liked from database, it isn't ObjectIdHex")
+	}
+
+	if matched {
+		list, err := s.listMatched(ctx, idUser)
+
+		return list, err
+	}
+
+	list, err := s.listLiked(ctx, idUser)
+	return list, err
+}
+
+// convert []*types.UserResGetInfo to []types.UserResGetInfo - if empty return []
+func (s *Service) convertPointerArrayToArray(list []*types.UserResGetInfo) []types.UserResGetInfo {
+	//return [] when list not found
+	listUsers := []types.UserResGetInfo{}
+	for _, user := range list {
+		listUsers = append(listUsers, *user)
+	}
+	return listUsers
 }

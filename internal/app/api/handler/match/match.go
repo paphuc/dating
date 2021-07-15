@@ -11,12 +11,14 @@ import (
 	"dating/internal/pkg/respond"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/mux"
 )
 
 type (
 	service interface {
 		InsertMatch(ctx context.Context, Match types.MatchRequest) (*types.Match, error)
 		DeleteMatch(ctx context.Context, matchreq types.MatchRequest) error
+		GetMatched(ctx context.Context, idUser, matchedParameter string) ([]types.UserResGetInfo, error)
 	}
 	// Handler is match web handler
 	Handler struct {
@@ -89,4 +91,19 @@ func (h *Handler) DeleteMatched(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond.JSON(w, http.StatusOK, h.em.Success)
+}
+
+// Get handler get list liked or matched by id idUser HTTP request
+func (h *Handler) GetMatched(w http.ResponseWriter, r *http.Request) {
+
+	userID := mux.Vars(r)["id"]
+	matchedParameter := r.URL.Query().Get("matched")
+
+	list, err := h.srv.GetMatched(r.Context(), userID, matchedParameter)
+	if err != nil {
+		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
+		return
+	}
+
+	respond.JSON(w, http.StatusOK, list)
 }

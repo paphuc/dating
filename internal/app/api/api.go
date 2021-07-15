@@ -117,6 +117,12 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			middlewares: []middlewareFunc{middleware.Auth},
 			handler:     matchHandler.DeleteMatched,
 		},
+		route{
+			path:        "/matches/{id:[a-z0-9-\\-]+}",
+			method:      get,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     matchHandler.GetMatched,
+		},
 	}
 
 	loggingMW := middleware.Logging(logger.WithField("package", "middleware"))
