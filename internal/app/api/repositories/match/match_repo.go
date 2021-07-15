@@ -173,69 +173,6 @@ func (r *MongoRepository) GetListMatched(ctx context.Context, idUser string) ([]
 	return match, err
 }
 
-// this method help get list matched include info
-func (r *MongoRepository) GetListMatchedInfo(ctx context.Context, idUser string) ([]*types.UserResGetInfo, error) {
-	s := r.session.Clone()
-	defer s.Close()
-
-	queryTest := []bson.M{
-		{"$match": bson.M{
-			"$or": []interface{}{
-				bson.M{"user_id": bson.ObjectIdHex(idUser)},
-				bson.M{"target_user_id": bson.ObjectIdHex(idUser)},
-			},
-			"matched": true,
-		}},
-		{"$project": bson.M{
-			"targer_id": bson.M{
-				"$cond": []interface{}{
-					bson.M{"$eq": []interface{}{"$user_id", bson.ObjectIdHex(idUser)}},
-					"$target_user_id", "$user_id"},
-			},
-		},
-		},
-		{"$lookup": bson.M{
-			"from":         "users",
-			"localField":   "targer_id",
-			"foreignField": "_id",
-			"as":           "target_user",
-		}},
-		{"$unwind": "$target_user"},
-		{"$replaceRoot": bson.M{"newRoot": "$target_user"}},
-	}
-	var listMatched []*types.UserResGetInfo
-	err := r.collection(s).Pipe(queryTest).All(&listMatched)
-
-	return listMatched, err
-}
-
-// this method help get list matched include info
-func (r *MongoRepository) GetListlikedInfo(ctx context.Context, idUser string) ([]*types.UserResGetInfo, error) {
-	s := r.session.Clone()
-	defer s.Close()
-
-	filter := bson.M{
-		"user_id": bson.ObjectIdHex(idUser),
-		"matched": false,
-	}
-	query := []bson.M{
-		{"$match": filter},
-		{"$lookup": bson.M{
-			"from":         "users",
-			"localField":   "target_user_id",
-			"foreignField": "_id",
-			"as":           "target_user",
-		}},
-		{"$unwind": "$target_user"},
-		{"$replaceRoot": bson.M{"newRoot": "$target_user"}},
-	}
-
-	var listMatched []*types.UserResGetInfo
-
-	err := r.collection(s).Pipe(query).All(&listMatched)
-	return listMatched, err
-}
-
 func (r *MongoRepository) collection(s *mgo.Session) *mgo.Collection {
 	return s.DB("").C("matches")
 }

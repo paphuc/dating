@@ -118,10 +118,10 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			handler:     matchHandler.DeleteMatched,
 		},
 		route{
-			path:        "/matches/{id:[a-z0-9-\\-]+}",
+			path:        "/users/{id:[a-z0-9-\\-]+}/matches",
 			method:      get,
 			middlewares: []middlewareFunc{middleware.Auth},
-			handler:     matchHandler.GetMatched,
+			handler:     userHandler.GetMatchedUsersByID,
 		},
 	}
 
