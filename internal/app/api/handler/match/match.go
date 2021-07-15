@@ -47,6 +47,7 @@ func (h *Handler) InsertMatch(w http.ResponseWriter, r *http.Request) {
 	var matchRequest types.MatchRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&matchRequest); err != nil {
+		h.logger.Errorf("Failed when NewDecoder matchRequest", err)
 		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.ValidationFailed)
 		return
 	}
@@ -72,6 +73,7 @@ func (h *Handler) DeleteMatched(w http.ResponseWriter, r *http.Request) {
 	var unmatchRequest types.MatchRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&unmatchRequest); err != nil {
+		h.logger.Errorf("Failed when NewDecoder matchRequest", err)
 		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.ValidationFailed)
 		return
 	}

@@ -173,36 +173,6 @@ func (r *MongoRepository) GetListMatched(ctx context.Context, idUser string) ([]
 	return match, err
 }
 
-// this method help get list matched include info
-func (r *MongoRepository) GetListMatchedInfo(ctx context.Context, idUser string) ([]*types.MatchResponse, error) {
-	s := r.session.Clone()
-	defer s.Close()
-
-	filter := bson.M{
-		"$or": []interface{}{
-			bson.M{"user_id": bson.ObjectIdHex(idUser)},
-			bson.M{"target_user_id": bson.ObjectIdHex(idUser)},
-		},
-		"matched": true,
-	}
-
-	query := []bson.M{
-		{"$match": filter},
-		{"$lookup": bson.M{
-			"from":         "users",
-			"localField":   "target_user_id",
-			"foreignField": "_id",
-			"as":           "target_user",
-		}},
-	}
-
-	var listMatched []*types.MatchResponse
-
-	err := r.collection(s).Pipe(query).All(&listMatched)
-
-	return listMatched, err
-}
-
 func (r *MongoRepository) collection(s *mgo.Session) *mgo.Collection {
 	return s.DB("").C("matches")
 }

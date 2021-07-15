@@ -21,6 +21,7 @@ type (
 		FindUserById(ctx context.Context, id string) (*types.UserResGetInfo, error)
 		UpdateUserByID(ctx context.Context, User types.User) error
 		GetListUsers(ctx context.Context, page, size string) (*types.GetListUsersResponse, error)
+		GetMatchedUsersByID(ctx context.Context, idUser, matchedParameter string) ([]types.UserResGetInfo, error)
 	}
 	// Handler is user web handler
 	Handler struct {
@@ -145,4 +146,19 @@ func (h *Handler) GetListUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond.JSON(w, http.StatusOK, userList)
+}
+
+// Get handler get list liked or matched by id idUser HTTP request
+func (h *Handler) GetMatchedUsersByID(w http.ResponseWriter, r *http.Request) {
+
+	userID := mux.Vars(r)["id"]
+	matchedParameter := r.URL.Query().Get("matched")
+
+	list, err := h.srv.GetMatchedUsersByID(r.Context(), userID, matchedParameter)
+	if err != nil {
+		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
+		return
+	}
+
+	respond.JSON(w, http.StatusOK, list)
 }
