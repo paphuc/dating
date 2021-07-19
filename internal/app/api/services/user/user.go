@@ -252,14 +252,7 @@ func (s *Service) convertPointerArrayToArray(list []*types.UserResGetInfo) []typ
 }
 
 // helps Enable/Disable account
-func (s *Service) DisableUserByID(ctx context.Context, idUser, disableParameter string) error {
-
-	disable, err := strconv.ParseBool(disableParameter)
-
-	if err != nil {
-		s.logger.Errorf("Failed url parameters when get list matched or like", err)
-		return errors.Wrap(err, "Failed url parameters when get list users")
-	}
+func (s *Service) DisableUserByID(ctx context.Context, idUser string, disable bool) error {
 
 	if !bson.IsObjectIdHex(idUser) {
 		s.logger.Errorf("Id user incorrect,it isn't ObjectIdHex")
@@ -272,12 +265,12 @@ func (s *Service) DisableUserByID(ctx context.Context, idUser, disableParameter 
 		}
 		s.logger.Infof("Disable completed", idUser)
 
-		return err
+		return nil
 	}
 
-	if err = s.repo.DisableUserByID(ctx, idUser, disable); err != nil {
+	if err := s.repo.DisableUserByID(ctx, idUser, disable); err != nil {
 		s.logger.Errorf("Enable failed", err)
 	}
 	s.logger.Infof("Enable completed", idUser)
-	return err
+	return nil
 }

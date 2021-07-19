@@ -66,3 +66,7 @@ type UserLogin struct {
 	Email    string `json:"email" bson:"email" validate:"required,email"`
 	Password string `json:"password" bson:"password" validate:"required"`
 }
+
+type DisableBody struct {
+	Disable *bool `json:"disable" bson:"disable" validate:"required"`
+}
