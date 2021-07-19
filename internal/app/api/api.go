@@ -2,7 +2,7 @@ package api
 
 import (
 	"net/http"
-
+"embed"
 	userhandler "dating/internal/app/api/handler/user"
 	user "dating/internal/app/api/repositories/user"
 	userService "dating/internal/app/api/services/user"
@@ -43,9 +43,9 @@ const (
 	delete = http.MethodDelete
 	patch  = http.MethodPatch
 )
-
+var staticFiles embed.FS
 // Init init all handlers
-func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
+func Init(conns *config.Configs, em config.ErrorMessage, staticFiles embed.FS) (http.Handler, error) {
 	logger := glog.New()
 
 	var userRepo userService.Repository
@@ -134,9 +134,7 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 
 	loggingMW := middleware.Logging(logger.WithField("package", "middleware"))
 	r := mux.NewRouter()
-
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
-
+	r.PathPrefix("/swagger").Handler(http.StripPrefix("/swagger/", http.FileServer(http.FS(staticFiles))))
 	r.Use(middleware.RequestID)
 	r.Use(middleware.StatusResponseWriter)
 	r.Use(loggingMW)
