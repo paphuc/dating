@@ -259,13 +259,13 @@ func (s *Service) DisableUserByID(ctx context.Context, idUser string, disable bo
 		return errors.New("Id user incorrect to find list liked from database, it isn't ObjectIdHex")
 	}
 
-	disableStr := strconv.FormatBool(disable)
+	// disableStr := strconv.FormatBool(disable)
 	if err := s.repo.DisableUserByID(ctx, idUser, disable); err != nil {
-		s.logger.Errorf("Set disable to "+disableStr+" for user "+idUser+" failed", err)
+		s.logger.Errorf("Set disable to %d for user %s failed", disable, idUser, err)
 		return err
 	}
 
-	s.logger.Infof("Set disable to "+disableStr+" for user "+idUser+" completed", idUser)
+	s.logger.Infof("Set disable to %d for user %s completed", disable, idUser)
 	return nil
 
 }

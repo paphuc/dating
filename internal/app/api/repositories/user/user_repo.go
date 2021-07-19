@@ -88,12 +88,10 @@ func (r *MongoRepository) DisableUserByID(ctx context.Context, idUser string, di
 	disableUpdate := bson.M{"$set": bson.M{
 		"disable": disable,
 	}}
-	err := r.collection(s).UpdateId(bson.ObjectIdHex(idUser), disableUpdate)
-
-	return err
+	return r.collection(s).UpdateId(bson.ObjectIdHex(idUser), disableUpdate)
 }
 
-// his method helps get all user by page
+// This method helps get all user by page
 func (r *MongoRepository) GetListUsers(ctx context.Context, ps types.PagingNSorting) ([]*types.UserResGetInfo, error) {
 	s := r.session.Clone()
 	defer s.Close()
