@@ -24,6 +24,7 @@ type Repository interface {
 	CountUser(ctx context.Context) (int, error)
 	GetListlikedInfo(ctx context.Context, idUser string) ([]*types.UserResGetInfo, error)
 	GetListMatchedInfo(ctx context.Context, idUser string) ([]*types.UserResGetInfo, error)
+	DisableUserByID(ctx context.Context, idUser string, disable bool) error
 }
 
 // Service is an user service
@@ -59,6 +60,7 @@ func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*typ
 		Name:     UserSignUp.Name,
 		Email:    UserSignUp.Email,
 		Password: UserSignUp.Password,
+		Disable:  false,
 		CreateAt: time.Now(),
 		UpdateAt: time.Now()}
 
@@ -190,7 +192,6 @@ func (s *Service) GetListUsers(ctx context.Context, page, size string) (*types.G
 	}
 
 	listUsersResponse.ListUsers = append(listUsersResponse.ListUsers, listUsers...)
-
 	s.logger.Infof("get list users by page is completed, page: ", pagingNSorting)
 
 	return &listUsersResponse, nil
@@ -248,4 +249,35 @@ func (s *Service) convertPointerArrayToArray(list []*types.UserResGetInfo) []typ
 		listUsers = append(listUsers, *user)
 	}
 	return listUsers
+}
+
+// helps Enable/Disable account
+func (s *Service) DisableUserByID(ctx context.Context, idUser, disableParameter string) error {
+
+	disable, err := strconv.ParseBool(disableParameter)
+
+	if err != nil {
+		s.logger.Errorf("Failed url parameters when get list matched or like", err)
+		return errors.Wrap(err, "Failed url parameters when get list users")
+	}
+
+	if !bson.IsObjectIdHex(idUser) {
+		s.logger.Errorf("Id user incorrect,it isn't ObjectIdHex")
+		return errors.New("Id user incorrect to find list liked from database, it isn't ObjectIdHex")
+	}
+
+	if disable {
+		if err := s.repo.DisableUserByID(ctx, idUser, disable); err != nil {
+			s.logger.Errorf("Disable failed", err)
+		}
+		s.logger.Infof("Disable completed", idUser)
+
+		return err
+	}
+
+	if err = s.repo.DisableUserByID(ctx, idUser, disable); err != nil {
+		s.logger.Errorf("Enable failed", err)
+	}
+	s.logger.Infof("Enable completed", idUser)
+	return err
 }

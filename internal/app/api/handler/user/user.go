@@ -22,6 +22,7 @@ type (
 		UpdateUserByID(ctx context.Context, User types.User) error
 		GetListUsers(ctx context.Context, page, size string) (*types.GetListUsersResponse, error)
 		GetMatchedUsersByID(ctx context.Context, idUser, matchedParameter string) ([]types.UserResGetInfo, error)
+		DisableUserByID(ctx context.Context, idUser, disableParameter string) error
 	}
 	// Handler is user web handler
 	Handler struct {
@@ -161,4 +162,16 @@ func (h *Handler) GetMatchedUsersByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond.JSON(w, http.StatusOK, list)
+}
+func (h *Handler) DisableUsersByID(w http.ResponseWriter, r *http.Request) {
+
+	userID := mux.Vars(r)["id"]
+	disableParameter := r.URL.Query().Get("disable")
+
+	if err := h.srv.DisableUserByID(r.Context(), userID, disableParameter); err != nil {
+		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
+		return
+	}
+
+	respond.JSON(w, http.StatusOK, h.em.Success)
 }

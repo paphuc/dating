@@ -41,6 +41,7 @@ const (
 	post   = http.MethodPost
 	put    = http.MethodPut
 	delete = http.MethodDelete
+	patch  = http.MethodPatch
 )
 
 // Init init all handlers
@@ -122,6 +123,12 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			method:      get,
 			middlewares: []middlewareFunc{middleware.Auth},
 			handler:     userHandler.GetMatchedUsersByID,
+		},
+		route{
+			path:        "/users/{id:[a-z0-9-\\-]+}/disable",
+			method:      patch,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     userHandler.DisableUsersByID,
 		},
 	}
 

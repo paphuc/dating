@@ -19,6 +19,7 @@ type User struct {
 	Sex          string        `json:"sex" bson:"sex" validate:"omitempty,max=60"`
 	Country      string        `json:"country" bson:"country" validate:"required,max=60"`
 	Hobby        []string      `json:"hobby" bson:"hobby"`
+	Disable      bool          `json:"disable" bson:"disable"`
 	About        string        `json:"about" bson:"about" validate:"omitempty,max=256"`
 	CreateAt     time.Time     `json:"created_at" bson:"created_at"`
 	UpdateAt     time.Time     `json:"updated_at" bson:"updated_at"`
