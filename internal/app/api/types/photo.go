@@ -1,9 +1,9 @@
 package types
 
-import "github.com/globalsign/mgo/bson"
+import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type Photo struct {
-	ID     bson.ObjectId `json:"_id" bson:"_id,omitempty"`
-	UserID bson.ObjectId `json:"user_id" bson:"user_id"`
-	URLs   []string      `json:"urls" bson:"urls"`
+	ID     primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	UserID primitive.ObjectID `json:"user_id" bson:"user_id"`
+	URLs   []string           `json:"urls" bson:"urls"`
 }

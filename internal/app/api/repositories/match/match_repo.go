@@ -5,10 +5,11 @@ import (
 	"time"
 
 	"dating/internal/app/api/types"
-
-	mgo "github.com/globalsign/mgo"
-	"github.com/globalsign/mgo/bson"
 	"github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var (
@@ -16,116 +17,117 @@ var (
 )
 
 type MongoRepository struct {
-	session *mgo.Session
+	client *mongo.Client
 }
 
-func NewMongoRepository(s *mgo.Session) *MongoRepository {
+func NewMongoRepository(c *mongo.Client) *MongoRepository {
 	return &MongoRepository{
-		session: s,
+		client: c,
 	}
 }
 
 // this method helps insert match
 func (r *MongoRepository) Insert(ctx context.Context, match types.Match) error {
-	s := r.session.Clone()
-	defer s.Close()
-
-	err := r.collection(s).Insert(match)
-
+	_, err := r.collection().InsertOne(context.TODO(), match)
 	return err
 }
 
 // This method helps insert match
 func (r *MongoRepository) DeleteMatch(ctx context.Context, id string) error {
-	s := r.session.Clone()
-	defer s.Close()
-
-	err := r.collection(s).RemoveId(bson.ObjectIdHex(id))
-
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	_, err = r.collection().DeleteOne(context.TODO(), objectID)
 	return err
 }
 
 // This method helps get basic info match by id
 func (r *MongoRepository) FindByID(ctx context.Context, id string) (*types.Match, error) {
-	s := r.session.Clone()
-	defer s.Close()
-
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
 	var match *types.Match
-	err := r.collection(s).FindId(bson.ObjectIdHex(id)).One(&match)
-
+	err = r.collection().FindOne(ctx, types.Match{ID: objectID}).Decode(&match)
 	return match, err
 }
 
 // This method help check A vs B by Match
 func (r *MongoRepository) CheckAB(ctx context.Context, idUser, idTargetUser string, matched bool) (*types.Match, error) {
-	s := r.session.Clone()
-	defer s.Close()
-
-	filter := bson.M{
-		"user_id":        bson.ObjectIdHex(idUser),
-		"target_user_id": bson.ObjectIdHex(idTargetUser),
-		"matched":        matched,
+	userID, err := primitive.ObjectIDFromHex(idUser)
+	if err != nil {
+		return nil, err
+	}
+	targetUserID, err := primitive.ObjectIDFromHex(idTargetUser)
+	if err != nil {
+		return nil, err
 	}
 
 	var match *types.Match
-	err := r.collection(s).Find(filter).One(&match)
+	err = r.collection().FindOne(ctx, types.Match{UserID: userID, TargetUserID: targetUserID, Matched: matched}).Decode(&match)
 
 	return match, err
 }
 
 // this method help get record when user A liked user B
 func (r *MongoRepository) FindALikeB(ctx context.Context, idUser, idTargetUser string) (*types.Match, error) {
-	s := r.session.Clone()
-	defer s.Close()
-
-	filter := bson.M{
-		"user_id":        bson.ObjectIdHex(idUser),
-		"target_user_id": bson.ObjectIdHex(idTargetUser),
+	userID, err := primitive.ObjectIDFromHex(idUser)
+	if err != nil {
+		return nil, err
+	}
+	targetUserID, err := primitive.ObjectIDFromHex(idTargetUser)
+	if err != nil {
+		return nil, err
 	}
 
 	var match *types.Match
-	err := r.collection(s).Find(filter).One(&match)
-
+	err = r.collection().FindOne(ctx, types.Match{UserID: userID, TargetUserID: targetUserID}).Decode(&match)
 	return match, err
 }
 func (r *MongoRepository) FindAMatchB(ctx context.Context, idUser, idTargetUser string) (*types.Match, error) {
-	s := r.session.Clone()
-	defer s.Close()
-
-	filter := bson.M{
-		"$or": []interface{}{
-			bson.M{
-				"user_id":        bson.ObjectIdHex(idUser),
-				"target_user_id": bson.ObjectIdHex(idTargetUser),
-			},
-			bson.M{
-				"user_id":        bson.ObjectIdHex(idTargetUser),
-				"target_user_id": bson.ObjectIdHex(idUser),
-			},
-		},
-		"matched": true,
+	userID, err := primitive.ObjectIDFromHex(idUser)
+	if err != nil {
+		return nil, err
 	}
+	targetUserID, err := primitive.ObjectIDFromHex(idTargetUser)
+	if err != nil {
+		return nil, err
+	}
+
 	var match *types.Match
-	err := r.collection(s).Find(filter).One(&match)
+	if err := r.collection().FindOne(ctx, types.Match{UserID: userID, TargetUserID: targetUserID, Matched: true}).Decode(&match); err == nil {
+		return match, err
+	}
+
+	if match == nil {
+		if err := r.collection().FindOne(ctx, types.Match{UserID: targetUserID, TargetUserID: userID, Matched: true}).Decode(&match); err == nil {
+			return match, err
+		}
+	}
 
 	return match, err
 }
 
 // this method help get update match true when A,B liked
 func (r *MongoRepository) UpdateMatchByID(ctx context.Context, id string) error {
-	s := r.session.Clone()
-	defer s.Close()
+	matchID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
 
-	updatedUser := bson.M{"$set": bson.M{"matched": true}}
-	err := r.collection(s).UpdateId(bson.ObjectIdHex(id), updatedUser)
+	update := bson.D{
+		{"$set", bson.D{
+			{"matched", true},
+		}},
+	}
 
+	_, err = r.collection().UpdateOne(ctx, types.Match{ID: matchID}, update)
 	return err
 }
 
 // this method help get Upsert match
 func (r *MongoRepository) UpsertMatch(ctx context.Context, match types.Match) error {
-	s := r.session.Clone()
-	defer s.Close()
 	filter := bson.M{
 		"user_id":        match.UserID,
 		"target_user_id": match.TargetUserID,
@@ -136,43 +138,57 @@ func (r *MongoRepository) UpsertMatch(ctx context.Context, match types.Match) er
 		"matched":        false,
 		"created_at":     time.Now(),
 	}}
-	_, err := r.collection(s).Upsert(filter, updatedMath)
+
+	opts := options.Update().SetUpsert(true)
+	_, err := r.collection().UpdateOne(ctx, filter, updatedMath, opts)
 	return err
 }
 
 // this method help get list like
 func (r *MongoRepository) GetListLiked(ctx context.Context, idUser string) ([]*types.Match, error) {
-	s := r.session.Clone()
-	defer s.Close()
-
-	filter := bson.M{
-		"user_id": bson.ObjectIdHex(idUser),
-		"matched": false,
+	userID, err := primitive.ObjectIDFromHex(idUser)
+	if err != nil {
+		return nil, err
 	}
-	var match []*types.Match
-	err := r.collection(s).Find(filter).All(&match)
 
+	var match []*types.Match
+	cursor, err := r.collection().Find(ctx, types.Match{UserID: userID, Matched: true})
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cursor.All(ctx, &match); err != nil {
+		return nil, err
+	}
 	return match, err
 }
 
 // this method help get list matched
 func (r *MongoRepository) GetListMatched(ctx context.Context, idUser string) ([]*types.Match, error) {
-	s := r.session.Clone()
-	defer s.Close()
+	userID, err := primitive.ObjectIDFromHex(idUser)
+	if err != nil {
+		return nil, err
+	}
 
 	filter := bson.M{
 		"$or": []interface{}{
-			bson.M{"user_id": bson.ObjectIdHex(idUser)},
-			bson.M{"target_user_id": bson.ObjectIdHex(idUser)},
+			bson.M{"user_id": userID},
+			bson.M{"target_user_id": userID},
 		},
 		"matched": true,
 	}
 	var match []*types.Match
-	err := r.collection(s).Find(filter).All(&match)
+	cursor, err := r.collection().Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
 
+	if err = cursor.All(ctx, &match); err != nil {
+		return nil, err
+	}
 	return match, err
 }
 
-func (r *MongoRepository) collection(s *mgo.Session) *mgo.Collection {
-	return s.DB("").C("matches")
+func (r *MongoRepository) collection() *mongo.Collection {
+	return r.client.Database("dating").Collection("matches")
 }
