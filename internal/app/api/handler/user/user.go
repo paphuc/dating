@@ -20,7 +20,7 @@ type (
 		Login(ctx context.Context, UserLogin types.UserLogin) (*types.UserResponseSignUp, error)
 		FindUserById(ctx context.Context, id string) (*types.UserResGetInfo, error)
 		UpdateUserByID(ctx context.Context, User types.User) error
-		GetListUsers(ctx context.Context, page, size string) (*types.GetListUsersResponse, error)
+		GetListUsers(ctx context.Context, page, size, ageRange, gender string) (*types.GetListUsersResponse, error)
 		GetMatchedUsersByID(ctx context.Context, idUser, matchedParameter string) ([]types.UserResGetInfo, error)
 		DisableUserByID(ctx context.Context, idUser string, disable bool) error
 	}
@@ -139,8 +139,10 @@ func (h *Handler) GetListUsers(w http.ResponseWriter, r *http.Request) {
 
 	pageParameter := r.URL.Query().Get("page")
 	sizeParameter := r.URL.Query().Get("size")
+	ageRangeParameter := r.URL.Query().Get("age")
+	genderParameter := r.URL.Query().Get("gender")
 
-	userList, err := h.srv.GetListUsers(r.Context(), pageParameter, sizeParameter)
+	userList, err := h.srv.GetListUsers(r.Context(), pageParameter, sizeParameter, ageRangeParameter, genderParameter)
 	if err != nil {
 		respond.JSON(w, http.StatusInternalServerError, h.em.InvalidValue.Request)
 		return

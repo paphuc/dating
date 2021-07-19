@@ -21,7 +21,7 @@ type Repository interface {
 	Insert(ctx context.Context, User types.User) error
 	UpdateUserByID(ctx context.Context, User types.User) error
 	GetListUsers(ctx context.Context, ps types.PagingNSorting) ([]*types.UserResGetInfo, error)
-	CountUser(ctx context.Context) (int, error)
+	CountUser(ctx context.Context, ps types.PagingNSorting) (int, error)
 	GetListlikedInfo(ctx context.Context, idUser string) ([]*types.UserResGetInfo, error)
 	GetListMatchedInfo(ctx context.Context, idUser string) ([]*types.UserResGetInfo, error)
 	DisableUserByID(ctx context.Context, idUser string, disable bool) error
@@ -154,18 +154,18 @@ func (s *Service) UpdateUserByID(ctx context.Context, user types.User) error {
 }
 
 // Get list users by page
-func (s *Service) GetListUsers(ctx context.Context, page, size string) (*types.GetListUsersResponse, error) {
+func (s *Service) GetListUsers(ctx context.Context, page, size, ageRange, gender string) (*types.GetListUsersResponse, error) {
 
 	var pagingNSorting types.PagingNSorting
 
-	if err := pagingNSorting.Init(page, size); err != nil {
+	if err := pagingNSorting.Init(page, size, ageRange, gender); err != nil {
 		s.logger.Errorf("Failed url parameters when get list users", err)
 		return nil, errors.Wrap(err, "Failed url parameters when get list users")
 	}
 
 	var listUsersResponse types.GetListUsersResponse
 
-	numberUsers, err := s.repo.CountUser(ctx)
+	numberUsers, err := s.repo.CountUser(ctx, pagingNSorting)
 	if err != nil {
 		s.logger.Errorf("Failed when get number users", err)
 		return nil, errors.Wrap(err, "Failed when get number users")
@@ -192,6 +192,7 @@ func (s *Service) GetListUsers(ctx context.Context, page, size string) (*types.G
 	}
 
 	listUsersResponse.ListUsers = append(listUsersResponse.ListUsers, listUsers...)
+	listUsersResponse.Filter = pagingNSorting.Filter
 	s.logger.Infof("get list users by page is completed, page: ", pagingNSorting)
 
 	return &listUsersResponse, nil
