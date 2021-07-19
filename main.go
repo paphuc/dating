@@ -7,14 +7,15 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-
+"embed"
 	"dating/internal/app/api"
 	"dating/internal/app/config"
 	envconfig "dating/internal/pkg/config/env"
 	"dating/internal/pkg/glog"
 	"dating/internal/pkg/health"
 )
-
+//go:embed swagger-ui/* swagger-ui/dating-api.yaml
+var staticFiles embed.FS
 func main() {
 	logger := glog.New()
 	stage := flag.String("stage", "dev", "set working environment")
@@ -43,12 +44,11 @@ func main() {
 		conf.Database.Mongo.Database = mongoConf.Database
 	}
 	logger.Infof("initializing HTTP routing...")
-	router, err := api.Init(conf, em)
+	router, err := api.Init(conf, em, staticFiles)
 	if err != nil {
 		logger.Panicf("failed to init routing, err: %v", err)
 	}
 	addr := fmt.Sprintf("%s:%d", conf.HTTPServer.Address, conf.HTTPServer.Port)
-
 	httpServer := http.Server{
 		Addr:              addr,
 		Handler:           router,
