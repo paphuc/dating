@@ -41,7 +41,7 @@ func (r *MongoRepository) FindByEmail(ctx context.Context, email string) (*types
 	defer s.Close()
 
 	var user *types.User
-	err := r.collection(s).Find(bson.M{"email": email}).One(&user)
+	err := r.collection(s).Find(bson.M{"email": email, "disable": false}).One(&user)
 
 	return user, err
 }
@@ -52,7 +52,7 @@ func (r *MongoRepository) FindByID(ctx context.Context, id string) (*types.UserR
 	defer s.Close()
 
 	var user *types.UserResGetInfo
-	err := r.collection(s).FindId(bson.ObjectIdHex(id)).One(&user)
+	err := r.collection(s).Find(bson.M{"_id": bson.ObjectIdHex(id), "disable": false}).One(&user)
 
 	return user, err
 }
@@ -80,13 +80,26 @@ func (r *MongoRepository) UpdateUserByID(ctx context.Context, user types.User) e
 	return err
 }
 
+// This method helps Enable/Disable account
+func (r *MongoRepository) DisableUserByID(ctx context.Context, idUser string, disable bool) error {
+	s := r.session.Clone()
+	defer s.Close()
+
+	disableUpdate := bson.M{"$set": bson.M{
+		"disable": disable,
+	}}
+	return r.collection(s).UpdateId(bson.ObjectIdHex(idUser), disableUpdate)
+}
+
 // This method helps get all user by page
 func (r *MongoRepository) GetListUsers(ctx context.Context, ps types.PagingNSorting) ([]*types.UserResGetInfo, error) {
 	s := r.session.Clone()
 	defer s.Close()
 
 	var result []*types.UserResGetInfo
-	err := r.collection(s).Find(nil).Skip((ps.Page - 1) * ps.Size).Limit(ps.Size).All(&result)
+	err := r.collection(s).Find(bson.M{
+		"disable": false,
+	}).Skip((ps.Page - 1) * ps.Size).Limit(ps.Size).All(&result)
 
 	return result, err
 }
@@ -96,7 +109,9 @@ func (r *MongoRepository) CountUser(ctx context.Context) (int, error) {
 	s := r.session.Clone()
 	defer s.Close()
 
-	number, err := r.collection(s).Count()
+	number, err := r.collection(s).Find(bson.M{
+		"disable": false,
+	}).Count()
 
 	return number, err
 }
@@ -130,6 +145,9 @@ func (r *MongoRepository) GetListMatchedInfo(ctx context.Context, idUser string)
 		}},
 		{"$unwind": "$target_user"},
 		{"$replaceRoot": bson.M{"newRoot": "$target_user"}},
+		{"$match": bson.M{
+			"disable": false,
+		}},
 	}
 	var listMatched []*types.UserResGetInfo
 	err := s.DB("").C("matches").Pipe(query).All(&listMatched)
@@ -156,6 +174,9 @@ func (r *MongoRepository) GetListlikedInfo(ctx context.Context, idUser string) (
 		}},
 		{"$unwind": "$target_user"},
 		{"$replaceRoot": bson.M{"newRoot": "$target_user"}},
+		{"$match": bson.M{
+			"disable": false,
+		}},
 	}
 
 	var listMatched []*types.UserResGetInfo

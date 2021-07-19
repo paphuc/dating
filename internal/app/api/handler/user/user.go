@@ -22,6 +22,7 @@ type (
 		UpdateUserByID(ctx context.Context, User types.User) error
 		GetListUsers(ctx context.Context, page, size string) (*types.GetListUsersResponse, error)
 		GetMatchedUsersByID(ctx context.Context, idUser, matchedParameter string) ([]types.UserResGetInfo, error)
+		DisableUserByID(ctx context.Context, idUser string, disable bool) error
 	}
 	// Handler is user web handler
 	Handler struct {
@@ -161,4 +162,27 @@ func (h *Handler) GetMatchedUsersByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond.JSON(w, http.StatusOK, list)
+}
+func (h *Handler) DisableUsersByID(w http.ResponseWriter, r *http.Request) {
+
+	userID := mux.Vars(r)["id"]
+	var disable types.DisableBody
+
+	if err := json.NewDecoder(r.Body).Decode(&disable); err != nil {
+		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.ValidationFailed)
+		return
+	}
+
+	if err := validate.Struct(disable); err != nil {
+		h.logger.Errorf("Failed when validate field in method DisableUsersByID", err)
+		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.ValidationFailed)
+		return
+	}
+
+	if err := h.srv.DisableUserByID(r.Context(), userID, *disable.Disable); err != nil {
+		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
+		return
+	}
+
+	respond.JSON(w, http.StatusOK, h.em.Success)
 }
