@@ -138,7 +138,7 @@ func convertAgeRangeToDate(ageRange string) (*AgeRange, error) {
 	}
 	//age=24,25 range 24->25
 	return &AgeRange{
-		Gte: time.Now().AddDate(-int(gteInt), 0, 0),
+		Gte: time.Now().AddDate(-int(gteInt+1), 0, 0),
 		Lt:  time.Now().AddDate(-int(ltInt), 0, 0),
 	}, nil
 }
