@@ -15,7 +15,7 @@ type User struct {
 	LookingFor   string        `json:"looking_for" bson:"looking_for" validate:"omitempty,max=60"`
 	Password     string        `json:"password" bson:"password"`
 	Media        []string      `json:"media" bson:"media"` // arr path media
-	Gender       string        `json:"gender" bson:"gender" validate:"required,eq=Male|eq=Female|eq=Other"`
+	Gender       string        `json:"gender" bson:"gender" validate:"required,eq=Male|eq=Female|eq=Both"`
 	Sex          string        `json:"sex" bson:"sex" validate:"omitempty,max=60"`
 	Country      string        `json:"country" bson:"country" validate:"required,max=60"`
 	Hobby        []string      `json:"hobby" bson:"hobby"`

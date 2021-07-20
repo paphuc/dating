@@ -71,19 +71,22 @@ func (ps *PagingNSorting) Init(page, size, minAge, maxAge, genderStr string) err
 }
 
 func genderInit(gender string) ([]string, error) {
-	genderArray := []string{"Male", "Female", "Other"}
+	genderArray := []string{"Male", "Female", "Both"}
 
 	if gender != "" {
 		split := strings.Split(gender, ",")
-		if len(split) != 1 {
+		if len(split) > 1 {
 			for _, v := range split {
 				if !stringInSlice(v, genderArray) {
-					return nil, errors.Errorf("gender not in arr {Male, Female, Other}", gender)
+					return nil, errors.Errorf("gender not in arr {Male, Female, Both}", gender)
 				}
 			}
 			return split, nil
 		}
 
+		if !stringInSlice(gender, genderArray) {
+			return nil, errors.Errorf("gender not in arr {Male, Female, Both}", gender)
+		}
 		return []string{gender}, nil
 	}
 
@@ -94,6 +97,8 @@ func genderInit(gender string) ([]string, error) {
 // range birdday 2003 2002
 func convertAgeRangeToDate(minAgeStr, maxAgeStr string) (*AgeRange, error) {
 	// range 0-100
+	timeNow := time.Now()
+
 	min, err := convertAgeStr(minAgeStr, 0)
 	if err != nil {
 		return nil, err
@@ -105,8 +110,8 @@ func convertAgeRangeToDate(minAgeStr, maxAgeStr string) (*AgeRange, error) {
 	}
 
 	return &AgeRange{
-		Gte: time.Now().AddDate(-int(max+1), 0, 0),
-		Lt:  time.Now().AddDate(-int(min), 0, 0),
+		Gte: timeNow.AddDate(-int(max+1), 0, 0),
+		Lt:  timeNow.AddDate(-int(min), 0, 0),
 	}, nil
 }
 
