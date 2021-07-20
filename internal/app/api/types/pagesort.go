@@ -111,8 +111,8 @@ func convertAgeRangeToDate(ageRange string) (*AgeRange, error) {
 			return nil, err
 		}
 		return &AgeRange{
-			Gte: time.Now().AddDate(-int(gteInt), 0, 0),
-			Lt:  time.Now().AddDate(-int(gteInt+1), 0, 0),
+			Gte: time.Now().AddDate(-int(gteInt+1), 0, 0),
+			Lt:  time.Now().AddDate(-int(gteInt), 0, 0),
 		}, nil
 	}
 	// return err
@@ -120,20 +120,20 @@ func convertAgeRangeToDate(ageRange string) (*AgeRange, error) {
 		return nil, errors.Errorf("Can't convert ageRange to arr", ageRange)
 	}
 
-	gteInt, err := strconv.ParseInt(split[0], 10, 64)
+	ltInt, err := strconv.ParseInt(split[0], 10, 64)
 	if err != nil {
 		return nil, err
 	}
 
-	ltInt, err := strconv.ParseInt(split[1], 10, 64)
+	gteInt, err := strconv.ParseInt(split[1], 10, 64)
 	if err != nil {
 		return nil, err
 	}
 	//age=24,24 range 24
 	if gteInt == ltInt {
 		return &AgeRange{
-			Gte: time.Now().AddDate(-int(gteInt), 0, 0),
-			Lt:  time.Now().AddDate(-int(gteInt+1), 0, 0),
+			Gte: time.Now().AddDate(-int(ltInt+1), 0, 0),
+			Lt:  time.Now().AddDate(-int(ltInt), 0, 0),
 		}, nil
 	}
 	//age=24,25 range 24->25
