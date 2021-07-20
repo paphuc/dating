@@ -30,7 +30,7 @@ type Pagination struct {
 	Filter          Filter `json:"filter"`
 }
 
-func (ps *PagingNSorting) Init(page, size, ageRange, genderStr string) error {
+func (ps *PagingNSorting) Init(page, size, minAge, maxAge, genderStr string) error {
 
 	gender, err := genderInit(genderStr)
 	if err != nil {
@@ -38,7 +38,7 @@ func (ps *PagingNSorting) Init(page, size, ageRange, genderStr string) error {
 	}
 	ps.Filter.Gender = gender
 
-	time, err := convertAgeRangeToDate(ageRange)
+	time, err := convertAgeRangeToDate(minAge, maxAge)
 	if err != nil {
 		return err
 	}
@@ -92,55 +92,34 @@ func genderInit(gender string) ([]string, error) {
 
 // convertAgeRangeToDate, ex: 18 year olds (now 2021) -> year birdday 2003 ->
 // range birdday 2003 2002
-func convertAgeRangeToDate(ageRange string) (*AgeRange, error) {
-	// ageRange = "" range 0-100
-	if ageRange == "" {
-		return &AgeRange{
-			Gte: time.Now().AddDate(-100, 0, 0),
-			Lt:  time.Now(),
-		}, nil
-	}
-
-	split := strings.Split(ageRange, ",")
-	// age=24 range 24
-	if len(split) == 1 {
-
-		gteInt, err := strconv.ParseInt(split[0], 10, 64)
-
-		if err != nil {
-			return nil, err
-		}
-		return &AgeRange{
-			Gte: time.Now().AddDate(-int(gteInt+1), 0, 0),
-			Lt:  time.Now().AddDate(-int(gteInt), 0, 0),
-		}, nil
-	}
-	// return err
-	if len(split) != 2 {
-		return nil, errors.Errorf("Can't convert ageRange to arr", ageRange)
-	}
-
-	ltInt, err := strconv.ParseInt(split[0], 10, 64)
+func convertAgeRangeToDate(minAgeStr, maxAgeStr string) (*AgeRange, error) {
+	// range 0-100
+	min, err := convertAgeStr(minAgeStr, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	gteInt, err := strconv.ParseInt(split[1], 10, 64)
+	max, err := convertAgeStr(maxAgeStr, 100)
 	if err != nil {
 		return nil, err
 	}
-	//age=24,24 range 24
-	if gteInt == ltInt {
-		return &AgeRange{
-			Gte: time.Now().AddDate(-int(ltInt+1), 0, 0),
-			Lt:  time.Now().AddDate(-int(ltInt), 0, 0),
-		}, nil
-	}
-	//age=24,25 range 24->25
+
 	return &AgeRange{
-		Gte: time.Now().AddDate(-int(gteInt+1), 0, 0),
-		Lt:  time.Now().AddDate(-int(ltInt), 0, 0),
+		Gte: time.Now().AddDate(-int(max+1), 0, 0),
+		Lt:  time.Now().AddDate(-int(min), 0, 0),
 	}, nil
+}
+
+func convertAgeStr(ageStr string, defaultValue int) (int, error) {
+	if ageStr == "" {
+		return defaultValue, nil
+	} else {
+		value, err := strconv.ParseInt(ageStr, 10, 64)
+		if err != nil {
+			return -1, err
+		}
+		return int(value), nil
+	}
 }
 
 func stringInSlice(a string, list []string) bool {

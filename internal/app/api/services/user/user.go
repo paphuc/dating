@@ -154,11 +154,11 @@ func (s *Service) UpdateUserByID(ctx context.Context, user types.User) error {
 }
 
 // Get list users by page
-func (s *Service) GetListUsers(ctx context.Context, page, size, ageRange, gender string) (*types.GetListUsersResponse, error) {
+func (s *Service) GetListUsers(ctx context.Context, page, size, minAge, maxAge, gender string) (*types.GetListUsersResponse, error) {
 
 	var pagingNSorting types.PagingNSorting
 
-	if err := pagingNSorting.Init(page, size, ageRange, gender); err != nil {
+	if err := pagingNSorting.Init(page, size, minAge, maxAge, gender); err != nil {
 		s.logger.Errorf("Failed url parameters when get list users", err)
 		return nil, errors.Wrap(err, "Failed url parameters when get list users")
 	}
