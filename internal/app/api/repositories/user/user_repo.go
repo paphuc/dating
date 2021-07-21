@@ -96,22 +96,38 @@ func (r *MongoRepository) GetListUsers(ctx context.Context, ps types.PagingNSort
 	s := r.session.Clone()
 	defer s.Close()
 
-	var result []*types.UserResGetInfo
-	err := r.collection(s).Find(bson.M{
+	query := bson.M{
 		"disable": false,
-	}).Skip((ps.Page - 1) * ps.Size).Limit(ps.Size).All(&result)
+		"birthday": bson.M{
+			"$gte": ps.Filter.AgeRange.Gte,
+			"$lt":  ps.Filter.AgeRange.Lt,
+		},
+		"gender": bson.M{
+			"$in": ps.Filter.Gender,
+		},
+	}
+
+	var result []*types.UserResGetInfo
+	err := r.collection(s).Find(query).Skip((ps.Page - 1) * ps.Size).Limit(ps.Size).All(&result)
 
 	return result, err
 }
 
 // This method helps count number users in collection
-func (r *MongoRepository) CountUser(ctx context.Context) (int, error) {
+func (r *MongoRepository) CountUser(ctx context.Context, ps types.PagingNSorting) (int, error) {
 	s := r.session.Clone()
 	defer s.Close()
-
-	number, err := r.collection(s).Find(bson.M{
+	query := bson.M{
 		"disable": false,
-	}).Count()
+		"birthday": bson.M{
+			"$gte": ps.Filter.AgeRange.Gte,
+			"$lt":  ps.Filter.AgeRange.Lt,
+		},
+		"gender": bson.M{
+			"$in": ps.Filter.Gender,
+		},
+	}
+	number, err := r.collection(s).Find(query).Count()
 
 	return number, err
 }
