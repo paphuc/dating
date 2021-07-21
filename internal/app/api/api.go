@@ -1,11 +1,12 @@
 package api
 
 import (
+	"embed"
+	"net/http"
+
 	userhandler "dating/internal/app/api/handler/user"
 	user "dating/internal/app/api/repositories/user"
 	userService "dating/internal/app/api/services/user"
-	"embed"
-	"net/http"
 
 	matchhandler "dating/internal/app/api/handler/match"
 	match "dating/internal/app/api/repositories/match"
