@@ -1,11 +1,11 @@
 package api
 
 import (
-	"net/http"
-"embed"
 	userhandler "dating/internal/app/api/handler/user"
 	user "dating/internal/app/api/repositories/user"
 	userService "dating/internal/app/api/services/user"
+	"embed"
+	"net/http"
 
 	matchhandler "dating/internal/app/api/handler/match"
 	match "dating/internal/app/api/repositories/match"
@@ -43,7 +43,9 @@ const (
 	delete = http.MethodDelete
 	patch  = http.MethodPatch
 )
+
 var staticFiles embed.FS
+
 // Init init all handlers
 func Init(conns *config.Configs, em config.ErrorMessage, staticFiles embed.FS) (http.Handler, error) {
 	logger := glog.New()
