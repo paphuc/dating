@@ -130,7 +130,23 @@ paths:
       - name: "size"
         in: "query"
         description: "number users in a page"
+        type: "integer"
+      - name: "minAge"
+        in: "query"
+        description: "minAge users"
         type: "integer" 
+      - name: "maxAge"
+        in: "query"
+        description: "maxAge users"
+        type: "integer" 
+      - name: "gender"
+        in: "query"
+        type: "string"
+        description: "gender user"
+        enum:
+        - "Male"
+        - "Female"
+        - "Both" 
       produces:
       - "application/json"
       responses:
@@ -205,6 +221,40 @@ paths:
             items:
               $ref: "#/definitions/UserInfoRequest"
           description: "info user"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "Not Found"
+  /users/{idUsers}/disable:
+    patch: 
+      security:
+        - Bearer: []
+      tags:
+      - "user"
+      summary: "Enable/Disable account"
+      description: "This can only be done by the logged in user."
+      operationId: "Enable/Disable account"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "idUsers"
+        in: "path"
+        description: "The id user for get"
+        required: true
+        type: "string" 
+      - in: "body"
+        name: "body"
+        description: "DisableRequest obj"
+        required: true
+        schema:
+          $ref: "#/definitions/DisableRequest"
+      responses:
+        "200":
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+          description: "Enable/Disable completed!"
         "400":
           description: "Bad Request"
           schema:
@@ -419,6 +469,11 @@ definitions:
       target_user_id: 
         type: "string"
       matched: 
+        type: "boolean"
+  DisableRequest:
+    type: "object"
+    properties:
+      disable: 
         type: "boolean"
   SuccessResponse:
     type: "object"
