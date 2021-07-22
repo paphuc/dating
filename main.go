@@ -35,8 +35,8 @@ func main() {
 
 	var mongoConf config.MongoDB
 	envconfig.Load(&mongoConf)
-	if mongoConf.Addresses != nil {
-		conf.Database.Mongo.Addresses = mongoConf.Addresses
+	if mongoConf.Address != "" {
+		conf.Database.Mongo.Address = mongoConf.Address
 	}
 
 	if mongoConf.Database != "" {

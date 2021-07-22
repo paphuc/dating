@@ -9,8 +9,7 @@ http_server:
 database:
   type: mongodb
   mongo:
-    addresses:
-    - "dating:012345678x@X@cluster0.sudw4.mongodb.net/dating?retryWrites=true&w=majority"
+    address: "dating1:012345678@cluster0.sudw4.mongodb.net/dating?retryWrites=true&w=majority"
     timeout: 15s
     username: ""
     password: ""

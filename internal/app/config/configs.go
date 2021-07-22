@@ -84,11 +84,11 @@ type (
 
 	// Config hold MongoDB configuration information
 	MongoDB struct {
-		Addresses []string      `envconfig:"MONGODB_ADDRS" default:"127.0.0.1:27017" mapstructure:"addresses"`
-		Database  string        `envconfig:"MONGODB_DATABASE" default:"dating" mapstructure:"database"`
-		Username  string        `mapstructure:"username"`
-		Password  string        `mapstructure:"password"`
-		Timeout   time.Duration `mapstructure:"timout"`
+		Address  string        `envconfig:"MONGODB_ADDRS" mapstructure:"address"`
+		Database string        `envconfig:"MONGODB_DATABASE" default:"dating" mapstructure:"database"`
+		Username string        `mapstructure:"username"`
+		Password string        `mapstructure:"password"`
+		Timeout  time.Duration `mapstructure:"timout"`
 	}
 
 	HTTPServer struct {
@@ -106,7 +106,7 @@ func Dial(conf *MongoDB, logger glog.Logger) (*mongo.Client, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 	// Set client options
-	clientOptions := options.Client().ApplyURI("mongodb+srv://dating1:012345678@cluster0.sudw4.mongodb.net/dating?retryWrites=true&w=majority")
+	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb+srv://%s", conf.Address))
 
 	// Connect to MongoDB
 	client, err := mongo.Connect(ctx, clientOptions)
@@ -123,6 +123,6 @@ func Dial(conf *MongoDB, logger glog.Logger) (*mongo.Client, error) {
 
 	fmt.Println("Connected to MongoDB!")
 
-	logger.Infof("successfully dialing to MongoDB at %v", conf.Addresses)
+	logger.Infof("successfully dialing to MongoDB at %v", conf.Address)
 	return client, nil
 }
