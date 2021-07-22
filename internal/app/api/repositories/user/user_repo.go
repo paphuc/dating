@@ -87,11 +87,21 @@ func (r *MongoRepository) DisableUserByID(ctx context.Context, idUser string, di
 
 // This method helps get all user by page
 func (r *MongoRepository) GetListUsers(ctx context.Context, ps types.PagingNSorting) ([]*types.UserResGetInfo, error) {
+	query := bson.M{
+		"disable": false,
+		"birthday": bson.M{
+			"$gte": ps.Filter.AgeRange.Gte,
+			"$lt":  ps.Filter.AgeRange.Lt,
+		},
+		"gender": bson.M{
+			"$in": ps.Filter.Gender,
+		},
+	}
 	var result []*types.UserResGetInfo
 	opts := options.Find()
 	opts.SetSkip(int64((ps.Page - 1) * ps.Size))
 	opts.SetLimit(int64(ps.Size))
-	cursor, err := r.collection().Find(ctx, bson.M{"disable": false}, opts)
+	cursor, err := r.collection().Find(ctx, query, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -103,8 +113,18 @@ func (r *MongoRepository) GetListUsers(ctx context.Context, ps types.PagingNSort
 }
 
 // This method helps count number users in collection
-func (r *MongoRepository) CountUser(ctx context.Context) (int64, error) {
-	return r.collection().CountDocuments(ctx, bson.M{"disable": false})
+func (r *MongoRepository) CountUser(ctx context.Context, ps types.PagingNSorting) (int64, error) {
+	query := bson.M{
+		"disable": false,
+		"birthday": bson.M{
+			"$gte": ps.Filter.AgeRange.Gte,
+			"$lt":  ps.Filter.AgeRange.Lt,
+		},
+		"gender": bson.M{
+			"$in": ps.Filter.Gender,
+		},
+	}
+	return r.collection().CountDocuments(ctx, query)
 }
 
 // this method help get list matched include info
