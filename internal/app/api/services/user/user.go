@@ -2,6 +2,7 @@ package userservices
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"dating/internal/app/api/types"
@@ -9,7 +10,6 @@ import (
 	"dating/internal/pkg/glog"
 	"dating/internal/pkg/jwt"
 
-	"github.com/globalsign/mgo/bson"
 	"github.com/pkg/errors"
 )
 
@@ -20,7 +20,10 @@ type Repository interface {
 	Insert(ctx context.Context, User types.User) error
 	UpdateUserByID(ctx context.Context, User types.User) error
 	GetListUsers(ctx context.Context, ps types.PagingNSorting) ([]*types.UserResGetInfo, error)
-	CountUser(ctx context.Context) (int, error)
+	CountUser(ctx context.Context) (int64, error)
+	GetListlikedInfo(ctx context.Context, idUser string) ([]*types.UserResGetInfo, error)
+	GetListMatchedInfo(ctx context.Context, idUser string) ([]*types.UserResGetInfo, error)
+	DisableUserByID(ctx context.Context, idUser string, disable bool) error
 }
 
 // Service is an user service
@@ -52,10 +55,10 @@ func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*typ
 	UserSignUp.Password, _ = jwt.HashPassword(UserSignUp.Password)
 
 	user := types.User{
-		ID:       bson.NewObjectId(),
 		Name:     UserSignUp.Name,
 		Email:    UserSignUp.Email,
 		Password: UserSignUp.Password,
+		Disable:  false,
 		CreateAt: time.Now(),
 		UpdateAt: time.Now()}
 
@@ -119,11 +122,11 @@ func (s *Service) Login(ctx context.Context, UserLogin types.UserLogin) (*types.
 func (s *Service) FindUserById(ctx context.Context, id string) (*types.UserResGetInfo, error) {
 	var user *types.UserResGetInfo
 
-	//check id correct
-	if !bson.IsObjectIdHex(id) {
-		s.logger.Errorf("Id user incorrect,it isn't ObjectIdHex")
-		return nil, errors.New("Id incorrect to find the given user from database, it isn't ObjectIdHex")
-	}
+	// //check id correct
+	// if !bson.IsObjectIdHex(id) {
+	// 	s.logger.Errorf("Id user incorrect,it isn't ObjectIdHex")
+	// 	return nil, errors.New("Id incorrect to find the given user from database, it isn't ObjectIdHex")
+	// }
 
 	user, err := s.repo.FindByID(ctx, id)
 
@@ -160,14 +163,14 @@ func (s *Service) GetListUsers(ctx context.Context, page, size string) (*types.G
 
 	var listUsersResponse types.GetListUsersResponse
 
-	numberUsers, err := s.repo.CountUser(ctx)
+	total, err := s.repo.CountUser(ctx)
 	if err != nil {
 		s.logger.Errorf("Failed when get number users", err)
 		return nil, errors.Wrap(err, "Failed when get number users")
 	}
-
+	numberUsers := int(total)
 	listUsersResponse.CurrentPage = pagingNSorting.Page
-	listUsersResponse.MaxItemsPerPage = pagingNSorting.Size
+	listUsersResponse.MaxItemsPerPage = int(pagingNSorting.Size)
 	listUsersResponse.TotalItems = numberUsers
 	listUsersResponse.TotalPages = int(numberUsers / pagingNSorting.Size)
 	// ex: total: 5, size: 2 => 3 page
@@ -187,8 +190,80 @@ func (s *Service) GetListUsers(ctx context.Context, page, size string) (*types.G
 	}
 
 	listUsersResponse.ListUsers = append(listUsersResponse.ListUsers, listUsers...)
-
 	s.logger.Infof("get list users by page is completed, page: ", pagingNSorting)
 
 	return &listUsersResponse, nil
+}
+
+// get list user liked
+func (s *Service) listLiked(ctx context.Context, userID string) ([]types.UserResGetInfo, error) {
+	list, err := s.repo.GetListlikedInfo(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return s.convertPointerArrayToArray(list), err
+}
+
+// get list user matched
+func (s *Service) listMatched(ctx context.Context, userID string) ([]types.UserResGetInfo, error) {
+	list, err := s.repo.GetListMatchedInfo(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return s.convertPointerArrayToArray(list), err
+}
+
+// get list matched or liked
+func (s *Service) GetMatchedUsersByID(ctx context.Context, idUser, matchedParameter string) ([]types.UserResGetInfo, error) {
+
+	matched, err := strconv.ParseBool(matchedParameter)
+
+	if err != nil {
+		s.logger.Errorf("Failed url parameters when get list matched or like", err)
+		return nil, errors.Wrap(err, "Failed url parameters when get list users")
+	}
+
+	// if !bson.IsObjectIdHex(idUser) {
+	// 	s.logger.Errorf("Id user incorrect,it isn't ObjectIdHex")
+	// 	return nil, errors.New("Id user incorrect to find list liked from database, it isn't ObjectIdHex")
+	// }
+
+	if matched {
+		list, err := s.listMatched(ctx, idUser)
+		s.logger.Infof("Get list matched completed", idUser)
+		return list, err
+	}
+
+	list, err := s.listLiked(ctx, idUser)
+	s.logger.Infof("Get list liked completed", idUser)
+	return list, err
+}
+
+// convert []*types.UserResGetInfo to []types.UserResGetInfo - if empty return []
+func (s *Service) convertPointerArrayToArray(list []*types.UserResGetInfo) []types.UserResGetInfo {
+
+	listUsers := []types.UserResGetInfo{}
+	for _, user := range list {
+		listUsers = append(listUsers, *user)
+	}
+	return listUsers
+}
+
+// helps Enable/Disable account
+func (s *Service) DisableUserByID(ctx context.Context, idUser string, disable bool) error {
+
+	// if !bson.IsObjectIdHex(idUser) {
+	// 	s.logger.Errorf("Id user incorrect,it isn't ObjectIdHex")
+	// 	return errors.New("Id user incorrect to find list liked from database, it isn't ObjectIdHex")
+	// }
+
+	// disableStr := strconv.FormatBool(disable)
+	if err := s.repo.DisableUserByID(ctx, idUser, disable); err != nil {
+		s.logger.Errorf("Set disable to %d for user %s failed", disable, idUser, err)
+		return err
+	}
+
+	s.logger.Infof("Set disable to %d for user %s completed", disable, idUser)
+	return nil
+
 }

@@ -28,6 +28,7 @@ type ErrorMessage struct {
 		IncorrectPasswordEmail ErrorCode
 		EmailExists            ErrorCode
 		FailedAuthentication   ErrorCode
+		ValidationFailed       ErrorCode
 	}
 }
 

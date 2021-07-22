@@ -10,8 +10,8 @@ database:
   type: mongodb
   mongo:
     addresses:
-    - "127.0.0.1:27017"
-    timeout: 5s
+    - "dating:012345678x@X@cluster0.sudw4.mongodb.net/dating?retryWrites=true&w=majority"
+    timeout: 15s
     username: ""
     password: ""
     database: "dating"

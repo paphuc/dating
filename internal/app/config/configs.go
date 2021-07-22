@@ -1,14 +1,17 @@
 package config
 
 import (
+	"context"
 	"dating/internal/pkg/glog"
 	"fmt"
 	"log"
 	"strings"
 	"time"
 
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+
 	"github.com/fsnotify/fsnotify"
-	"github.com/globalsign/mgo"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
@@ -99,19 +102,27 @@ type (
 )
 
 // Dial dial to target server with Monotonic mode
-func Dial(conf *MongoDB, logger glog.Logger) (*mgo.Session, error) {
-	logger.Infof("dialing to target MongoDB at: %v, database: %v", conf.Addresses, conf.Database)
-	ms, err := mgo.DialWithInfo(&mgo.DialInfo{
-		Addrs:    conf.Addresses,
-		Database: conf.Database,
-		Username: conf.Username,
-		Password: conf.Password,
-		Timeout:  conf.Timeout,
-	})
+func Dial(conf *MongoDB, logger glog.Logger) (*mongo.Client, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	defer cancel()
+	// Set client options
+	clientOptions := options.Client().ApplyURI("mongodb+srv://dating1:012345678@cluster0.sudw4.mongodb.net/dating?retryWrites=true&w=majority")
+
+	// Connect to MongoDB
+	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		return nil, err
+		logger.Errorf("Got an error: %v", err)
 	}
-	ms.SetMode(mgo.Monotonic, true)
+
+	// Check the connection
+	err = client.Ping(ctx, nil)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Connected to MongoDB!")
+
 	logger.Infof("successfully dialing to MongoDB at %v", conf.Addresses)
-	return ms, nil
+	return client, nil
 }

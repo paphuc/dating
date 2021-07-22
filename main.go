@@ -47,8 +47,12 @@ func main() {
 	if err != nil {
 		logger.Panicf("failed to init routing, err: %v", err)
 	}
-	addr := fmt.Sprintf("%s:%d", conf.HTTPServer.Address, conf.HTTPServer.Port)
 
+	addr := fmt.Sprintf("%s:%d", conf.HTTPServer.Address, conf.HTTPServer.Port)
+	port := os.Getenv("PORT")
+	if port != "" {
+		addr = fmt.Sprintf("%s:%s", conf.HTTPServer.Address, port)
+	}
 	httpServer := http.Server{
 		Addr:              addr,
 		Handler:           router,
