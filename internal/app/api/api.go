@@ -12,6 +12,8 @@ import (
 	match "dating/internal/app/api/repositories/match"
 	matchService "dating/internal/app/api/services/match"
 
+	chathandler "dating/internal/app/api/handler/chat"
+
 	"dating/internal/app/config"
 	"dating/internal/app/db"
 	"dating/internal/pkg/glog"
@@ -73,6 +75,7 @@ func Init(conns *config.Configs, em config.ErrorMessage, staticFiles embed.FS) (
 	matchSrv := matchService.NewService(conns, &em, matchRepo, matchLogger)
 	matchHandler := matchhandler.New(conns, &em, matchSrv, matchLogger)
 
+	chatHandler := chathandler.New(conns, &em, logger.WithField("package", "chat"))
 	routes := []route{
 		// infra
 		route{
@@ -132,6 +135,11 @@ func Init(conns *config.Configs, em config.ErrorMessage, staticFiles embed.FS) (
 			method:      patch,
 			middlewares: []middlewareFunc{middleware.Auth},
 			handler:     userHandler.DisableUsersByID,
+		},
+		route{
+			path:    "/ws",
+			method:  get,
+			handler: chatHandler.WS,
 		},
 	}
 
