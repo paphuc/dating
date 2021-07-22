@@ -1,4 +1,4 @@
-package userhandler
+package matchhandler
 
 import (
 	"context"
