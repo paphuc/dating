@@ -13,6 +13,8 @@ import (
 	matchService "dating/internal/app/api/services/match"
 
 	chathandler "dating/internal/app/api/handler/chat"
+	chat "dating/internal/app/api/repositories/chat"
+	chatService "dating/internal/app/api/services/chat"
 
 	"dating/internal/app/config"
 	"dating/internal/app/db"
@@ -40,11 +42,12 @@ type (
 )
 
 const (
-	get    = http.MethodGet
-	post   = http.MethodPost
-	put    = http.MethodPut
-	delete = http.MethodDelete
-	patch  = http.MethodPatch
+	get     = http.MethodGet
+	post    = http.MethodPost
+	put     = http.MethodPut
+	delete  = http.MethodDelete
+	patch   = http.MethodPatch
+	connect = http.MethodConnect
 )
 
 var staticFiles embed.FS
@@ -55,6 +58,7 @@ func Init(conns *config.Configs, em config.ErrorMessage, staticFiles embed.FS) (
 
 	var userRepo userService.Repository
 	var matchRepo matchService.Repository
+	var chatRepo chatService.Repository
 	switch conns.Database.Type {
 	case db.TypeMongoDB:
 		s, err := config.Dial(&conns.Database.Mongo, logger)
@@ -63,6 +67,7 @@ func Init(conns *config.Configs, em config.ErrorMessage, staticFiles embed.FS) (
 		}
 		userRepo = user.NewMongoRepository(s)
 		matchRepo = match.NewMongoRepository(s)
+		chatRepo = chat.NewMongoRepository(s)
 	default:
 		panic("database type not supported: " + conns.Database.Type)
 	}
@@ -75,7 +80,10 @@ func Init(conns *config.Configs, em config.ErrorMessage, staticFiles embed.FS) (
 	matchSrv := matchService.NewService(conns, &em, matchRepo, matchLogger)
 	matchHandler := matchhandler.New(conns, &em, matchSrv, matchLogger)
 
-	chatHandler := chathandler.New(conns, &em, logger.WithField("package", "chat"))
+	chatLogger := logger.WithField("package", "chat")
+	chatSrv := chatService.NewService(conns, &em, chatRepo, chatLogger)
+	chatHandler := chathandler.New(conns, &em, chatSrv, chatLogger)
+
 	routes := []route{
 		// infra
 		route{

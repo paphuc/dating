@@ -6,6 +6,7 @@ import (
 
 	"dating/internal/app/config"
 	"dating/internal/pkg/glog"
+	"dating/internal/pkg/respond"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/websocket"
@@ -28,28 +29,34 @@ var (
 )
 
 // New returns new res api match handler
-func New(c *config.Configs, e *config.ErrorMessage, l glog.Logger) *Handler {
+func New(c *config.Configs, e *config.ErrorMessage, s service, l glog.Logger) *Handler {
 	return &Handler{
-		conf: c,
-		em:   e,
-		// srv:    s,
+		conf:   c,
+		em:     e,
+		srv:    s,
 		logger: l,
 	}
 }
 
 var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
 // Put handler post insert match HTTP request
 func (h *Handler) WS(w http.ResponseWriter, r *http.Request) {
 
+	// fmt.Printf("w's type is %T\n", w)
+	matchedParameter := r.URL.Query().Get("room")
+
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		h.logger.Errorc(r.Context(), err.Error())
+		h.logger.Errorf(err.Error())
 	}
-	fmt.Println(ws)
 
-	defer ws.Close()
+	fmt.Println("New Client joined the hub!")
+	fmt.Println(ws)
+	fmt.Println(matchedParameter)
+	respond.JSON(w, http.StatusOK, nil)
 }
