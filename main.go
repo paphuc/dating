@@ -2,20 +2,22 @@ package main
 
 import (
 	"context"
-	"flag"
-	"fmt"
-	"net/http"
-	"os"
-	"os/signal"
-"embed"
 	"dating/internal/app/api"
 	"dating/internal/app/config"
 	envconfig "dating/internal/pkg/config/env"
 	"dating/internal/pkg/glog"
 	"dating/internal/pkg/health"
+	"embed"
+	"flag"
+	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
 )
+
 //go:embed swagger-ui/* swagger-ui/dating-api.yaml
 var staticFiles embed.FS
+
 func main() {
 	logger := glog.New()
 	stage := flag.String("stage", "dev", "set working environment")
