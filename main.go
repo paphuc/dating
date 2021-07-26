@@ -2,17 +2,16 @@ package main
 
 import (
 	"context"
-	"flag"
-	"fmt"
-	"net/http"
-	"os"
-	"os/signal"
-
 	"dating/internal/app/api"
 	"dating/internal/app/config"
 	envconfig "dating/internal/pkg/config/env"
 	"dating/internal/pkg/glog"
 	"dating/internal/pkg/health"
+	"flag"
+	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
 )
 
 func main() {
@@ -35,8 +34,8 @@ func main() {
 
 	var mongoConf config.MongoDB
 	envconfig.Load(&mongoConf)
-	if mongoConf.Addresses != nil {
-		conf.Database.Mongo.Addresses = mongoConf.Addresses
+	if mongoConf.Address != "" {
+		conf.Database.Mongo.Address = mongoConf.Address
 	}
 
 	if mongoConf.Database != "" {

@@ -1,0 +1,494 @@
+swagger: "2.0"
+info:
+  description: "This is a sample server Dating server."
+  version: "1.0.0"
+  title: "Swagger Dating"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "apiteam@swagger.io"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost:8080"
+tags:
+- name: "user"
+  description: "Operations about user"
+- name: "matches"
+  description: "Operations about match"
+schemes:
+- "http"
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+paths:
+  /signup:
+    post:
+      tags:
+      - "user"
+      summary: "Register user"
+      description: "Help to register a user"
+      operationId: "Signup User"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Register user object"
+        required: true
+        schema:
+          $ref: "#/definitions/RegisterUserRequest"
+      responses:
+        "200":
+          schema:
+            $ref: "#/definitions/RegisterLoginUserResponse"
+          description: "Invalid user supplied"
+        "409":
+          description: "StatusConflict"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "Not found"
+  /login:
+    post:
+      tags:
+      - "user"
+      summary: "Login user"
+      description: "Help to login, return token"
+      operationId: "Login User"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Login user object"
+        required: true
+        schema:
+          $ref: "#/definitions/LoginUserRequest"
+      responses:
+        "200":
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+          description: "update completed"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "not found"
+  /users:
+    put:
+      security:
+        - Bearer: []
+      tags:
+      - "user"
+      summary: "update user"
+      description: "This can only be done by the logged in user."
+      operationId: "updateUser"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "update user object"
+        required: true
+        schema:
+          $ref: "#/definitions/UpdateUserRequest"
+      responses:
+        "200":
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+          description: "Invalid user supplied"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "Not Found"
+    get:
+      security:
+      - Bearer: []
+      tags:
+      - "user"
+      summary: "get list users"
+      description: "This can only be done by the logged in user."
+      operationId: "Get list users"
+      parameters:
+      - name: "page"
+        in: "query"
+        description: "page number"
+        type: "integer" 
+      - name: "size"
+        in: "query"
+        description: "number users in a page"
+        type: "integer"
+      - name: "minAge"
+        in: "query"
+        description: "minAge users"
+        type: "integer" 
+      - name: "maxAge"
+        in: "query"
+        description: "maxAge users"
+        type: "integer" 
+      - name: "gender"
+        in: "query"
+        type: "string"
+        description: "gender user"
+        enum:
+        - "Male"
+        - "Female"
+        - "Both" 
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          schema:
+            $ref: "#/definitions/GetListUsersResponse"
+          description: "info user"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "Not Found"
+  /users/{idUsers}:
+    get:
+      security:
+        - Bearer: []
+      tags:
+      - "user"
+      summary: "get user"
+      description: "This can only be done by the logged in user."
+      operationId: "Get User"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "idUsers"
+        in: "path"
+        description: "The id user for get"
+        required: true
+        type: "string" 
+      responses:
+        "200":
+          schema:
+            $ref: "#/definitions/UserInfoRequest"
+          description: "info user"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "Not Found"
+  /users/{idUsers}/matches:
+    get:
+      security:
+        - Bearer: []
+      tags:
+      - "user"
+      summary: "get list user matched/liked"
+      description: "This can only be done by the logged in user."
+      operationId: "get list users matched/liked"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "idUsers"
+        in: "path"
+        description: "The id user for get"
+        required: true
+        type: "string" 
+      - name: "matched"
+        in: "query"
+        description: "true - get list matched / false - get list liked"
+        required: true
+        type: "boolean" 
+      responses:
+        "200":
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/UserInfoRequest"
+          description: "info user"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "Not Found"
+  /users/{idUsers}/disable:
+    patch: 
+      security:
+        - Bearer: []
+      tags:
+      - "user"
+      summary: "Enable/Disable account"
+      description: "This can only be done by the logged in user."
+      operationId: "Enable/Disable account"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "idUsers"
+        in: "path"
+        description: "The id user for get"
+        required: true
+        type: "string" 
+      - in: "body"
+        name: "body"
+        description: "DisableRequest obj"
+        required: true
+        schema:
+          $ref: "#/definitions/DisableRequest"
+      responses:
+        "200":
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+          description: "Enable/Disable completed!"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "Not Found"
+  /matches:
+    post:
+      security:
+        - Bearer: []
+      tags:
+      - "matches"
+      summary: "match/like someone"
+      description: "This can only be done by the logged in user."
+      operationId: "post match"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "match object"
+        required: true
+        schema:
+          $ref: "#/definitions/MatchRequest"
+      responses:
+        "200":
+          schema:
+            $ref: "#/definitions/MatchResponse"
+          description: "match/like completed"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "not found"
+    delete:
+      security:
+        - Bearer: []
+      tags:
+      - "matches"
+      summary: "unmatch/unlike someone"
+      description: "This can only be done by the logged in user."
+      operationId: "del match"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "match object"
+        required: true
+        schema:
+          $ref: "#/definitions/DelMatchRequest"
+      responses:
+        "200":
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+          description: "unmatch/unlike completed"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "not found"
+definitions:
+  RegisterUserRequest:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      email:
+        type: "string"
+      password:
+        type: "string"
+    xml:
+      name: "User"
+  LoginUserRequest:
+    type: "object"
+    properties:
+      email:
+        type: "string"
+      password:
+        type: "string"
+    xml:
+      name: "User"
+  RegisterLoginUserResponse:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      email:
+        type: "string"
+      token:
+        type: "string"
+  UpdateUserRequest:
+    type: "object"
+    properties:
+      _id: 
+        type: "string"
+      name:
+        type: "string"
+      birthday:
+        type: "string"
+        format: "date-time"
+      gender:
+        type: "string"
+        description: "gender user"
+        enum:
+        - "Male"
+        - "Female"
+        - "Both"
+      media:
+        type: "array"
+        items:
+          type: "string"
+      hobby:
+        type: "array"
+        items:
+          type: "string"
+      sex:
+        type: "string"
+      country:
+        type: "string"
+      relationship:
+        type: "string"
+      looking_for:
+        type: "string"
+      about:
+        type: "string"
+    xml:
+      name: "User"
+  UserInfoRequest:
+    type: "object"
+    properties:
+      _id: 
+        type: "string"
+      name:
+        type: "string"
+      email:
+        type: "string"
+      birthday:
+        type: "string"
+        format: "date-time"
+      gender:
+        type: "string"
+        description: "gender user"
+        enum:
+        - "Male"
+        - "Female"
+        - "Both"
+      media:
+        type: "array"
+        items:
+          type: "string"
+      hobby:
+        type: "array"
+        items:
+          type: "string"
+      sex:
+        type: "string"
+      country:
+        type: "string"
+      relationship:
+        type: "string"
+      looking_for:
+        type: "string"
+      about:
+        type: "string"
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+    xml:
+      name: "User"
+  GetListUsersResponse:
+    type: "object"
+    properties:
+      totalItems: 
+        type: "integer"
+      totalPages: 
+        type: "integer"
+      maxItemsPerPage: 
+        type: "integer"
+      listUsers: 
+        type: array
+        items:
+          $ref: "#/definitions/UserInfoRequest"
+  MatchRequest:
+    type: "object"
+    properties:
+      user_id: 
+        type: "string"
+      target_user_id: 
+        type: "string"
+  MatchResponse:
+    type: "object"
+    properties:
+      _id: 
+        type: "string"
+      user_id: 
+        type: "string"
+      matched: 
+        type: "boolean"
+      target_user_id: 
+        type: "string"
+  DelMatchRequest:
+    type: "object"
+    properties:
+      user_id: 
+        type: "string"
+      target_user_id: 
+        type: "string"
+      matched: 
+        type: "boolean"
+  DisableRequest:
+    type: "object"
+    properties:
+      disable: 
+        type: "boolean"
+  SuccessResponse:
+    type: "object"
+    properties:
+      code:
+        type: "string"
+      message:
+        type: "string"
+  ErrorResponse:
+    type: "object"
+    properties:
+      code:
+        type: "string"
+      message:
+        type: "string"
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"
