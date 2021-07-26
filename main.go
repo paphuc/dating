@@ -2,17 +2,18 @@ package main
 
 import (
 	"context"
-	"dating/internal/app/api"
-	"dating/internal/app/config"
-	envconfig "dating/internal/pkg/config/env"
-	"dating/internal/pkg/glog"
-	"dating/internal/pkg/health"
 	"embed"
 	"flag"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
+
+	"dating/internal/app/api"
+	"dating/internal/app/config"
+	envconfig "dating/internal/pkg/config/env"
+	"dating/internal/pkg/glog"
+	"dating/internal/pkg/health"
 )
 
 //go:embed swagger-ui/* swagger-ui/dating-api.yaml

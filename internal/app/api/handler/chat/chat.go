@@ -1,19 +1,23 @@
 package chathandler
 
 import (
-	"fmt"
+	"context"
 	"net/http"
 
+	"dating/internal/app/api/types"
 	"dating/internal/app/config"
 	"dating/internal/pkg/glog"
 	"dating/internal/pkg/respond"
+	socket "dating/internal/pkg/socket"
 
-	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
 
 type (
 	service interface {
+		ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoom string)
+		GetMessagesByIdRoom(ctx context.Context, id string) ([]types.Message, error)
 	}
 	// Handler is match web handler
 	Handler struct {
@@ -25,11 +29,25 @@ type (
 )
 
 var (
-	validate = validator.New()
+	wsServer = socket.NewWebsocketServer()
+
+	socketBufferSize  = 1024
+	messageBufferSize = 256
+
+	upgrader = &websocket.Upgrader{
+		ReadBufferSize:  socketBufferSize,
+		WriteBufferSize: socketBufferSize,
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
 )
 
-// New returns new res api match handler
+// New returns new res api chat handler
 func New(c *config.Configs, e *config.ErrorMessage, s service, l glog.Logger) *Handler {
+
+	go wsServer.Run()
+
 	return &Handler{
 		conf:   c,
 		em:     e,
@@ -38,25 +56,29 @@ func New(c *config.Configs, e *config.ErrorMessage, s service, l glog.Logger) *H
 	}
 }
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
+// Put handler server chat socket HTTP request
+func (h *Handler) ServeWs(w http.ResponseWriter, r *http.Request) {
+	idRoom := r.URL.Query().Get("id")
+	conn, err := upgrader.Upgrade(w, r, nil)
 
-// Put handler post insert match HTTP request
-func (h *Handler) WS(w http.ResponseWriter, r *http.Request) {
-
-	// fmt.Printf("w's type is %T\n", w)
-	matchedParameter := r.URL.Query().Get("room")
-
-	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		h.logger.Errorf(err.Error())
+		h.logger.Errorf("Can't create ServeWs for client", err.Error())
+		return
 	}
 
-	fmt.Println("New Client joined the hub!")
-	fmt.Println(ws)
-	fmt.Println(matchedParameter)
-	respond.JSON(w, http.StatusOK, nil)
+	h.srv.ServeWs(wsServer, conn, idRoom)
+
+	h.logger.Infof("New Client joined the room!" + idRoom)
+}
+
+// Put handler get list message of room
+func (h *Handler) GetMessagesByIdRoom(w http.ResponseWriter, r *http.Request) {
+
+	messagesList, err := h.srv.GetMessagesByIdRoom(r.Context(), mux.Vars(r)["id"])
+	if err != nil {
+		respond.JSON(w, http.StatusInternalServerError, h.em.InvalidValue.Request)
+		return
+	}
+
+	respond.JSON(w, http.StatusOK, messagesList)
 }

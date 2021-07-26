@@ -42,12 +42,11 @@ type (
 )
 
 const (
-	get     = http.MethodGet
-	post    = http.MethodPost
-	put     = http.MethodPut
-	delete  = http.MethodDelete
-	patch   = http.MethodPatch
-	connect = http.MethodConnect
+	get    = http.MethodGet
+	post   = http.MethodPost
+	put    = http.MethodPut
+	delete = http.MethodDelete
+	patch  = http.MethodPatch
 )
 
 var staticFiles embed.FS
@@ -58,7 +57,9 @@ func Init(conns *config.Configs, em config.ErrorMessage, staticFiles embed.FS) (
 
 	var userRepo userService.Repository
 	var matchRepo matchService.Repository
+
 	var chatRepo chatService.Repository
+
 	switch conns.Database.Type {
 	case db.TypeMongoDB:
 		s, err := config.Dial(&conns.Database.Mongo, logger)
@@ -67,7 +68,9 @@ func Init(conns *config.Configs, em config.ErrorMessage, staticFiles embed.FS) (
 		}
 		userRepo = user.NewMongoRepository(s)
 		matchRepo = match.NewMongoRepository(s)
+
 		chatRepo = chat.NewMongoRepository(s)
+
 	default:
 		panic("database type not supported: " + conns.Database.Type)
 	}
@@ -147,7 +150,19 @@ func Init(conns *config.Configs, em config.ErrorMessage, staticFiles embed.FS) (
 		route{
 			path:    "/ws",
 			method:  get,
-			handler: chatHandler.WS,
+			handler: chatHandler.ServeWs,
+		},
+		route{
+			path:        "/matches/{id:[a-z0-9-\\-]+}",
+			method:      get,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     matchHandler.GetRoomsByUserId,
+		},
+		route{
+			path:        "/message/{id:[a-z0-9-\\-]+}",
+			method:      get,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     chatHandler.GetMessagesByIdRoom,
 		},
 	}
 
