@@ -22,7 +22,7 @@ func Auth(h http.HandlerFunc, em *config.ErrorMessage) http.HandlerFunc {
 		_, err := auth.IsAuthorized(tokenpath)
 
 		if err != nil {
-			logger.Infof("Not authorized, error: ", err)
+			logger.Errorf("Not authorized, error: ", err)
 			respond.JSON(w, http.StatusUnauthorized, &em.InvalidValue.FailedAuthentication)
 			return
 		}

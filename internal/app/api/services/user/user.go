@@ -122,12 +122,6 @@ func (s *Service) Login(ctx context.Context, UserLogin types.UserLogin) (*types.
 func (s *Service) FindUserById(ctx context.Context, id string) (*types.UserResGetInfo, error) {
 	var user *types.UserResGetInfo
 
-	// //check id correct
-	// if !bson.IsObjectIdHex(id) {
-	// 	s.logger.Errorf("Id user incorrect,it isn't ObjectIdHex")
-	// 	return nil, errors.New("Id incorrect to find the given user from database, it isn't ObjectIdHex")
-	// }
-
 	user, err := s.repo.FindByID(ctx, id)
 
 	if err != nil {
@@ -224,11 +218,6 @@ func (s *Service) GetMatchedUsersByID(ctx context.Context, idUser, matchedParame
 		return nil, errors.Wrap(err, "Failed url parameters when get list users")
 	}
 
-	// if !bson.IsObjectIdHex(idUser) {
-	// 	s.logger.Errorf("Id user incorrect,it isn't ObjectIdHex")
-	// 	return nil, errors.New("Id user incorrect to find list liked from database, it isn't ObjectIdHex")
-	// }
-
 	if matched {
 		list, err := s.listMatched(ctx, idUser)
 		s.logger.Infof("Get list matched completed", idUser)
@@ -253,12 +242,6 @@ func (s *Service) convertPointerArrayToArray(list []*types.UserResGetInfo) []typ
 // helps Enable/Disable account
 func (s *Service) DisableUserByID(ctx context.Context, idUser string, disable bool) error {
 
-	// if !bson.IsObjectIdHex(idUser) {
-	// 	s.logger.Errorf("Id user incorrect,it isn't ObjectIdHex")
-	// 	return errors.New("Id user incorrect to find list liked from database, it isn't ObjectIdHex")
-	// }
-
-	// disableStr := strconv.FormatBool(disable)
 	if err := s.repo.DisableUserByID(ctx, idUser, disable); err != nil {
 		s.logger.Errorf("Set disable to %d for user %s failed", disable, idUser, err)
 		return err
