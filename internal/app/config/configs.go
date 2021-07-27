@@ -107,7 +107,6 @@ func Dial(conf *MongoDB, logger glog.Logger) (*mongo.Client, error) {
 	defer cancel()
 	// Set client options
 	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb+srv://%s", conf.Address))
-
 	// Connect to MongoDB
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {

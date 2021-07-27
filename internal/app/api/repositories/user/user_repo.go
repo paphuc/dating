@@ -68,7 +68,7 @@ func (r *MongoRepository) UpdateUserByID(ctx context.Context, user types.User) e
 		"updated_at":   time.Now(),
 	}}
 
-	_, err := r.collection().UpdateOne(ctx, types.User{ID: user.ID}, updatedUser)
+	_, err := r.collection().UpdateByID(ctx, user.ID, updatedUser)
 	return err
 }
 
@@ -81,7 +81,7 @@ func (r *MongoRepository) DisableUserByID(ctx context.Context, idUser string, di
 	disableUpdate := bson.M{"$set": bson.M{
 		"disable": disable,
 	}}
-	_, err = r.collection().UpdateOne(ctx, types.User{ID: userID}, disableUpdate)
+	_, err = r.collection().UpdateByID(ctx, userID, disableUpdate)
 	return err
 }
 
