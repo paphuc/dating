@@ -15,8 +15,8 @@ tags:
   description: "Operations about user"
 - name: "matches"
   description: "Operations about match"
-- name: "chat"
-  description: "Operations about chat"
+- name: "messages"
+  description: "Operations about messages"
 schemes:
 - "http"
 securityDefinitions:
@@ -320,7 +320,7 @@ paths:
             $ref: "#/definitions/ErrorResponse"
         "404":
           description: "not found"
-  /matches/{idRoom}:
+  /matches/{idUser}:
     get: 
       security:
         - Bearer: []
@@ -332,9 +332,9 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "idRoom"
+      - name: "idUser"
         in: "path"
-        description: "The id room for get"
+        description: "The id User for get"
         required: true
         type: "string" 
       responses:
@@ -348,21 +348,21 @@ paths:
             $ref: "#/definitions/ErrorResponse"
         "404":
           description: "Not Found"    
-  /message/{idUser}:
+  /messages/{idRoom}:
     get: 
       security:
         - Bearer: []
       tags:
-      - "chat"
+      - "messages"
       summary: "Get message chat account"
       description: "This can only be done by the logged in user."
       operationId: "Get message chat account"
       produces:
       - "application/json"
       parameters:
-      - name: "idUser"
+      - name: "idRoom"
         in: "path"
-        description: "The id idUser for get"
+        description: "The id Room for get"
         required: true
         type: "string" 
       responses:
