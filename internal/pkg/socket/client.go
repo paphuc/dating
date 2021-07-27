@@ -49,7 +49,7 @@ func (c *Client) Write(logger glog.Logger) {
 	for msg := range c.send {
 		err := c.conn.WriteJSON(msg)
 		if err != nil {
-			logger.Errorf("Failed when write message from room %d, client %d", c.RoomId, c.ID, msg)
+			logger.Errorf("Failed when write message from room %d, client %d", c.RoomId, c.ID, msg, err)
 			return
 		}
 	}

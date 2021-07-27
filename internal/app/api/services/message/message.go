@@ -1,4 +1,4 @@
-package chatservices
+package messageservices
 
 import (
 	"context"
@@ -13,13 +13,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Repository is an interface of a chat repository
+// Repository is an interface of a message repository
 type Repository interface {
 	Insert(ctx context.Context, message types.Message) error
 	FindByIDRoom(ctx context.Context, id string) ([]*types.Message, error)
 }
 
-// Service is an chat service
+// Service is an message service
 type Service struct {
 	conf   *config.Configs
 	em     *config.ErrorMessage
@@ -27,7 +27,7 @@ type Service struct {
 	logger glog.Logger
 }
 
-// NewService returns a new chat service
+// NewService returns a new message service
 func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.Logger) *Service {
 	return &Service{
 		conf:   c,
@@ -37,7 +37,7 @@ func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.
 	}
 }
 
-// method help join client into room chat server
+// method help join client into room message server
 func (s *Service) ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoom string) {
 
 	saveMessagesChan := socket.NewSaveMessageChan(s.repo)
@@ -57,7 +57,7 @@ func (s *Service) ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoo
 
 }
 
-// method help join client into room chat server
+// method help join client into room message server
 func (s *Service) GetMessagesByIdRoom(ctx context.Context, id string) ([]types.Message, error) {
 
 	listMessages, err := s.repo.FindByIDRoom(ctx, id)

@@ -1,4 +1,4 @@
-package chathandler
+package messagehandler
 
 import (
 	"context"
@@ -19,7 +19,7 @@ type (
 		ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoom string)
 		GetMessagesByIdRoom(ctx context.Context, id string) ([]types.Message, error)
 	}
-	// Handler is match web handler
+	// Handler is message web handler
 	Handler struct {
 		conf   *config.Configs
 		em     *config.ErrorMessage
@@ -31,7 +31,7 @@ type (
 var (
 	wsServer = socket.NewWebsocketServer()
 
-	socketBufferSize  = 1024
+	socketBufferSize  = 2048
 	messageBufferSize = 256
 
 	upgrader = &websocket.Upgrader{
@@ -43,7 +43,7 @@ var (
 	}
 )
 
-// New returns new res api chat handler
+// New returns new res api message handler
 func New(c *config.Configs, e *config.ErrorMessage, s service, l glog.Logger) *Handler {
 
 	go wsServer.Run()
@@ -56,7 +56,7 @@ func New(c *config.Configs, e *config.ErrorMessage, s service, l glog.Logger) *H
 	}
 }
 
-// Put handler server chat socket HTTP request
+// Put handler server message socket HTTP request
 func (h *Handler) ServeWs(w http.ResponseWriter, r *http.Request) {
 	idRoom := r.URL.Query().Get("id")
 	conn, err := upgrader.Upgrade(w, r, nil)

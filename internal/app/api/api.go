@@ -11,9 +11,9 @@ import (
 	match "dating/internal/app/api/repositories/match"
 	matchService "dating/internal/app/api/services/match"
 
-	chathandler "dating/internal/app/api/handler/chat"
-	chat "dating/internal/app/api/repositories/chat"
-	chatService "dating/internal/app/api/services/chat"
+	messagehandler "dating/internal/app/api/handler/message"
+	message "dating/internal/app/api/repositories/message"
+	messageService "dating/internal/app/api/services/message"
 
 	"dating/internal/app/config"
 	"dating/internal/app/db"
@@ -55,7 +55,7 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 	var userRepo userService.Repository
 	var matchRepo matchService.Repository
 
-	var chatRepo chatService.Repository
+	var messageRepo messageService.Repository
 
 	switch conns.Database.Type {
 	case db.TypeMongoDB:
@@ -66,7 +66,7 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 		userRepo = user.NewMongoRepository(s)
 		matchRepo = match.NewMongoRepository(s)
 
-		chatRepo = chat.NewMongoRepository(s)
+		messageRepo = message.NewMongoRepository(s)
 
 	default:
 		panic("database type not supported: " + conns.Database.Type)
@@ -80,9 +80,9 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 	matchSrv := matchService.NewService(conns, &em, matchRepo, matchLogger)
 	matchHandler := matchhandler.New(conns, &em, matchSrv, matchLogger)
 
-	chatLogger := logger.WithField("package", "chat")
-	chatSrv := chatService.NewService(conns, &em, chatRepo, chatLogger)
-	chatHandler := chathandler.New(conns, &em, chatSrv, chatLogger)
+	messageLogger := logger.WithField("package", "chat")
+	messageSrv := messageService.NewService(conns, &em, messageRepo, messageLogger)
+	messageHandler := messagehandler.New(conns, &em, messageSrv, messageLogger)
 
 	routes := []route{
 		// infra
@@ -147,7 +147,7 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 		route{
 			path:    "/ws",
 			method:  get,
-			handler: chatHandler.ServeWs,
+			handler: messageHandler.ServeWs,
 		},
 		route{
 			path:        "/matches/{id:[a-z0-9-\\-]+}",
@@ -156,10 +156,10 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			handler:     matchHandler.GetRoomsByUserId,
 		},
 		route{
-			path:        "/message/{id:[a-z0-9-\\-]+}",
+			path:        "/messages/{id:[a-z0-9-\\-]+}",
 			method:      get,
 			middlewares: []middlewareFunc{middleware.Auth},
-			handler:     chatHandler.GetMessagesByIdRoom,
+			handler:     messageHandler.GetMessagesByIdRoom,
 		},
 	}
 

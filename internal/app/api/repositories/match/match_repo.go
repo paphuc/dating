@@ -216,7 +216,7 @@ func (r *MongoRepository) GetListMatched(ctx context.Context, idUser string) ([]
 	return match, err
 }
 
-// This method helps get message by id room
+// This method helps find rooms by user id
 func (r *MongoRepository) FindRoomsByUserId(ctx context.Context, idUser string) ([]*types.MatchRoomResponse, error) {
 
 	objectID, err := primitive.ObjectIDFromHex(idUser)
