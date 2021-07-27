@@ -11,6 +11,7 @@ import (
 	"dating/internal/pkg/jwt"
 
 	"github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Repository is an interface of a user repository
@@ -55,10 +56,13 @@ func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*typ
 	UserSignUp.Password, _ = jwt.HashPassword(UserSignUp.Password)
 
 	user := types.User{
+		ID:       primitive.NewObjectID(),
 		Name:     UserSignUp.Name,
 		Email:    UserSignUp.Email,
 		Password: UserSignUp.Password,
 		Disable:  false,
+		Media:    []string{},
+		Hobby:    []string{},
 		CreateAt: time.Now(),
 		UpdateAt: time.Now()}
 
