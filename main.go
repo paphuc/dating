@@ -2,16 +2,17 @@ package main
 
 import (
 	"context"
-	"dating/internal/app/api"
-	"dating/internal/app/config"
-	envconfig "dating/internal/pkg/config/env"
-	"dating/internal/pkg/glog"
-	"dating/internal/pkg/health"
 	"flag"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
+
+	"dating/internal/app/api"
+	"dating/internal/app/config"
+	envconfig "dating/internal/pkg/config/env"
+	"dating/internal/pkg/glog"
+	"dating/internal/pkg/health"
 )
 
 func main() {

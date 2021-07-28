@@ -11,6 +11,10 @@ import (
 	match "dating/internal/app/api/repositories/match"
 	matchService "dating/internal/app/api/services/match"
 
+	messagehandler "dating/internal/app/api/handler/message"
+	message "dating/internal/app/api/repositories/message"
+	messageService "dating/internal/app/api/services/message"
+
 	"dating/internal/app/config"
 	"dating/internal/app/db"
 	"dating/internal/pkg/glog"
@@ -50,6 +54,9 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 
 	var userRepo userService.Repository
 	var matchRepo matchService.Repository
+
+	var messageRepo messageService.Repository
+
 	switch conns.Database.Type {
 	case db.TypeMongoDB:
 		s, err := config.Dial(&conns.Database.Mongo, logger)
@@ -58,6 +65,9 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 		}
 		userRepo = user.NewMongoRepository(s)
 		matchRepo = match.NewMongoRepository(s)
+
+		messageRepo = message.NewMongoRepository(s)
+
 	default:
 		panic("database type not supported: " + conns.Database.Type)
 	}
@@ -69,6 +79,10 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 	matchLogger := logger.WithField("package", "match")
 	matchSrv := matchService.NewService(conns, &em, matchRepo, matchLogger)
 	matchHandler := matchhandler.New(conns, &em, matchSrv, matchLogger)
+
+	messageLogger := logger.WithField("package", "chat")
+	messageSrv := messageService.NewService(conns, &em, messageRepo, messageLogger)
+	messageHandler := messagehandler.New(conns, &em, messageSrv, messageLogger)
 
 	routes := []route{
 		// infra
@@ -129,6 +143,23 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			method:      patch,
 			middlewares: []middlewareFunc{middleware.Auth},
 			handler:     userHandler.DisableUsersByID,
+		},
+		route{
+			path:    "/ws",
+			method:  get,
+			handler: messageHandler.ServeWs,
+		},
+		route{
+			path:        "/matches/{id:[a-z0-9-\\-]+}",
+			method:      get,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     matchHandler.GetRoomsByUserId,
+		},
+		route{
+			path:        "/messages/{id:[a-z0-9-\\-]+}",
+			method:      get,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     messageHandler.GetMessagesByIdRoom,
 		},
 	}
 

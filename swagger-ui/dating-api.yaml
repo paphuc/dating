@@ -9,12 +9,14 @@ info:
   license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "localhost:8080"
+host: "https://dating-tma.herokuapp.com/"
 tags:
 - name: "user"
   description: "Operations about user"
 - name: "matches"
   description: "Operations about match"
+- name: "messages"
+  description: "Operations about messages"
 schemes:
 - "http"
 securityDefinitions:
@@ -318,6 +320,65 @@ paths:
             $ref: "#/definitions/ErrorResponse"
         "404":
           description: "not found"
+  /matches/{idUser}:
+    get: 
+      security:
+        - Bearer: []
+      tags:
+      - "matches"
+      summary: "Get list Room chat account"
+      description: "This can only be done by the logged in user."
+      operationId: "Get list Room chat account"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "idUser"
+        in: "path"
+        description: "The id User for get"
+        required: true
+        type: "string" 
+      responses:
+        "200":
+          schema:
+            $ref: "#/definitions/MatchesRoomResponse"
+          description: "Get list Room chat account"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "Not Found"    
+  /messages/{idRoom}:
+    get: 
+      security:
+        - Bearer: []
+      tags:
+      - "messages"
+      summary: "Get message chat account"
+      description: "This can only be done by the logged in user."
+      operationId: "Get message chat account"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "idRoom"
+        in: "path"
+        description: "The id Room for get"
+        required: true
+        type: "string" 
+      responses:
+        "200":
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/MessageResponse"
+          description: "Bad Request"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "Not Found"          
+
 definitions:
   RegisterUserRequest:
     type: "object"
@@ -475,6 +536,55 @@ definitions:
     properties:
       disable: 
         type: "boolean"
+        
+  UserResGetInfoInRoom:
+    type: "object"
+    properties:
+      _id: 
+        type: "string"
+      users: 
+        type: "string"
+      avatar: 
+        type: "string"
+      gender:
+        type: "string"
+        description: "gender user"
+        enum:
+        - "Male"
+        - "Female"
+        - "Both"
+      
+  MatchesRoomResponse:
+    type: "object"
+    properties:
+      _id: 
+        type: "string"
+      users:
+        type: array
+        items:
+          $ref: "#/definitions/UserResGetInfoInRoom"
+      last_message: 
+        type: "object"
+        $ref: "#/definitions/MessageResponse"
+      created_at:
+        type: "string"
+        format: "date-time"
+  MessageResponse:
+    type: "object"
+    properties:
+      _id: 
+        type: "string"
+      room_id: 
+        type: "string"
+      sender_id: 
+        type: "string"
+      content: 
+        type: "string"
+      attachments: 
+        type: "string"
+      created_at:
+        type: "string"
+        format: "date-time"
   SuccessResponse:
     type: "object"
     properties:
