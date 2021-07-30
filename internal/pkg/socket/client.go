@@ -40,6 +40,9 @@ func (c *Client) Read(logger glog.Logger) {
 			logger.Errorf("Failed when read message from room %d, client %d", c.RoomId, c.ID, mgs)
 			return
 		}
+		if mgs.Attachments == nil {
+			mgs.Attachments = []string{}
+		}
 		c.handleNewMessage(mgs)
 	}
 }
@@ -67,6 +70,7 @@ func (client *Client) handleNewMessage(jsonMessage *MessageSocket) {
 			jsonMessage.ID = primitive.NewObjectID()
 
 			room.broadcast <- jsonMessage
+
 			sm := &SaveMessage{
 				message: &types.Message{
 					ID:          jsonMessage.ID,
@@ -77,6 +81,7 @@ func (client *Client) handleNewMessage(jsonMessage *MessageSocket) {
 					CreateAt:    jsonMessage.CreateAt,
 				},
 			}
+
 			*client.save <- *sm
 		}
 

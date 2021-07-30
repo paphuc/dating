@@ -11,6 +11,6 @@ type Message struct {
 	RoomID      primitive.ObjectID `json:"room_id" bson:"room_id"`
 	SenderID    primitive.ObjectID `json:"sender_id" bson:"sender_id"`
 	Content     string             `json:"content" bson:"content"`
-	Attachments string             `json:"attachments" bson:"attachments"`
+	Attachments []string           `json:"attachments" bson:"attachments"`
 	CreateAt    time.Time          `json:"created_at" bson:"created_at"`
 }
