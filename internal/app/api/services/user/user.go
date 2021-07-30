@@ -187,7 +187,7 @@ func (s *Service) GetListUsers(ctx context.Context, page, size, minAge, maxAge, 
 		return nil, errors.Wrap(err, "Failed when get list users by page")
 	}
 
-	listUsersResponse.Content = append(listUsersResponse.Content, listUsers...)
+	listUsersResponse.Content = append(listUsersResponse.Content, s.convertPointerArrayToArray(listUsers)...)
 	listUsersResponse.Filter = pagingNSorting.Filter
 	s.logger.Infof("get list users by page is completed, page: ", pagingNSorting)
 
@@ -213,24 +213,24 @@ func (s *Service) listMatched(ctx context.Context, userID string) ([]types.UserR
 }
 
 // get list matched or liked
-func (s *Service) GetMatchedUsersByID(ctx context.Context, idUser, matchedParameter string) ([]types.UserResGetInfo, error) {
+func (s *Service) GetMatchedUsersByID(ctx context.Context, idUser, matchedParameter string) (types.ListUsersResponse, error) {
 
 	matched, err := strconv.ParseBool(matchedParameter)
 
 	if err != nil {
 		s.logger.Errorf("Failed url parameters when get list matched or like", err)
-		return nil, errors.Wrap(err, "Failed url parameters when get list users")
+		return types.ListUsersResponse{}, errors.Wrap(err, "Failed url parameters when get list users")
 	}
 
 	if matched {
 		list, err := s.listMatched(ctx, idUser)
 		s.logger.Infof("Get list matched completed", idUser)
-		return list, err
+		return types.ListUsersResponse{Content: list}, err
 	}
 
 	list, err := s.listLiked(ctx, idUser)
 	s.logger.Infof("Get list liked completed", idUser)
-	return list, err
+	return types.ListUsersResponse{Content: list}, err
 }
 
 // convert []*types.UserResGetInfo to []types.UserResGetInfo - if empty return []

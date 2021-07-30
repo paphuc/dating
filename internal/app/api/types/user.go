@@ -58,11 +58,14 @@ type UserResponseSignUp struct {
 	Email string `json:"email"`
 	Token string `json:"token"`
 }
-
+type ListUsersResponse struct {
+	Content []UserResGetInfo `json:"content"`
+}
 type GetListUsersResponse struct {
 	Pagination
-	Content []*UserResGetInfo `json:"content"`
+	ListUsersResponse
 }
+
 type UserLogin struct {
 	Email    string `json:"email" bson:"email" validate:"required,email"`
 	Password string `json:"password" bson:"password" validate:"required"`
