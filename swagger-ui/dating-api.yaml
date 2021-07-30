@@ -9,7 +9,7 @@ info:
   license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "localhost:8080"
+host: "dating-tma.herokuapp.com"
 tags:
 - name: "user"
   description: "Operations about user"
@@ -18,7 +18,7 @@ tags:
 - name: "messages"
   description: "Operations about messages"
 schemes:
-- "http"
+- "https"
 securityDefinitions:
   Bearer:
     type: apiKey
@@ -583,7 +583,9 @@ definitions:
       content: 
         type: "string"
       attachments: 
-        type: "string"
+        type: "array"
+        items:
+          type: "string"
       created_at:
         type: "string"
         format: "date-time"
