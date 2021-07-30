@@ -9,7 +9,7 @@ info:
   license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "https://dating-tma.herokuapp.com/"
+host: "localhost:8080"
 tags:
 - name: "user"
   description: "Operations about user"
@@ -483,6 +483,8 @@ definitions:
         type: "string"
       about:
         type: "string"
+      disable:
+        type: "boolean"
       created_at:
         type: "string"
         format: "date-time"
@@ -500,7 +502,7 @@ definitions:
         type: "integer"
       maxItemsPerPage: 
         type: "integer"
-      listUsers: 
+      content: 
         type: array
         items:
           $ref: "#/definitions/UserInfoRequest"

@@ -187,7 +187,7 @@ func (s *Service) GetListUsers(ctx context.Context, page, size, minAge, maxAge, 
 		return nil, errors.Wrap(err, "Failed when get list users by page")
 	}
 
-	listUsersResponse.ListUsers = append(listUsersResponse.ListUsers, listUsers...)
+	listUsersResponse.Content = append(listUsersResponse.Content, listUsers...)
 	listUsersResponse.Filter = pagingNSorting.Filter
 	s.logger.Infof("get list users by page is completed, page: ", pagingNSorting)
 

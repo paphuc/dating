@@ -38,6 +38,7 @@ type UserResGetInfo struct {
 	Country      string             `json:"country" bson:"country" validate:"omitempty,max=60"`
 	Hobby        []string           `json:"hobby" bson:"hobby"`
 	About        string             `json:"about" bson:"about" validate:"omitempty,max=256"`
+	Disable      bool               `json:"disable" bson:"disable"`
 	CreateAt     time.Time          `json:"created_at" bson:"created_at"`
 	UpdateAt     time.Time          `json:"updated_at" bson:"updated_at"`
 }
@@ -60,7 +61,7 @@ type UserResponseSignUp struct {
 
 type GetListUsersResponse struct {
 	Pagination
-	ListUsers []*UserResGetInfo `json:"listUsers"`
+	Content []*UserResGetInfo `json:"content"`
 }
 type UserLogin struct {
 	Email    string `json:"email" bson:"email" validate:"required,email"`
