@@ -124,8 +124,8 @@ func (r *MongoRepository) FindAMatchB(ctx context.Context, idUser, idTargetUser 
 	}
 
 	var match *types.Match
-	if err := r.collection().FindOne(ctx, filter).Decode(&match); err == nil {
-		return match, err
+	if err := r.collection().FindOne(ctx, filter).Decode(&match); err != nil {
+		return nil, err
 	}
 
 	return match, err
