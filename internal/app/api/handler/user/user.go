@@ -23,6 +23,7 @@ type (
 		GetListUsers(ctx context.Context, page, size, minAge, maxAge, gender string) (*types.GetListUsersResponse, error)
 		GetMatchedUsersByID(ctx context.Context, idUser, matchedParameter string) (types.ListUsersResponse, error)
 		DisableUserByID(ctx context.Context, idUser string, disable bool) error
+		GetListUsersAvailable(ctx context.Context, id, page, size, minAge, maxAge, gender string) (*types.GetListUsersResponse, error)
 	}
 	// Handler is user web handler
 	Handler struct {
@@ -188,4 +189,23 @@ func (h *Handler) DisableUsersByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond.JSON(w, http.StatusOK, h.em.Success)
+}
+
+// Post handler update information of the user by id
+func (h *Handler) GetListUsersAvailable(w http.ResponseWriter, r *http.Request) {
+
+	pageParameter := r.URL.Query().Get("page")
+	sizeParameter := r.URL.Query().Get("size")
+	minAgeParameter := r.URL.Query().Get("minAge")
+	maxAgeParameter := r.URL.Query().Get("maxAge")
+	genderParameter := r.URL.Query().Get("gender")
+	id := mux.Vars(r)["id"]
+
+	userList, err := h.srv.GetListUsersAvailable(r.Context(), id, pageParameter, sizeParameter, minAgeParameter, maxAgeParameter, genderParameter)
+	if err != nil {
+		respond.JSON(w, http.StatusInternalServerError, h.em.InvalidValue.Request)
+		return
+	}
+
+	respond.JSON(w, http.StatusOK, userList)
 }

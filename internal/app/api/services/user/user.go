@@ -25,6 +25,9 @@ type Repository interface {
 	GetListlikedInfo(ctx context.Context, idUser string) ([]*types.UserResGetInfo, error)
 	GetListMatchedInfo(ctx context.Context, idUser string) ([]*types.UserResGetInfo, error)
 	DisableUserByID(ctx context.Context, idUser string, disable bool) error
+	GetListUsersAvailable(ctx context.Context, ignoreIds []primitive.ObjectID, ps types.PagingNSorting) ([]*types.UserResGetInfo, error)
+	IgnoreIdUsers(ctx context.Context, id string) ([]primitive.ObjectID, error)
+	CountUserUsersAvailable(ctx context.Context, ignoreIds []primitive.ObjectID, ps types.PagingNSorting) (int64, error)
 }
 
 // Service is an user service
@@ -183,13 +186,13 @@ func (s *Service) GetListUsers(ctx context.Context, page, size, minAge, maxAge, 
 	listUsers, err := s.repo.GetListUsers(ctx, pagingNSorting)
 
 	if err != nil {
-		s.logger.Errorf("Failed when get list users by page", err)
+		s.logger.Errorf("Failed when get list users by page  %v", err)
 		return nil, errors.Wrap(err, "Failed when get list users by page")
 	}
 
 	listUsersResponse.Content = append(listUsersResponse.Content, s.convertPointerArrayToArray(listUsers)...)
 	listUsersResponse.Filter = pagingNSorting.Filter
-	s.logger.Infof("get list users by page is completed, page: ", pagingNSorting)
+	s.logger.Infof("get list users by page is completed, page:  %v", pagingNSorting)
 
 	return &listUsersResponse, nil
 }
@@ -218,18 +221,18 @@ func (s *Service) GetMatchedUsersByID(ctx context.Context, idUser, matchedParame
 	matched, err := strconv.ParseBool(matchedParameter)
 
 	if err != nil {
-		s.logger.Errorf("Failed url parameters when get list matched or like", err)
+		s.logger.Errorf("Failed url parameters when get list matched or like  %v", err)
 		return types.ListUsersResponse{}, errors.Wrap(err, "Failed url parameters when get list users")
 	}
 
 	if matched {
 		list, err := s.listMatched(ctx, idUser)
-		s.logger.Infof("Get list matched completed", idUser)
+		s.logger.Infof("Get list matched completed  %v", idUser)
 		return types.ListUsersResponse{Content: list}, err
 	}
 
 	list, err := s.listLiked(ctx, idUser)
-	s.logger.Infof("Get list liked completed", idUser)
+	s.logger.Infof("Get list liked completed  %v", idUser)
 	return types.ListUsersResponse{Content: list}, err
 }
 
@@ -254,4 +257,54 @@ func (s *Service) DisableUserByID(ctx context.Context, idUser string, disable bo
 	s.logger.Infof("Set disable to %d for user %s completed", disable, idUser)
 	return nil
 
+}
+
+// Get list users by page, ignore self and people who had matched, liked
+func (s *Service) GetListUsersAvailable(ctx context.Context, id, page, size, minAge, maxAge, gender string) (*types.GetListUsersResponse, error) {
+
+	var pagingNSorting types.PagingNSorting
+
+	if err := pagingNSorting.Init(page, size, minAge, maxAge, gender); err != nil {
+		s.logger.Errorf("Failed url parameters when get list users  %v", err)
+		return nil, errors.Wrap(err, "Failed url parameters when get list users")
+	}
+
+	ignoreIds, err := s.repo.IgnoreIdUsers(ctx, id)
+	if err != nil {
+		s.logger.Errorf("Failed when get ignoreIds users %v", err)
+		return nil, errors.Wrap(err, "Failed when get ignoreIds users")
+	}
+
+	var listUsersResponse types.GetListUsersResponse
+
+	total, err := s.repo.CountUserUsersAvailable(ctx, ignoreIds, pagingNSorting)
+	if err != nil {
+		s.logger.Errorf("Failed when get number users  %v", err)
+		return nil, errors.Wrap(err, "Failed when get number users")
+	}
+	numberUsers := int(total)
+	listUsersResponse.CurrentPage = pagingNSorting.Page
+	listUsersResponse.MaxItemsPerPage = int(pagingNSorting.Size)
+	listUsersResponse.TotalItems = numberUsers
+	listUsersResponse.TotalPages = int(numberUsers / pagingNSorting.Size)
+	// ex: total: 5, size: 2 => 3 page
+	if numberUsers%pagingNSorting.Size != 0 {
+		listUsersResponse.TotalPages += 1
+	}
+
+	if pagingNSorting.Size > numberUsers {
+		listUsersResponse.MaxItemsPerPage = numberUsers
+	}
+
+	listUsers, err := s.repo.GetListUsersAvailable(ctx, ignoreIds, pagingNSorting)
+	if err != nil {
+		s.logger.Errorf("Failed when get list users by page  %v", err)
+		return nil, errors.Wrap(err, "Failed when get list users by page")
+	}
+
+	listUsersResponse.Content = append(listUsersResponse.Content, s.convertPointerArrayToArray(listUsers)...)
+	listUsersResponse.Filter = pagingNSorting.Filter
+	s.logger.Infof("get list users by page is completed, page:  %v", pagingNSorting)
+
+	return &listUsersResponse, nil
 }
