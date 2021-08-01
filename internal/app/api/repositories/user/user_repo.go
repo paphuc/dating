@@ -221,7 +221,10 @@ func (r *MongoRepository) IgnoreIdUsers(ctx context.Context, id string) ([]primi
 		{"$match": bson.M{
 			"$or": []interface{}{
 				bson.M{"user_id": userID},
-				bson.M{"target_user_id": userID},
+				bson.M{
+					"matched":        true,
+					"target_user_id": userID,
+				},
 			},
 		}},
 		{"$project": bson.M{
