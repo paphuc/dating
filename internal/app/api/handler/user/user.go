@@ -3,7 +3,6 @@ package userhandler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"dating/internal/app/api/types"
@@ -201,8 +200,6 @@ func (h *Handler) GetListUsersAvailable(w http.ResponseWriter, r *http.Request) 
 	maxAgeParameter := r.URL.Query().Get("maxAge")
 	genderParameter := r.URL.Query().Get("gender")
 	id := mux.Vars(r)["id"]
-
-	fmt.Println(id)
 
 	userList, err := h.srv.GetListUsersAvailable(r.Context(), id, pageParameter, sizeParameter, minAgeParameter, maxAgeParameter, genderParameter)
 	if err != nil {

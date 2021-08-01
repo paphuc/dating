@@ -270,7 +270,6 @@ func (s *Service) GetListUsersAvailable(ctx context.Context, id, page, size, min
 	}
 
 	ignoreIds, err := s.repo.IgnoreIdUsers(ctx, id)
-
 	if err != nil {
 		s.logger.Errorf("Failed when get ignoreIds users %v", err)
 		return nil, errors.Wrap(err, "Failed when get ignoreIds users")
@@ -298,7 +297,6 @@ func (s *Service) GetListUsersAvailable(ctx context.Context, id, page, size, min
 	}
 
 	listUsers, err := s.repo.GetListUsersAvailable(ctx, ignoreIds, pagingNSorting)
-
 	if err != nil {
 		s.logger.Errorf("Failed when get list users by page  %v", err)
 		return nil, errors.Wrap(err, "Failed when get list users by page")
