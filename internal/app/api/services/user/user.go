@@ -25,7 +25,6 @@ type Repository interface {
 	GetListlikedInfo(ctx context.Context, idUser string) ([]*types.UserResGetInfo, error)
 	GetListMatchedInfo(ctx context.Context, idUser string) ([]*types.UserResGetInfo, error)
 	DisableUserByID(ctx context.Context, idUser string, disable bool) error
-
 	GetListUsersAvailable(ctx context.Context, ignoreIds []primitive.ObjectID, ps types.PagingNSorting) ([]*types.UserResGetInfo, error)
 	IgnoreIdUsers(ctx context.Context, id string) ([]primitive.ObjectID, error)
 	CountUserUsersAvailable(ctx context.Context, ignoreIds []primitive.ObjectID, ps types.PagingNSorting) (int64, error)

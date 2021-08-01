@@ -24,7 +24,6 @@ type (
 		GetListUsers(ctx context.Context, page, size, minAge, maxAge, gender string) (*types.GetListUsersResponse, error)
 		GetMatchedUsersByID(ctx context.Context, idUser, matchedParameter string) (types.ListUsersResponse, error)
 		DisableUserByID(ctx context.Context, idUser string, disable bool) error
-
 		GetListUsersAvailable(ctx context.Context, id, page, size, minAge, maxAge, gender string) (*types.GetListUsersResponse, error)
 	}
 	// Handler is user web handler
