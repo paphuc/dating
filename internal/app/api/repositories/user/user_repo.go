@@ -210,6 +210,103 @@ func (r *MongoRepository) GetListlikedInfo(ctx context.Context, idUser string) (
 	return listMatched, err
 }
 
+// This method helps find people who had matched, liked
+func (r *MongoRepository) IgnoreIdUsers(ctx context.Context, id string) ([]primitive.ObjectID, error) {
+	userID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	query := []bson.M{
+		{"$match": bson.M{
+			"$or": []interface{}{
+				bson.M{"user_id": userID},
+				bson.M{"target_user_id": userID},
+			},
+		}},
+		{"$project": bson.M{
+			"targer_id": bson.M{
+				"$cond": []interface{}{
+					bson.M{"$eq": []interface{}{"$user_id", userID}},
+					"$target_user_id", "$user_id"},
+			},
+		},
+		},
+	}
+
+	cursor, err := r.client.Database("dating").Collection("matches").Aggregate(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*struct {
+		ID        primitive.ObjectID `json:"_id" bson:"_id"`
+		Targer_id primitive.ObjectID `json:"targer_id" bson:"targer_id"`
+	}
+
+	if err = cursor.All(context.TODO(), &result); err != nil {
+		return nil, err
+	}
+
+	ignoreIds := []primitive.ObjectID{}
+
+	for _, c := range result {
+		ignoreIds = append(ignoreIds, c.Targer_id)
+	}
+	ignoreIds = append(ignoreIds, userID) // yourself
+
+	return ignoreIds, nil
+}
+
+// This method helps get all user by page ignore self and people who had matched, liked
+func (r *MongoRepository) GetListUsersAvailable(ctx context.Context, ignoreIds []primitive.ObjectID, ps types.PagingNSorting) ([]*types.UserResGetInfo, error) {
+
+	query := bson.M{
+		"disable": false,
+		"birthday": bson.M{
+			"$gte": ps.Filter.AgeRange.Gte,
+			"$lt":  ps.Filter.AgeRange.Lt,
+		},
+		"gender": bson.M{
+			"$in": ps.Filter.Gender,
+		},
+		"_id": bson.M{
+			"$nin": ignoreIds,
+		},
+	}
+	var result []*types.UserResGetInfo
+	opts := options.Find()
+	opts.SetSkip(int64((ps.Page - 1) * ps.Size))
+	opts.SetLimit(int64(ps.Size))
+	cursor, err := r.collection().Find(ctx, query, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cursor.All(ctx, &result); err != nil {
+		return nil, err
+	}
+	return result, err
+}
+
+// This method helps count number users in collection, ignore self and people who had matched, liked
+func (r *MongoRepository) CountUserUsersAvailable(ctx context.Context, ignoreIds []primitive.ObjectID, ps types.PagingNSorting) (int64, error) {
+	query := bson.M{
+		"disable": false,
+		"birthday": bson.M{
+			"$gte": ps.Filter.AgeRange.Gte,
+			"$lt":  ps.Filter.AgeRange.Lt,
+		},
+		"gender": bson.M{
+			"$in": ps.Filter.Gender,
+		},
+		"_id": bson.M{
+			"$nin": ignoreIds,
+		},
+	}
+	return r.collection().CountDocuments(ctx, query)
+}
+
 func (r *MongoRepository) collection() *mongo.Collection {
 	return r.client.Database("dating").Collection("users")
 }
