@@ -121,6 +121,24 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			handler:     userHandler.GetListUsers,
 		},
 		route{
+			path:        "/users/{id:[a-z0-9-\\-]+}/disable",
+			method:      patch,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     userHandler.DisableUsersByID,
+		},
+		route{
+			path:        "/users/{id:[a-z0-9-\\-]+}/available",
+			method:      get,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     userHandler.GetListUsersAvailable,
+		},
+		route{
+			path:        "/users/{id:[a-z0-9-\\-]+}/matches",
+			method:      get,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     userHandler.GetMatchedUsersByID,
+		},
+		route{
 			path:        "/matches",
 			method:      post,
 			middlewares: []middlewareFunc{middleware.Auth},
@@ -133,23 +151,6 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			handler:     matchHandler.DeleteMatched,
 		},
 		route{
-			path:        "/users/{id:[a-z0-9-\\-]+}/matches",
-			method:      get,
-			middlewares: []middlewareFunc{middleware.Auth},
-			handler:     userHandler.GetMatchedUsersByID,
-		},
-		route{
-			path:        "/users/{id:[a-z0-9-\\-]+}/disable",
-			method:      patch,
-			middlewares: []middlewareFunc{middleware.Auth},
-			handler:     userHandler.DisableUsersByID,
-		},
-		route{
-			path:    "/ws",
-			method:  get,
-			handler: messageHandler.ServeWs,
-		},
-		route{
 			path:        "/matches/{id:[a-z0-9-\\-]+}",
 			method:      get,
 			middlewares: []middlewareFunc{middleware.Auth},
@@ -160,6 +161,12 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			method:      get,
 			middlewares: []middlewareFunc{middleware.Auth},
 			handler:     messageHandler.GetMessagesByIdRoom,
+		},
+
+		route{
+			path:    "/ws",
+			method:  get,
+			handler: messageHandler.ServeWs,
 		},
 	}
 
