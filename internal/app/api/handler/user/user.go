@@ -3,6 +3,7 @@ package userhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"dating/internal/app/api/types"
@@ -23,6 +24,10 @@ type (
 		GetListUsers(ctx context.Context, page, size, minAge, maxAge, gender string) (*types.GetListUsersResponse, error)
 		GetMatchedUsersByID(ctx context.Context, idUser, matchedParameter string) (types.ListUsersResponse, error)
 		DisableUserByID(ctx context.Context, idUser string, disable bool) error
+<<<<<<< HEAD
+=======
+
+>>>>>>> e4696e0 (DAT-86:  Ignore self and people who had matched, liked)
 		GetListUsersAvailable(ctx context.Context, id, page, size, minAge, maxAge, gender string) (*types.GetListUsersResponse, error)
 	}
 	// Handler is user web handler
@@ -201,6 +206,11 @@ func (h *Handler) GetListUsersAvailable(w http.ResponseWriter, r *http.Request) 
 	genderParameter := r.URL.Query().Get("gender")
 	id := mux.Vars(r)["id"]
 
+<<<<<<< HEAD
+=======
+	fmt.Println(id)
+
+>>>>>>> e4696e0 (DAT-86:  Ignore self and people who had matched, liked)
 	userList, err := h.srv.GetListUsersAvailable(r.Context(), id, pageParameter, sizeParameter, minAgeParameter, maxAgeParameter, genderParameter)
 	if err != nil {
 		respond.JSON(w, http.StatusInternalServerError, h.em.InvalidValue.Request)

@@ -270,6 +270,10 @@ func (s *Service) GetListUsersAvailable(ctx context.Context, id, page, size, min
 	}
 
 	ignoreIds, err := s.repo.IgnoreIdUsers(ctx, id)
+<<<<<<< HEAD
+=======
+
+>>>>>>> e4696e0 (DAT-86:  Ignore self and people who had matched, liked)
 	if err != nil {
 		s.logger.Errorf("Failed when get ignoreIds users %v", err)
 		return nil, errors.Wrap(err, "Failed when get ignoreIds users")
@@ -297,6 +301,10 @@ func (s *Service) GetListUsersAvailable(ctx context.Context, id, page, size, min
 	}
 
 	listUsers, err := s.repo.GetListUsersAvailable(ctx, ignoreIds, pagingNSorting)
+<<<<<<< HEAD
+=======
+
+>>>>>>> e4696e0 (DAT-86:  Ignore self and people who had matched, liked)
 	if err != nil {
 		s.logger.Errorf("Failed when get list users by page  %v", err)
 		return nil, errors.Wrap(err, "Failed when get list users by page")
