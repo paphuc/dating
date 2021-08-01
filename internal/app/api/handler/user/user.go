@@ -25,9 +25,12 @@ type (
 		GetMatchedUsersByID(ctx context.Context, idUser, matchedParameter string) (types.ListUsersResponse, error)
 		DisableUserByID(ctx context.Context, idUser string, disable bool) error
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> e4696e0 (DAT-86:  Ignore self and people who had matched, liked)
+=======
+>>>>>>> 084031d (fix eof)
 		GetListUsersAvailable(ctx context.Context, id, page, size, minAge, maxAge, gender string) (*types.GetListUsersResponse, error)
 	}
 	// Handler is user web handler
