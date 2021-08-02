@@ -36,7 +36,7 @@ func (r *MongoRepository) Insert(ctx context.Context, user types.User) error {
 // this method helps get user with email
 func (r *MongoRepository) FindByEmail(ctx context.Context, email string) (*types.User, error) {
 	var user *types.User
-	err := r.collection().FindOne(ctx, bson.M{"email": email, "disable": false}).Decode(&user)
+	err := r.collection().FindOne(ctx, bson.M{"email": email}).Decode(&user)
 	return user, err
 }
 
@@ -47,7 +47,7 @@ func (r *MongoRepository) FindByID(ctx context.Context, id string) (*types.UserR
 		return nil, err
 	}
 	var user *types.UserResGetInfo
-	err = r.collection().FindOne(ctx, bson.M{"_id": objectID, "disable": false}).Decode(&user)
+	err = r.collection().FindOne(ctx, bson.M{"_id": objectID}).Decode(&user)
 
 	return user, err
 }
