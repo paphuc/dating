@@ -132,10 +132,10 @@ func (s *Service) FindUserById(ctx context.Context, id string) (*types.UserResGe
 	user, err := s.repo.FindByID(ctx, id)
 
 	if err != nil {
-		s.logger.Errorf("Not found id user", err)
+		s.logger.Errorf("Not found id user %v", err)
 		return nil, errors.Wrap(err, "Failed to find id user from database")
 	}
-	s.logger.Infof("Find id completed ", id)
+	s.logger.Infof("Find id completed %v", id)
 	return user, nil
 }
 
@@ -145,7 +145,7 @@ func (s *Service) UpdateUserByID(ctx context.Context, user types.User) error {
 	err := s.repo.UpdateUserByID(ctx, user)
 
 	if err != nil {
-		s.logger.Errorf("failed when update user by id", err)
+		s.logger.Errorf("failed when update user by id %v", err)
 		return err
 	}
 	s.logger.Infof("updated user is completed ")
@@ -158,7 +158,7 @@ func (s *Service) GetListUsers(ctx context.Context, page, size, minAge, maxAge, 
 	var pagingNSorting types.PagingNSorting
 
 	if err := pagingNSorting.Init(page, size, minAge, maxAge, gender); err != nil {
-		s.logger.Errorf("Failed url parameters when get list users", err)
+		s.logger.Errorf("Failed url parameters when get list users %v", err)
 		return nil, errors.Wrap(err, "Failed url parameters when get list users")
 	}
 
@@ -166,7 +166,7 @@ func (s *Service) GetListUsers(ctx context.Context, page, size, minAge, maxAge, 
 
 	total, err := s.repo.CountUser(ctx, pagingNSorting)
 	if err != nil {
-		s.logger.Errorf("Failed when get number users", err)
+		s.logger.Errorf("Failed when get number users %v", err)
 		return nil, errors.Wrap(err, "Failed when get number users")
 	}
 	numberUsers := int(total)

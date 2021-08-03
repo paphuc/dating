@@ -166,6 +166,62 @@ paths:
             $ref: "#/definitions/ErrorResponse"
         "404":
           description: "Not Found"
+  /users/{idUsers}/available:
+    get:
+      security:
+      - Bearer: []
+      tags:
+      - "user"
+      summary: "get list users"
+      description: "This can only be done by the logged in user."
+      operationId: "Get list users"
+      parameters:
+      - name: "idUsers"
+        in: "path"
+        description: "The id user for get"
+        required: true
+        type: "string"
+      - name: "page"
+        in: "query"
+        description: "page number"
+        type: "integer" 
+      - name: "size"
+        in: "query"
+        description: "number users in a page"
+        type: "integer"
+      - name: "minAge"
+        in: "query"
+        description: "minAge users"
+        type: "integer" 
+      - name: "maxAge"
+        in: "query"
+        description: "maxAge users"
+        type: "integer" 
+      - name: "gender"
+        in: "query"
+        type: "string"
+        description: "gender user"
+        enum:
+        - "Male"
+        - "Female"
+        - "Both" 
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          schema:
+            $ref: "#/definitions/GetListUsersResponse"
+          description: "info user"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "Not Found"
   /users/{idUsers}:
     get:
       security:
