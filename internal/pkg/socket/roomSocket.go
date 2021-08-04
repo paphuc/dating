@@ -25,6 +25,12 @@ func NewRoom(id primitive.ObjectID, private bool) *RoomSocket {
 	}
 }
 
+// id for Room Big
+func IdBigRoom() primitive.ObjectID {
+	roomHex, _ := primitive.ObjectIDFromHex("000000000000000000000000")
+	return roomHex
+}
+
 // RunRoom runs our room, accepting various requests
 func (room *RoomSocket) RunRoomSocket() {
 	for {
@@ -54,6 +60,16 @@ func (room *RoomSocket) unregisterClientInRoom(client *Client) {
 }
 
 func (room *RoomSocket) broadcastToClientsInRoom(message *MessageSocket) {
+
+	if room.ID == IdBigRoom() {
+		for client := range room.clients {
+			if client.UserID == message.ReceiverID {
+				client.send <- message
+			}
+		}
+		return
+	}
+
 	for client := range room.clients {
 		client.send <- message
 	}

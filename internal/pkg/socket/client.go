@@ -11,6 +11,7 @@ import (
 type Client struct {
 	ID       primitive.ObjectID
 	RoomId   primitive.ObjectID
+	UserID   primitive.ObjectID
 	wsServer *WsServer
 	conn     *websocket.Conn
 	send     chan *MessageSocket
@@ -18,10 +19,11 @@ type Client struct {
 	rooms    map[*RoomSocket]bool
 }
 
-func NewClient(conn *websocket.Conn, wsServer *WsServer, idRoom primitive.ObjectID, sm *chan SaveMessage) *Client {
+func NewClient(conn *websocket.Conn, wsServer *WsServer, idRoom, idUser primitive.ObjectID, sm *chan SaveMessage) *Client {
 	return &Client{
 		ID:       primitive.NewObjectID(),
 		RoomId:   idRoom,
+		UserID:   idUser,
 		conn:     conn,
 		wsServer: wsServer,
 		send:     make(chan *MessageSocket),
@@ -37,9 +39,12 @@ func (c *Client) Read(logger glog.Logger) {
 		var mgs *MessageSocket
 		err := c.conn.ReadJSON(&mgs)
 		if err != nil {
-			logger.Errorf("Failed when read message from room %d, client %d", c.RoomId, c.ID, mgs)
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				logger.Errorf("Failed when read message  %v", err)
+			}
 			return
 		}
+
 		if mgs.Attachments == nil {
 			mgs.Attachments = []string{}
 		}
@@ -52,7 +57,7 @@ func (c *Client) Write(logger glog.Logger) {
 	for msg := range c.send {
 		err := c.conn.WriteJSON(msg)
 		if err != nil {
-			logger.Errorf("Failed when write message from room %d, client %d", c.RoomId, c.ID, msg, err)
+			logger.Errorf("Failed when read message  %v", err)
 			return
 		}
 	}
@@ -71,10 +76,15 @@ func (client *Client) handleNewMessage(jsonMessage *MessageSocket) {
 
 			room.broadcast <- jsonMessage
 
+			if roomBig := client.wsServer.findRoomByID(IdBigRoom()); room != nil {
+				roomBig.broadcast <- jsonMessage
+			}
+
 			sm := &SaveMessage{
 				message: &types.Message{
 					ID:          jsonMessage.ID,
 					RoomID:      roomID,
+					ReceiverID:  jsonMessage.ReceiverID,
 					SenderID:    jsonMessage.SenderID,
 					Content:     jsonMessage.Content,
 					Attachments: jsonMessage.Attachments,
@@ -82,7 +92,9 @@ func (client *Client) handleNewMessage(jsonMessage *MessageSocket) {
 				},
 			}
 
-			*client.save <- *sm
+			if roomID != IdBigRoom() {
+				*client.save <- *sm
+			}
 		}
 
 	case JoinRoomAction:
@@ -111,11 +123,30 @@ func (client *Client) handleJoinRoomMessage(message MessageSocket) {
 	client.joinRoom(roomID, nil)
 }
 
+func countUserChanInClient(room *RoomSocket, sender *Client) int {
+	userID := sender.UserID
+	count := 0
+	for k, _ := range room.clients {
+		if k.UserID == userID {
+			count += 1
+		}
+	}
+	return count
+}
+
 func (client *Client) joinRoom(roomID primitive.ObjectID, sender *Client) {
-
 	room := client.wsServer.findRoomByID(roomID)
-	if room == nil {
+	if room != nil {
+		// if a user is logged in on multiple devices (each device is chan, max=5)
+		if countUserChanInClient(room, client) >= 5 {
+			for k, _ := range room.clients {
+				delete(room.clients, k)
+				break
+			}
+		}
+	}
 
+	if room == nil {
 		room = client.wsServer.createRoom(roomID, sender != nil)
 	}
 

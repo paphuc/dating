@@ -2,6 +2,7 @@ package messageservices
 
 import (
 	"context"
+	"fmt"
 
 	"dating/internal/app/api/types"
 	"dating/internal/app/config"
@@ -38,17 +39,26 @@ func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.
 }
 
 // method help join client into room message server
-func (s *Service) ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoom string) {
+func (s *Service) ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoom, idUser string) {
 
 	saveMessagesChan := socket.NewSaveMessageChan(s.repo)
 	idRoomHex, error := primitive.ObjectIDFromHex(idRoom)
 
 	if error != nil {
-		s.logger.Errorf("Id room incorrect,it isn't ObjectIdHex ", error)
+		s.logger.Errorf("Id room incorrect,it isn't ObjectIdHex %v", error)
 		return
 	}
 
-	client := socket.NewClient(conn, wsServer, idRoomHex, saveMessagesChan)
+	idUserHex, error := primitive.ObjectIDFromHex(idUser)
+
+	if error != nil {
+		s.logger.Errorf("Id user incorrect,it isn't ObjectIdHex %v", error)
+		return
+	}
+
+	fmt.Println(idRoomHex, idUserHex)
+
+	client := socket.NewClient(conn, wsServer, idRoomHex, idUserHex, saveMessagesChan)
 
 	go client.Write(s.logger)
 	go client.Read(s.logger)
