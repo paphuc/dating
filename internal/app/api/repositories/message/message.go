@@ -60,5 +60,5 @@ func (r *MongoRepository) FindByIDRoom(ctx context.Context, id string) ([]*types
 }
 
 func (r *MongoRepository) collection() *mongo.Collection {
-	return r.client.Database("dating").Collection("message_test")
+	return r.client.Database("dating").Collection("messages")
 }
