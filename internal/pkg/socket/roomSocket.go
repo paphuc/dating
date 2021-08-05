@@ -4,6 +4,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+var (
+	IdBigRoomStr = "000000000000000000000000"
+)
+
 type RoomSocket struct {
 	ID         primitive.ObjectID `json:"id"`
 	clients    map[*Client]bool
@@ -27,7 +31,7 @@ func NewRoom(id primitive.ObjectID, private bool) *RoomSocket {
 
 // id for Room Big
 func IdBigRoom() primitive.ObjectID {
-	roomHex, _ := primitive.ObjectIDFromHex("000000000000000000000000")
+	roomHex, _ := primitive.ObjectIDFromHex(IdBigRoomStr)
 	return roomHex
 }
 

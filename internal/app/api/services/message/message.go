@@ -2,7 +2,6 @@ package messageservices
 
 import (
 	"context"
-	"fmt"
 
 	"dating/internal/app/api/types"
 	"dating/internal/app/config"
@@ -50,13 +49,10 @@ func (s *Service) ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoo
 	}
 
 	idUserHex, error := primitive.ObjectIDFromHex(idUser)
-
 	if error != nil {
 		s.logger.Errorf("Id user incorrect,it isn't ObjectIdHex %v", error)
 		return
 	}
-
-	fmt.Println(idRoomHex, idUserHex)
 
 	client := socket.NewClient(conn, wsServer, idRoomHex, idUserHex, saveMessagesChan)
 

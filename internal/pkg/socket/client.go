@@ -3,9 +3,14 @@ package socket
 import (
 	"dating/internal/app/api/types"
 	"dating/internal/pkg/glog"
+	"encoding/json"
 
 	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+var (
+	maxDevicesChan = 5
 )
 
 type Client struct {
@@ -36,19 +41,28 @@ func NewClient(conn *websocket.Conn, wsServer *WsServer, idRoom, idUser primitiv
 func (c *Client) Read(logger glog.Logger) {
 	defer c.conn.Close()
 	for {
+
 		var mgs *MessageSocket
 		err := c.conn.ReadJSON(&mgs)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				logger.Errorf("Failed when read message  %v", err)
+				logger.Errorf("Failed when ReadJSON message, connection closed  %v", err)
+				return
 			}
-			return
+			_, ok := err.(*json.UnmarshalTypeError)
+			if ok {
+				c.handleErrorMessage(err)
+			} else {
+				break
+			}
+		} else {
+			if mgs.Attachments == nil {
+				mgs.Attachments = []string{}
+			}
+			mgs.Status = DoneMessage
+			c.handleNewMessage(mgs)
 		}
 
-		if mgs.Attachments == nil {
-			mgs.Attachments = []string{}
-		}
-		c.handleNewMessage(mgs)
 	}
 }
 
@@ -57,10 +71,26 @@ func (c *Client) Write(logger glog.Logger) {
 	for msg := range c.send {
 		err := c.conn.WriteJSON(msg)
 		if err != nil {
-			logger.Errorf("Failed when read message  %v", err)
+			logger.Errorf("Failed when write message  %v", err)
 			return
 		}
 	}
+}
+
+func (client *Client) handleErrorMessage(err error) {
+	roomID := client.RoomId
+	mgs := &MessageSocket{
+		Status: ErrorMessage,
+		Message: types.Message{
+			Attachments: []string{},
+			Content:     err.Error(),
+			SenderID:    client.UserID,
+		},
+	}
+	if room := client.wsServer.findRoomByID(roomID); room != nil {
+		room.broadcast <- mgs
+	}
+
 }
 
 func (client *Client) handleNewMessage(jsonMessage *MessageSocket) {
@@ -69,14 +99,13 @@ func (client *Client) handleNewMessage(jsonMessage *MessageSocket) {
 
 	switch jsonMessage.Action {
 	case SendMessageAction:
-
 		if room := client.wsServer.findRoomByID(roomID); room != nil {
 
 			jsonMessage.ID = primitive.NewObjectID()
 
 			room.broadcast <- jsonMessage
 
-			if roomBig := client.wsServer.findRoomByID(IdBigRoom()); room != nil {
+			if roomBig := client.wsServer.findRoomByID(IdBigRoom()); roomBig != nil {
 				roomBig.broadcast <- jsonMessage
 			}
 
@@ -138,15 +167,13 @@ func (client *Client) joinRoom(roomID primitive.ObjectID, sender *Client) {
 	room := client.wsServer.findRoomByID(roomID)
 	if room != nil {
 		// if a user is logged in on multiple devices (each device is chan, max=5)
-		if countUserChanInClient(room, client) >= 5 {
+		if countUserChanInClient(room, client) >= maxDevicesChan {
 			for k, _ := range room.clients {
 				delete(room.clients, k)
 				break
 			}
 		}
-	}
-
-	if room == nil {
+	} else {
 		room = client.wsServer.createRoom(roomID, sender != nil)
 	}
 
