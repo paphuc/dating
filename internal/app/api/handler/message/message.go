@@ -16,7 +16,7 @@ import (
 
 type (
 	service interface {
-		ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoom string)
+		ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoom, idUser string)
 		GetMessagesByIdRoom(ctx context.Context, id string) ([]types.Message, error)
 	}
 	// Handler is message web handler
@@ -58,7 +58,8 @@ func New(c *config.Configs, e *config.ErrorMessage, s service, l glog.Logger) *H
 
 // Put handler server message socket HTTP request
 func (h *Handler) ServeWs(w http.ResponseWriter, r *http.Request) {
-	idRoom := r.URL.Query().Get("id")
+	idRoom := r.URL.Query().Get("room")
+	idUser := r.URL.Query().Get("user")
 	conn, err := upgrader.Upgrade(w, r, nil)
 
 	if err != nil {
@@ -66,7 +67,7 @@ func (h *Handler) ServeWs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.srv.ServeWs(wsServer, conn, idRoom)
+	h.srv.ServeWs(wsServer, conn, idRoom, idUser)
 
 	h.logger.Infof("New Client joined the room!" + idRoom)
 }

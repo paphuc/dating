@@ -4,6 +4,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+var (
+	IdBigRoomStr = "000000000000000000000000"
+)
+
 type RoomSocket struct {
 	ID         primitive.ObjectID `json:"id"`
 	clients    map[*Client]bool
@@ -23,6 +27,12 @@ func NewRoom(id primitive.ObjectID, private bool) *RoomSocket {
 		broadcast:  make(chan *MessageSocket),
 		Private:    private,
 	}
+}
+
+// id for Room Big
+func IdBigRoom() primitive.ObjectID {
+	roomHex, _ := primitive.ObjectIDFromHex(IdBigRoomStr)
+	return roomHex
 }
 
 // RunRoom runs our room, accepting various requests
@@ -54,6 +64,16 @@ func (room *RoomSocket) unregisterClientInRoom(client *Client) {
 }
 
 func (room *RoomSocket) broadcastToClientsInRoom(message *MessageSocket) {
+
+	if room.ID == IdBigRoom() {
+		for client := range room.clients {
+			if client.UserID == message.ReceiverID {
+				client.send <- message
+			}
+		}
+		return
+	}
+
 	for client := range room.clients {
 		client.send <- message
 	}

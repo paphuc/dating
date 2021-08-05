@@ -3,14 +3,20 @@ package socket
 import (
 	"dating/internal/app/api/types"
 	"dating/internal/pkg/glog"
+	"encoding/json"
 
 	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+var (
+	maxDevicesChan = 5
+)
+
 type Client struct {
 	ID       primitive.ObjectID
 	RoomId   primitive.ObjectID
+	UserID   primitive.ObjectID
 	wsServer *WsServer
 	conn     *websocket.Conn
 	send     chan *MessageSocket
@@ -18,10 +24,11 @@ type Client struct {
 	rooms    map[*RoomSocket]bool
 }
 
-func NewClient(conn *websocket.Conn, wsServer *WsServer, idRoom primitive.ObjectID, sm *chan SaveMessage) *Client {
+func NewClient(conn *websocket.Conn, wsServer *WsServer, idRoom, idUser primitive.ObjectID, sm *chan SaveMessage) *Client {
 	return &Client{
 		ID:       primitive.NewObjectID(),
 		RoomId:   idRoom,
+		UserID:   idUser,
 		conn:     conn,
 		wsServer: wsServer,
 		send:     make(chan *MessageSocket),
@@ -34,16 +41,28 @@ func NewClient(conn *websocket.Conn, wsServer *WsServer, idRoom primitive.Object
 func (c *Client) Read(logger glog.Logger) {
 	defer c.conn.Close()
 	for {
+
 		var mgs *MessageSocket
 		err := c.conn.ReadJSON(&mgs)
 		if err != nil {
-			logger.Errorf("Failed when read message from room %d, client %d", c.RoomId, c.ID, mgs)
-			return
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				logger.Errorf("Failed when ReadJSON message, connection closed  %v", err)
+				return
+			}
+			_, ok := err.(*json.UnmarshalTypeError)
+			if ok {
+				c.handleErrorMessage(err)
+			} else {
+				break
+			}
+		} else {
+			if mgs.Attachments == nil {
+				mgs.Attachments = []string{}
+			}
+			mgs.Status = DoneMessage
+			c.handleNewMessage(mgs)
 		}
-		if mgs.Attachments == nil {
-			mgs.Attachments = []string{}
-		}
-		c.handleNewMessage(mgs)
+
 	}
 }
 
@@ -52,10 +71,26 @@ func (c *Client) Write(logger glog.Logger) {
 	for msg := range c.send {
 		err := c.conn.WriteJSON(msg)
 		if err != nil {
-			logger.Errorf("Failed when write message from room %d, client %d", c.RoomId, c.ID, msg, err)
+			logger.Errorf("Failed when write message  %v", err)
 			return
 		}
 	}
+}
+
+func (client *Client) handleErrorMessage(err error) {
+	roomID := client.RoomId
+	mgs := &MessageSocket{
+		Status: ErrorMessage,
+		Message: types.Message{
+			Attachments: []string{},
+			Content:     err.Error(),
+			SenderID:    client.UserID,
+		},
+	}
+	if room := client.wsServer.findRoomByID(roomID); room != nil {
+		room.broadcast <- mgs
+	}
+
 }
 
 func (client *Client) handleNewMessage(jsonMessage *MessageSocket) {
@@ -64,17 +99,21 @@ func (client *Client) handleNewMessage(jsonMessage *MessageSocket) {
 
 	switch jsonMessage.Action {
 	case SendMessageAction:
-
 		if room := client.wsServer.findRoomByID(roomID); room != nil {
 
 			jsonMessage.ID = primitive.NewObjectID()
 
 			room.broadcast <- jsonMessage
 
+			if roomBig := client.wsServer.findRoomByID(IdBigRoom()); roomBig != nil {
+				roomBig.broadcast <- jsonMessage
+			}
+
 			sm := &SaveMessage{
 				message: &types.Message{
 					ID:          jsonMessage.ID,
 					RoomID:      roomID,
+					ReceiverID:  jsonMessage.ReceiverID,
 					SenderID:    jsonMessage.SenderID,
 					Content:     jsonMessage.Content,
 					Attachments: jsonMessage.Attachments,
@@ -82,7 +121,9 @@ func (client *Client) handleNewMessage(jsonMessage *MessageSocket) {
 				},
 			}
 
-			*client.save <- *sm
+			if roomID != IdBigRoom() {
+				*client.save <- *sm
+			}
 		}
 
 	case JoinRoomAction:
@@ -111,11 +152,28 @@ func (client *Client) handleJoinRoomMessage(message MessageSocket) {
 	client.joinRoom(roomID, nil)
 }
 
+func countUserChanInClient(room *RoomSocket, sender *Client) int {
+	userID := sender.UserID
+	count := 0
+	for k, _ := range room.clients {
+		if k.UserID == userID {
+			count += 1
+		}
+	}
+	return count
+}
+
 func (client *Client) joinRoom(roomID primitive.ObjectID, sender *Client) {
-
 	room := client.wsServer.findRoomByID(roomID)
-	if room == nil {
-
+	if room != nil {
+		// if a user is logged in on multiple devices (each device is chan, max=5)
+		if countUserChanInClient(room, client) >= maxDevicesChan {
+			for k, _ := range room.clients {
+				delete(room.clients, k)
+				break
+			}
+		}
+	} else {
 		room = client.wsServer.createRoom(roomID, sender != nil)
 	}
 

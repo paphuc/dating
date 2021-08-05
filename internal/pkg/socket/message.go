@@ -25,8 +25,7 @@ func saveMessages(sm *chan SaveMessage, r Repository) {
 		}
 		err := r.Insert(context.Background(), *sm.message)
 		if err != nil {
-			logger.Errorf("Error when insert message to db", err)
-
+			logger.Errorf("Error when insert message to db %v", err)
 		}
 	}
 }
