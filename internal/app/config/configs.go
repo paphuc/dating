@@ -80,6 +80,16 @@ type (
 		Jwt struct {
 			Duration time.Duration `mapstructure:"duration"`
 		} `mapstructure:"jwt"`
+		Mail struct {
+			Email    string `mapstructure:"email"`
+			Password string `mapstructure:"password"`
+			Smtp     struct {
+				HostMail string `mapstructure:"host_mail"`
+				PortMail string `mapstructure:"port_mail"`
+			} `mapstructure:"smtp"`
+			ConfirmTimeout time.Duration `mapstructure:"confirm_timeout"`
+			SrcTemplate    string        `mapstructure:"src_template"`
+		} `mapstructure:"mail"`
 	}
 
 	// Config hold MongoDB configuration information

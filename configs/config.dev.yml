@@ -17,3 +17,11 @@ database:
 
 jwt:
   duration: 24h
+mail:
+  email: ""
+  password: ""
+  smtp:
+    host_mail: "smtp.gmail.com"
+    port_mail: "587"
+  confirm_timeout: 120s
+  src_template: "internal/pkg/mail/template/index.html"

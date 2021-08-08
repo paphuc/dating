@@ -28,6 +28,7 @@ type Repository interface {
 	GetListUsersAvailable(ctx context.Context, ignoreIds []primitive.ObjectID, ps types.PagingNSorting) ([]*types.UserResGetInfo, error)
 	IgnoreIdUsers(ctx context.Context, id string) ([]primitive.ObjectID, error)
 	CountUserUsersAvailable(ctx context.Context, ignoreIds []primitive.ObjectID, ps types.PagingNSorting) (int64, error)
+	UpdateMailVerified(ctx context.Context, email string) error
 }
 
 // Service is an user service
@@ -85,8 +86,17 @@ func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*typ
 		s.logger.Errorf("Can't gen token after insert %v", err)
 		return nil, errors.Wrap(err, "Can't insert user")
 	}
+<<<<<<< HEAD
 	s.logger.Infof("Register completed %v", UserSignUp)
+=======
+>>>>>>> 74a6f05 (DAT-23: BE - Mail to confirm)
 
+	if err := s.repo.UpdateMailVerified(ctx, user.Email); err != nil {
+		s.logger.Errorf("Can't UpdateMailVerified", err)
+		return nil, errors.Wrap(err, "Can't UpdateMailVerified")
+	}
+
+	s.logger.Infof("Register completed", UserSignUp)
 	return &types.UserResponseSignUp{
 		Name:  UserSignUp.Name,
 		Email: UserSignUp.Email,
