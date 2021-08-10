@@ -2,6 +2,7 @@ package userservices
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -52,7 +53,7 @@ func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.
 func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*types.UserResponseSignUp, error) {
 
 	if _, err := s.repo.FindByEmail(ctx, UserSignUp.Email); err == nil {
-		s.logger.Errorf("Email email exits", err)
+		s.logger.Errorf("Email email exits %v", err)
 		return nil, errors.Wrap(errors.New("Email email exits"), "Email exits, can't insert user")
 	}
 
@@ -70,7 +71,7 @@ func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*typ
 		UpdateAt: time.Now()}
 
 	if err := s.repo.Insert(ctx, user); err != nil {
-		s.logger.Errorf("Can't insert user", err)
+		s.logger.Errorf("Can't insert user %v", err)
 		return nil, errors.Wrap(err, "Can't insert user")
 	}
 
@@ -82,10 +83,10 @@ func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*typ
 	}, s.conf.Jwt.Duration)
 
 	if err != nil {
-		s.logger.Errorf("Can't gen token after insert", err)
+		s.logger.Errorf("Can't gen token after insert %v", err)
 		return nil, errors.Wrap(err, "Can't insert user")
 	}
-	s.logger.Infof("Register completed", UserSignUp)
+	s.logger.Infof("Register completed %v", UserSignUp)
 
 	return &types.UserResponseSignUp{
 		Name:  UserSignUp.Name,
@@ -99,12 +100,12 @@ func (s *Service) Login(ctx context.Context, UserLogin types.UserLogin) (*types.
 
 	user, err := s.repo.FindByEmail(ctx, UserLogin.Email)
 	if err != nil {
-		s.logger.Errorf("Not found email exits", err)
+		s.logger.Errorf("Not found email exits %v", err)
 		return nil, errors.Wrap(errors.New("Not found email exits"), "Email not exists, can't find user")
 	}
 
 	if !jwt.IsCorrectPassword(UserLogin.Password, user.Password) {
-		s.logger.Errorf("Password incorrect", UserLogin.Email)
+		s.logger.Errorf("Password incorrect %v", UserLogin.Email)
 		return nil, errors.Wrap(errors.New("Password isn't like password from database"), "Password incorrect")
 	}
 
@@ -115,10 +116,10 @@ func (s *Service) Login(ctx context.Context, UserLogin types.UserLogin) (*types.
 		Email: user.Email}, s.conf.Jwt.Duration)
 
 	if error != nil {
-		s.logger.Errorf("Can not gen token", error)
+		s.logger.Errorf("Can not gen token %v", error)
 		return nil, errors.Wrap(error, "Can't gen token")
 	}
-	s.logger.Infof("Login completed ", user.Email)
+	s.logger.Infof("Login completed %v", user.Email)
 	return &types.UserResponseSignUp{
 		Name:  user.Name,
 		Email: user.Email,
@@ -270,6 +271,7 @@ func (s *Service) GetListUsersAvailable(ctx context.Context, id, page, size, min
 	}
 
 	ignoreIds, err := s.repo.IgnoreIdUsers(ctx, id)
+	fmt.Println(ignoreIds)
 	if err != nil {
 		s.logger.Errorf("Failed when get ignoreIds users %v", err)
 		return nil, errors.Wrap(err, "Failed when get ignoreIds users")
