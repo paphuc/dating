@@ -227,7 +227,8 @@ func TestLogin(t *testing.T) {
 	}
 
 	mockRepo := new(RepositoryMock)
-	mockRepo.On("FindByEmail").Return(user, nil)
+	mockRepo.On("FindByEmail").Return(user, nil).Once()
+	mockRepo.On("FindByEmail").Return(nil, errors.New("Not Find user by email"))
 
 	testService := NewService(
 		&config.Configs{},
@@ -235,7 +236,6 @@ func TestLogin(t *testing.T) {
 		mockRepo,
 		glog.New(),
 	)
-
 	result, err := testService.Login(context.Background(), types.UserLogin{
 		Email:    "tphuc@gmail.com",
 		Password: "123456",
@@ -244,15 +244,32 @@ func TestLogin(t *testing.T) {
 		assert.Error(t, err)
 		return
 	}
-	mockRepo.AssertExpectations(t)
 	assert.Equal(t, "Nhân Đinh Đẹp Trai", result.Name)
+	result, err = testService.Login(context.Background(), types.UserLogin{
+		Email:    "tphuc@gmail.com",
+		Password: "123456",
+	})
+	if err != nil {
+		assert.Error(t, err)
+		return
+	}
+	mockRepo.AssertExpectations(t)
+	assert.Equal(t, nil, result)
 }
 
 func TestSignUp(t *testing.T) {
 	mockRepo := new(RepositoryMock)
 
-	mockRepo.On("FindByEmail").Return(nil, errors.New("Email email exits"))
+	user, err := userMock()
+	if err != nil {
+		assert.Error(t, err)
+		return
+	}
+
+	mockRepo.On("FindByEmail").Return(nil, errors.New("Email email exits")).Once()
 	mockRepo.On("Insert").Return(nil)
+
+	mockRepo.On("FindByEmail").Return(user, nil)
 
 	testService := NewService(
 		&config.Configs{},
@@ -270,10 +287,19 @@ func TestSignUp(t *testing.T) {
 		assert.Error(t, err)
 		return
 	}
-
+	result2, err := testService.SignUp(context.Background(), types.UserSignUp{
+		Email:    "tphuc@gmail.com",
+		Password: "123456",
+		Name:     "Nhân Đinh Đẹp Trai",
+	})
+	if err != nil {
+		assert.Error(t, err)
+		return
+	}
 	mockRepo.AssertExpectations(t)
 	assert.Equal(t, "Nhân Đinh Đẹp Trai", result.Name)
 	assert.Equal(t, "tphuc@gmail.com", result.Email)
+	assert.Equal(t, nil, result2)
 }
 
 func TestFindUserById(t *testing.T) {
@@ -286,7 +312,8 @@ func TestFindUserById(t *testing.T) {
 
 	mockRepo := new(RepositoryMock)
 
-	mockRepo.On("FindByID").Return(userInfo, nil)
+	mockRepo.On("FindByID").Return(userInfo, nil).Once()
+	mockRepo.On("FindByID").Return(nil, errors.New("Not found id"))
 
 	testService := NewService(
 		&config.Configs{},
@@ -300,9 +327,16 @@ func TestFindUserById(t *testing.T) {
 		assert.Error(t, err)
 		return
 	}
+	result2, err := testService.FindUserById(context.Background(), "tphuc@gmail.com")
+	if err != nil {
+		assert.Error(t, err)
+		return
+	}
 	mockRepo.AssertExpectations(t)
 	assert.Equal(t, "Nhân Đinh Đẹp Trai", result.Name)
 	assert.Equal(t, "tphuc@gmail.com", result.Email)
+	assert.Equal(t, nil, result2)
+
 }
 
 func TestUpdateUserByID(t *testing.T) {
@@ -315,8 +349,8 @@ func TestUpdateUserByID(t *testing.T) {
 
 	mockRepo := new(RepositoryMock)
 
-	mockRepo.On("UpdateUserByID").Return(nil)
-
+	mockRepo.On("UpdateUserByID").Return(nil).Once()
+	mockRepo.On("UpdateUserByID").Return(errors.New("Failed when update user"))
 	testService := NewService(
 		&config.Configs{},
 		&config.ErrorMessage{},
@@ -325,10 +359,11 @@ func TestUpdateUserByID(t *testing.T) {
 	)
 
 	error := testService.UpdateUserByID(context.Background(), *user)
+	error2 := testService.UpdateUserByID(context.Background(), *user)
 
 	mockRepo.AssertExpectations(t)
 	assert.Equal(t, nil, error)
-
+	assert.NotEqual(t, nil, error2)
 }
 func TestGetListUsers(t *testing.T) {
 	userInfo, _ := userInfoMock()
@@ -339,8 +374,8 @@ func TestGetListUsers(t *testing.T) {
 	mockRepo.On("GetListUsers").Return([]*types.UserResGetInfo{
 		userInfo, userInfo,
 		userInfo, userInfo,
-	}, nil)
-
+	}, nil).Once()
+	mockRepo.On("GetListUsers").Return(nil, errors.New("Failed when get list"))
 	testService := NewService(
 		&config.Configs{},
 		&config.ErrorMessage{},
@@ -353,7 +388,11 @@ func TestGetListUsers(t *testing.T) {
 		assert.Error(t, err)
 		return
 	}
-
+	_, err = testService.GetListUsers(context.Background(), "1", "4", "18", "22", "Male")
+	if err != nil {
+		assert.Error(t, err)
+		return
+	}
 	mockRepo.AssertExpectations(t)
 	assert.Equal(t, 8, result.TotalItems)
 	assert.Equal(t, 4, len(result.Content))
@@ -392,7 +431,11 @@ func TestGetMatchedUsersByID(t *testing.T) {
 		assert.Error(t, err)
 		return
 	}
-
+	_, err = testService.GetMatchedUsersByID(context.Background(), "60e3f9a7e1ab4c3dfc8fe4c1", "falses")
+	if err != nil {
+		assert.Error(t, err)
+		return
+	}
 	mockRepo.AssertExpectations(t)
 	assert.Equal(t, 5, len(result1.Content))
 	assert.Equal(t, 4, len(result2.Content))
@@ -401,7 +444,8 @@ func TestGetMatchedUsersByID(t *testing.T) {
 func TestDisableUserByID(t *testing.T) {
 	mockRepo := new(RepositoryMock)
 
-	mockRepo.On("DisableUserByID").Return(nil)
+	mockRepo.On("DisableUserByID").Return(nil).Twice()
+	mockRepo.On("DisableUserByID").Return(errors.New("DisableUserByID Failed"))
 
 	testService := NewService(
 		&config.Configs{},
@@ -411,11 +455,12 @@ func TestDisableUserByID(t *testing.T) {
 	)
 	errDisabled := testService.DisableUserByID(context.Background(), "60e3f9a7e1ab4c3dfc8fe4c1", true)
 	errEnabled := testService.DisableUserByID(context.Background(), "60e3f9a7e1ab4c3dfc8fe4c1", false)
+	errEnabled2 := testService.DisableUserByID(context.Background(), "60e3f9a7e1ab4c3dfc8fe4c1", false)
 
 	mockRepo.AssertExpectations(t)
 	assert.Equal(t, nil, errDisabled)
 	assert.Equal(t, nil, errEnabled)
-
+	assert.Error(t, errEnabled2)
 }
 func TestGetListUsersAvailable(t *testing.T) {
 

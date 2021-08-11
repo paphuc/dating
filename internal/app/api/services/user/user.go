@@ -2,7 +2,6 @@ package userservices
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -251,11 +250,11 @@ func (s *Service) convertPointerArrayToArray(list []*types.UserResGetInfo) []typ
 func (s *Service) DisableUserByID(ctx context.Context, idUser string, disable bool) error {
 
 	if err := s.repo.DisableUserByID(ctx, idUser, disable); err != nil {
-		s.logger.Errorf("Set disable to %d for user %s failed", disable, idUser, err)
+		s.logger.Errorf("Set disable to %d for user %s failed %v", disable, idUser, err)
 		return err
 	}
 
-	s.logger.Infof("Set disable to %d for user %s completed", disable, idUser)
+	s.logger.Infof("Set disable to %d for user %s completed %v", disable, idUser)
 	return nil
 
 }
@@ -271,7 +270,6 @@ func (s *Service) GetListUsersAvailable(ctx context.Context, id, page, size, min
 	}
 
 	ignoreIds, err := s.repo.IgnoreIdUsers(ctx, id)
-	fmt.Println(ignoreIds)
 	if err != nil {
 		s.logger.Errorf("Failed when get ignoreIds users %v", err)
 		return nil, errors.Wrap(err, "Failed when get ignoreIds users")
