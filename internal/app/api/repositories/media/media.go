@@ -1,10 +1,6 @@
 package media
 
 import (
-	"context"
-
-	"dating/internal/app/api/types"
-
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -21,12 +17,6 @@ func NewMongoRepository(c *mongo.Client) *MongoRepository {
 	return &MongoRepository{
 		client: c,
 	}
-}
-
-// this method helps insert match
-func (r *MongoRepository) Insert(ctx context.Context, match types.Match) error {
-	_, err := r.collection().InsertOne(context.TODO(), match)
-	return err
 }
 
 func (r *MongoRepository) collection() *mongo.Collection {

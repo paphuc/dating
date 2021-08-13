@@ -172,22 +172,19 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 		},
 
 		route{
-			path:    "/images",
+			path:    "/media",
 			method:  post,
 			handler: imageHandler.Upload,
-			// middlewares: []middlewareFunc{middleware.Auth},
 		},
 		route{
-			path:    "/images/{id:[a-z0-9-\\-]+}",
+			path:    "/media/{id:[a-z0-9-\\-]+}",
 			method:  get,
 			handler: imageHandler.Asset,
-			// middlewares: []middlewareFunc{middleware.Auth},
 		},
 		route{
-			path:    "/images/{id:[a-z0-9-\\-]+}",
+			path:    "/media/{id:[a-z0-9-\\-]+}",
 			method:  delete,
 			handler: imageHandler.Destroy,
-			// middlewares: []middlewareFunc{middleware.Auth},
 		},
 
 		route{
