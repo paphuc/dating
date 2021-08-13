@@ -99,15 +99,7 @@ func (s *Service) SendMail(ctx context.Context, email string) error {
 // method help gen code and send code to mail user
 func (s *Service) GenNumberSendAndUpsert(ctx context.Context, mail string) error {
 
-	code := mailpkg.GenCode(6)
-
-	//send email
-	if err := mailpkg.Sendmail(mailpkg.Mail{
-		Subject: "Mail Confirm",
-		Body:    code,
-	}, []string{mail}, s.conf); err != nil {
-		return errors.Wrap(err, "Send mail fail")
-	}
+	code := GenCode(6)
 
 	//upsert db
 	if err := s.repo.Insert(ctx, types.EmailVerification{
@@ -117,6 +109,15 @@ func (s *Service) GenNumberSendAndUpsert(ctx context.Context, mail string) error
 	}); err != nil {
 		return err
 	}
+
+	//send email
+	if err := Sendmail(mailpkg.Mail{
+		Subject: "Mail Confirm",
+		Body:    code,
+	}, []string{mail}, s.conf); err != nil {
+		return errors.Wrap(err, "Send mail fail")
+	}
+
 	s.logger.Infof("Send email completed %v", mail)
 	return nil
 }
