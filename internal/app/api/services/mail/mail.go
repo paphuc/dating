@@ -2,6 +2,7 @@ package mailservices
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"dating/internal/app/api/types"
@@ -37,6 +38,11 @@ func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.
 	}
 }
 
+var (
+	GenCode  = mailpkg.GenCode
+	Sendmail = mailpkg.Sendmail
+)
+
 // method help verify mail users
 func (s *Service) MailVerified(ctx context.Context, mail, code string) error {
 
@@ -50,6 +56,7 @@ func (s *Service) MailVerified(ctx context.Context, mail, code string) error {
 		s.logger.Errorf("MailVerified has true")
 		return errors.Wrap(errors.New("MailVerified failed"), "Email has confirmed")
 	}
+	fmt.Println(time.Now().Sub(emailExists.CreatedTime), "Dasd", s.conf.Mail.ConfirmTimeout)
 
 	if time.Now().Sub(emailExists.CreatedTime) > s.conf.Mail.ConfirmTimeout {
 		s.logger.Errorf("Code expired")
@@ -71,7 +78,7 @@ func (s *Service) SendMail(ctx context.Context, email string) error {
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			if err := s.GenNumberSendAndUpsert(ctx, email); err != nil {
-				s.logger.Errorf("Error when gen code %v", err)
+				s.logger.Errorf("Error when gen  s code %v", err)
 				return err
 			}
 			return nil
@@ -94,15 +101,7 @@ func (s *Service) SendMail(ctx context.Context, email string) error {
 // method help gen code and send code to mail user
 func (s *Service) GenNumberSendAndUpsert(ctx context.Context, mail string) error {
 
-	code := mailpkg.GenCode(6)
-
-	//send email
-	if err := mailpkg.Sendmail(mailpkg.Mail{
-		Subject: "Mail Confirm",
-		Body:    code,
-	}, []string{mail}, s.conf); err != nil {
-		return errors.Wrap(err, "Send mail fail")
-	}
+	code := GenCode(6)
 
 	//upsert db
 	if err := s.repo.Insert(ctx, types.EmailVerification{
@@ -112,6 +111,16 @@ func (s *Service) GenNumberSendAndUpsert(ctx context.Context, mail string) error
 	}); err != nil {
 		return err
 	}
+
+	//send email
+	if err := Sendmail(mailpkg.Mail{
+		Subject: "Mail Confirm",
+		Body:    code,
+	}, []string{mail}, s.conf); err != nil {
+		fmt.Println("Ddasd ", err)
+		return errors.Wrap(err, "Send mail fail")
+	}
+
 	s.logger.Infof("Send email completed %v", mail)
 	return nil
 }

@@ -86,17 +86,14 @@ func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*typ
 		s.logger.Errorf("Can't gen token after insert %v", err)
 		return nil, errors.Wrap(err, "Can't insert user")
 	}
-<<<<<<< HEAD
-	s.logger.Infof("Register completed %v", UserSignUp)
-=======
->>>>>>> 74a6f05 (DAT-23: BE - Mail to confirm)
 
 	if err := s.repo.UpdateMailVerified(ctx, user.Email); err != nil {
 		s.logger.Errorf("Can't UpdateMailVerified", err)
 		return nil, errors.Wrap(err, "Can't UpdateMailVerified")
 	}
 
-	s.logger.Infof("Register completed", UserSignUp)
+	s.logger.Infof("Register completed %v", UserSignUp)
+
 	return &types.UserResponseSignUp{
 		Name:  UserSignUp.Name,
 		Email: UserSignUp.Email,

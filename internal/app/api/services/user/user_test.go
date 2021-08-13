@@ -109,6 +109,11 @@ func (mock *RepositoryMock) CountUserUsersAvailable(ctx context.Context, ignoreI
 	return result.(int64), args.Error(1)
 }
 
+func (mock *RepositoryMock) UpdateMailVerified(ctx context.Context, email string) error {
+	args := mock.Called()
+	return args.Error(0)
+}
+
 func userMock() (*types.User, error) {
 	id, errID := primitive.ObjectIDFromHex("60e3f9a7e1ab4c3dfc8fe4c1")
 	if errID != nil {
@@ -270,6 +275,7 @@ func TestSignUp(t *testing.T) {
 	mockRepo.On("Insert").Return(nil)
 
 	mockRepo.On("FindByEmail").Return(user, nil)
+	mockRepo.On("UpdateMailVerified").Return(nil)
 
 	testService := NewService(
 		&config.Configs{},
