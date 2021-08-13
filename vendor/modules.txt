@@ -1,9 +1,5 @@
-# github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6
-## explicit
-# github.com/coreos/etcd v3.3.10+incompatible
-## explicit
-# github.com/coreos/go-etcd v2.0.0+incompatible
-## explicit
+# github.com/davecgh/go-spew v1.1.1
+github.com/davecgh/go-spew/spew
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 ## explicit
 github.com/dgrijalva/jwt-go
@@ -23,10 +19,7 @@ github.com/globalsign/mgo/internal/scram
 github.com/go-playground/locales
 github.com/go-playground/locales/currency
 # github.com/go-playground/universal-translator v0.17.0
-## explicit
 github.com/go-playground/universal-translator
-# github.com/go-playground/validator v9.31.0+incompatible
-## explicit
 # github.com/go-playground/validator/v10 v10.6.1
 ## explicit
 github.com/go-playground/validator/v10
@@ -78,6 +71,8 @@ github.com/pelletier/go-toml
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
 # github.com/sirupsen/logrus v1.8.1
 ## explicit
 github.com/sirupsen/logrus
@@ -93,6 +88,12 @@ github.com/spf13/pflag
 # github.com/spf13/viper v1.8.1
 ## explicit
 github.com/spf13/viper
+# github.com/stretchr/objx v0.1.1
+github.com/stretchr/objx
+# github.com/stretchr/testify v1.7.0
+## explicit
+github.com/stretchr/testify/assert
+github.com/stretchr/testify/mock
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
 # github.com/xdg-go/pbkdf2 v1.0.0
@@ -167,3 +168,5 @@ golang.org/x/text/unicode/norm
 gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.4.0
 gopkg.in/yaml.v2
+# gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+gopkg.in/yaml.v3
