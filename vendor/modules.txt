@@ -1,3 +1,24 @@
+# github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6
+## explicit
+# github.com/cloudinary/cloudinary-go v1.2.0
+## explicit
+github.com/cloudinary/cloudinary-go
+github.com/cloudinary/cloudinary-go/api
+github.com/cloudinary/cloudinary-go/api/admin
+github.com/cloudinary/cloudinary-go/api/admin/metadata
+github.com/cloudinary/cloudinary-go/api/admin/search
+github.com/cloudinary/cloudinary-go/api/uploader
+github.com/cloudinary/cloudinary-go/asset
+github.com/cloudinary/cloudinary-go/config
+github.com/cloudinary/cloudinary-go/internal/signature
+github.com/cloudinary/cloudinary-go/logger
+github.com/cloudinary/cloudinary-go/transformation
+# github.com/coreos/etcd v3.3.10+incompatible
+## explicit
+# github.com/coreos/go-etcd v2.0.0+incompatible
+## explicit
+# github.com/creasty/defaults v1.5.1
+github.com/creasty/defaults
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
