@@ -92,8 +92,7 @@ func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*typ
 		return nil, errors.Wrap(err, "Can't UpdateMailVerified")
 	}
 
-	s.logger.Infof("Register completed %v", UserSignUp)
-
+	s.logger.Infof("Register completed", UserSignUp)
 	return &types.UserResponseSignUp{
 		Name:  UserSignUp.Name,
 		Email: UserSignUp.Email,
