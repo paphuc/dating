@@ -15,6 +15,10 @@ import (
 	message "dating/internal/app/api/repositories/message"
 	messageService "dating/internal/app/api/services/message"
 
+	mediahandler "dating/internal/app/api/handler/media"
+	media "dating/internal/app/api/repositories/media"
+	mediaService "dating/internal/app/api/services/media"
+
 	"dating/internal/app/config"
 	"dating/internal/app/db"
 	"dating/internal/pkg/glog"
@@ -54,8 +58,8 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 
 	var userRepo userService.Repository
 	var matchRepo matchService.Repository
-
 	var messageRepo messageService.Repository
+	var imageRepo mediaService.Repository
 
 	switch conns.Database.Type {
 	case db.TypeMongoDB:
@@ -67,7 +71,7 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 		matchRepo = match.NewMongoRepository(s)
 
 		messageRepo = message.NewMongoRepository(s)
-
+		imageRepo = media.NewMongoRepository(s)
 	default:
 		panic("database type not supported: " + conns.Database.Type)
 	}
@@ -83,6 +87,10 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 	messageLogger := logger.WithField("package", "chat")
 	messageSrv := messageService.NewService(conns, &em, messageRepo, messageLogger)
 	messageHandler := messagehandler.New(conns, &em, messageSrv, messageLogger)
+
+	imageLogger := logger.WithField("package", "chat")
+	imageSrv := mediaService.NewService(conns, &em, imageRepo, imageLogger)
+	imageHandler := mediahandler.New(conns, &em, imageSrv, messageLogger)
 
 	routes := []route{
 		// infra
@@ -161,6 +169,25 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			method:      get,
 			middlewares: []middlewareFunc{middleware.Auth},
 			handler:     messageHandler.GetMessagesByIdRoom,
+		},
+
+		route{
+			path:    "/images",
+			method:  post,
+			handler: imageHandler.Upload,
+			// middlewares: []middlewareFunc{middleware.Auth},
+		},
+		route{
+			path:    "/images/{id:[a-z0-9-\\-]+}",
+			method:  get,
+			handler: imageHandler.Asset,
+			// middlewares: []middlewareFunc{middleware.Auth},
+		},
+		route{
+			path:    "/images/{id:[a-z0-9-\\-]+}",
+			method:  delete,
+			handler: imageHandler.Destroy,
+			// middlewares: []middlewareFunc{middleware.Auth},
 		},
 
 		route{

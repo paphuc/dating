@@ -77,6 +77,9 @@ type (
 			Type  string  `mapstructure:"type"`
 			Mongo MongoDB `mapstructure:"mongo"`
 		} `mapstructure:"database"`
+		Cloudinary struct {
+			URL string `mapstructure:"url"`
+		} `mapstructure:"cloudinary"`
 		Jwt struct {
 			Duration time.Duration `mapstructure:"duration"`
 		} `mapstructure:"jwt"`
