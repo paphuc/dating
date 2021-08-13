@@ -19,7 +19,7 @@ type (
 		Destroy(ctx context.Context, url string) error
 		Asset(ctx context.Context, url string) (*types.ImageResponse, error)
 	}
-	// Handler is message web handler
+	// Handler is media web handler
 	Handler struct {
 		conf   *config.Configs
 		em     *config.ErrorMessage
@@ -28,7 +28,7 @@ type (
 	}
 )
 
-// New returns new res api message handler
+// New returns new res api media handler
 func New(c *config.Configs, e *config.ErrorMessage, s service, l glog.Logger) *Handler {
 	return &Handler{
 		conf:   c,
@@ -38,6 +38,7 @@ func New(c *config.Configs, e *config.ErrorMessage, s service, l glog.Logger) *H
 	}
 }
 
+// Put handler update media
 func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 	// Parse our multipart form, 10 << 20 specifies a maximum
 	// upload of 10 MB files.
@@ -70,6 +71,7 @@ func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 	respond.JSON(w, http.StatusOK, media)
 }
 
+// Del handler delete media
 func (h *Handler) Destroy(w http.ResponseWriter, r *http.Request) {
 	err := h.srv.Destroy(r.Context(), mux.Vars(r)["id"])
 	if err != nil {
@@ -79,6 +81,7 @@ func (h *Handler) Destroy(w http.ResponseWriter, r *http.Request) {
 	respond.JSON(w, http.StatusOK, h.em.Success)
 }
 
+// Get handler get media
 func (h *Handler) Asset(w http.ResponseWriter, r *http.Request) {
 	media, err := h.srv.Asset(r.Context(), mux.Vars(r)["id"])
 	if err != nil {

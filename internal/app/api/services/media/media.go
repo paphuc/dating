@@ -9,16 +9,18 @@ import (
 	"dating/internal/pkg/uuid"
 )
 
-// Repository is an interface of a match repository
+// Repository is an interface of a media repository
 type Repository interface {
 }
+
+// Repository is an interface of a Cloudinary
 type Cloudinary interface {
 	UploadFile(ctx context.Context, fileBytes []byte, name string) (string, error)
 	DestroyFile(ctx context.Context, name string) (string, error)
 	AssetFile(ctx context.Context, name string) (string, error)
 }
 
-// Service is an match service
+// Service is an media service
 type Service struct {
 	conf   *config.Configs
 	em     *config.ErrorMessage
@@ -27,7 +29,7 @@ type Service struct {
 	cloud  Cloudinary
 }
 
-// NewService returns a new match service
+// NewService returns a new media service
 func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.Logger) *Service {
 	cld, _ := cloudinarypkg.New(c.Cloudinary.URL)
 	return &Service{
@@ -39,7 +41,7 @@ func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.
 	}
 }
 
-// Post basic, user match someone
+// Post upload media
 func (s *Service) Upload(ctx context.Context, fileBytes []byte) (*types.ImageResponse, error) {
 
 	src, err := s.cloud.UploadFile(ctx, fileBytes, uuid.New())
@@ -50,13 +52,13 @@ func (s *Service) Upload(ctx context.Context, fileBytes []byte) (*types.ImageRes
 	return &types.ImageResponse{Url: src}, nil
 }
 
-// Post basic, user match someone
+// Post del media
 func (s *Service) Destroy(ctx context.Context, url string) error {
 	_, error := s.cloud.DestroyFile(ctx, url)
 	return error
 }
 
-// Post basic, user match someone
+// Post get media
 func (s *Service) Asset(ctx context.Context, url string) (*types.ImageResponse, error) {
 	src, err := s.cloud.AssetFile(ctx, url)
 	if err != nil {
