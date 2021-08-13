@@ -28,6 +28,8 @@ type Repository interface {
 	GetListUsersAvailable(ctx context.Context, ignoreIds []primitive.ObjectID, ps types.PagingNSorting) ([]*types.UserResGetInfo, error)
 	IgnoreIdUsers(ctx context.Context, id string) ([]primitive.ObjectID, error)
 	CountUserUsersAvailable(ctx context.Context, ignoreIds []primitive.ObjectID, ps types.PagingNSorting) (int64, error)
+}
+type MailRepository interface {
 	UpdateMailVerified(ctx context.Context, email string) error
 }
 
@@ -36,15 +38,17 @@ type Service struct {
 	conf   *config.Configs
 	em     *config.ErrorMessage
 	repo   Repository
+	mail   MailRepository
 	logger glog.Logger
 }
 
 // NewService returns a new user service
-func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.Logger) *Service {
+func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, m MailRepository, l glog.Logger) *Service {
 	return &Service{
 		conf:   c,
 		em:     e,
 		repo:   r,
+		mail:   m,
 		logger: l,
 	}
 }
@@ -87,7 +91,7 @@ func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*typ
 		return nil, errors.Wrap(err, "Can't insert user")
 	}
 
-	if err := s.repo.UpdateMailVerified(ctx, user.Email); err != nil {
+	if err := s.mail.UpdateMailVerified(ctx, user.Email); err != nil {
 		s.logger.Errorf("Can't UpdateMailVerified", err)
 		return nil, errors.Wrap(err, "Can't UpdateMailVerified")
 	}

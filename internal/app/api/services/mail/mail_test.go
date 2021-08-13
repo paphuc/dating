@@ -32,6 +32,10 @@ func (mock *RepositoryMock) Insert(ctx context.Context, emailVerification types.
 	args := mock.Called()
 	return args.Error(0)
 }
+func (mock *RepositoryMock) UpdateMailVerified(ctx context.Context, email string) error {
+	args := mock.Called()
+	return args.Error(0)
+}
 
 func TestSendMail(t *testing.T) {
 	mockRepo := new(RepositoryMock)

@@ -18,6 +18,9 @@ import (
 type RepositoryMock struct {
 	mock.Mock
 }
+type MailRepositoryMock struct {
+	mock.Mock
+}
 
 func (mock *RepositoryMock) FindByEmail(ctx context.Context, email string) (*types.User, error) {
 	args := mock.Called()
@@ -109,7 +112,7 @@ func (mock *RepositoryMock) CountUserUsersAvailable(ctx context.Context, ignoreI
 	return result.(int64), args.Error(1)
 }
 
-func (mock *RepositoryMock) UpdateMailVerified(ctx context.Context, email string) error {
+func (mock *MailRepositoryMock) UpdateMailVerified(ctx context.Context, email string) error {
 	args := mock.Called()
 	return args.Error(0)
 }
@@ -230,7 +233,7 @@ func TestLogin(t *testing.T) {
 		assert.Error(t, err)
 		return
 	}
-
+	mockMailRepo := new(MailRepositoryMock)
 	mockRepo := new(RepositoryMock)
 	mockRepo.On("FindByEmail").Return(user, nil).Once()
 	mockRepo.On("FindByEmail").Return(nil, errors.New("Not Find user by email"))
@@ -239,6 +242,7 @@ func TestLogin(t *testing.T) {
 		&config.Configs{},
 		&config.ErrorMessage{},
 		mockRepo,
+		mockMailRepo,
 		glog.New(),
 	)
 	result, err := testService.Login(context.Background(), types.UserLogin{
@@ -264,6 +268,7 @@ func TestLogin(t *testing.T) {
 
 func TestSignUp(t *testing.T) {
 	mockRepo := new(RepositoryMock)
+	mockMailRepo := new(MailRepositoryMock)
 
 	user, err := userMock()
 	if err != nil {
@@ -275,12 +280,13 @@ func TestSignUp(t *testing.T) {
 	mockRepo.On("Insert").Return(nil)
 
 	mockRepo.On("FindByEmail").Return(user, nil)
-	mockRepo.On("UpdateMailVerified").Return(nil)
+	mockMailRepo.On("UpdateMailVerified").Return(nil)
 
 	testService := NewService(
 		&config.Configs{},
 		&config.ErrorMessage{},
 		mockRepo,
+		mockMailRepo,
 		glog.New(),
 	)
 
@@ -317,7 +323,7 @@ func TestFindUserById(t *testing.T) {
 	}
 
 	mockRepo := new(RepositoryMock)
-
+	mockMailRepo := new(MailRepositoryMock)
 	mockRepo.On("FindByID").Return(userInfo, nil).Once()
 	mockRepo.On("FindByID").Return(nil, errors.New("Not found id"))
 
@@ -325,6 +331,7 @@ func TestFindUserById(t *testing.T) {
 		&config.Configs{},
 		&config.ErrorMessage{},
 		mockRepo,
+		mockMailRepo,
 		glog.New(),
 	)
 
@@ -354,13 +361,14 @@ func TestUpdateUserByID(t *testing.T) {
 	}
 
 	mockRepo := new(RepositoryMock)
-
+	mockMailRepo := new(MailRepositoryMock)
 	mockRepo.On("UpdateUserByID").Return(nil).Once()
 	mockRepo.On("UpdateUserByID").Return(errors.New("Failed when update user"))
 	testService := NewService(
 		&config.Configs{},
 		&config.ErrorMessage{},
 		mockRepo,
+		mockMailRepo,
 		glog.New(),
 	)
 
@@ -375,6 +383,7 @@ func TestGetListUsers(t *testing.T) {
 	userInfo, _ := userInfoMock()
 
 	mockRepo := new(RepositoryMock)
+	mockMailRepo := new(MailRepositoryMock)
 
 	mockRepo.On("CountUser").Return(int64(8), nil)
 	mockRepo.On("GetListUsers").Return([]*types.UserResGetInfo{
@@ -386,6 +395,7 @@ func TestGetListUsers(t *testing.T) {
 		&config.Configs{},
 		&config.ErrorMessage{},
 		mockRepo,
+		mockMailRepo,
 		glog.New(),
 	)
 
@@ -410,7 +420,7 @@ func TestGetMatchedUsersByID(t *testing.T) {
 	userInfo, _ := userInfoMock()
 
 	mockRepo := new(RepositoryMock)
-
+	mockMailRepo := new(MailRepositoryMock)
 	mockRepo.On("GetListlikedInfo").Return([]*types.UserResGetInfo{
 		userInfo, userInfo,
 		userInfo, userInfo,
@@ -424,6 +434,7 @@ func TestGetMatchedUsersByID(t *testing.T) {
 		&config.Configs{},
 		&config.ErrorMessage{},
 		mockRepo,
+		mockMailRepo,
 		glog.New(),
 	)
 
@@ -449,7 +460,7 @@ func TestGetMatchedUsersByID(t *testing.T) {
 
 func TestDisableUserByID(t *testing.T) {
 	mockRepo := new(RepositoryMock)
-
+	mockMailRepo := new(MailRepositoryMock)
 	mockRepo.On("DisableUserByID").Return(nil).Twice()
 	mockRepo.On("DisableUserByID").Return(errors.New("DisableUserByID Failed"))
 
@@ -457,6 +468,7 @@ func TestDisableUserByID(t *testing.T) {
 		&config.Configs{},
 		&config.ErrorMessage{},
 		mockRepo,
+		mockMailRepo,
 		glog.New(),
 	)
 	errDisabled := testService.DisableUserByID(context.Background(), "60e3f9a7e1ab4c3dfc8fe4c1", true)
@@ -489,7 +501,7 @@ func TestGetListUsersAvailable(t *testing.T) {
 	userInfo, _ := userInfoMock()
 
 	mockRepo := new(RepositoryMock)
-
+	mockMailRepo := new(MailRepositoryMock)
 	mockRepo.On("IgnoreIdUsers").Return([]primitive.ObjectID{id1, id2, id3}, nil)
 	mockRepo.On("CountUserUsersAvailable").Return(int64(2), nil)
 	mockRepo.On("GetListUsersAvailable").Return([]*types.UserResGetInfo{
@@ -500,6 +512,7 @@ func TestGetListUsersAvailable(t *testing.T) {
 		&config.Configs{},
 		&config.ErrorMessage{},
 		mockRepo,
+		mockMailRepo,
 		glog.New(),
 	)
 

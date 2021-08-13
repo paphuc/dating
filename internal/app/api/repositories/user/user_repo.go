@@ -310,23 +310,6 @@ func (r *MongoRepository) CountUserUsersAvailable(ctx context.Context, ignoreIds
 	return r.collection().CountDocuments(ctx, query)
 }
 
-// this method help get update verify email in mail collection
-func (r *MongoRepository) UpdateMailVerified(ctx context.Context, email string) error {
-	filter := bson.M{
-		"email": email,
-	}
-	updated := bson.M{
-		"$set": bson.M{
-			"verified": true,
-		},
-	}
-	_, err := r.client.Database("dating").Collection("mails").UpdateOne(ctx, filter, updated)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (r *MongoRepository) collection() *mongo.Collection {
 	return r.client.Database("dating").Collection("users")
 }

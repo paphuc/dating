@@ -53,6 +53,23 @@ func (r *MongoRepository) FindByEmail(ctx context.Context, email string) (*types
 	return result, err
 }
 
+// this method help get update verify email in mail collection
+func (r *MongoRepository) UpdateMailVerified(ctx context.Context, email string) error {
+	filter := bson.M{
+		"email": email,
+	}
+	updated := bson.M{
+		"$set": bson.M{
+			"verified": true,
+		},
+	}
+	_, err := r.collection().UpdateOne(ctx, filter, updated)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *MongoRepository) collection() *mongo.Collection {
 	return r.client.Database("dating").Collection("mails")
 }

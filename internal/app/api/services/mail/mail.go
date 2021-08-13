@@ -17,6 +17,7 @@ import (
 type Repository interface {
 	FindByEmail(ctx context.Context, email string) (*types.EmailVerification, error)
 	Insert(ctx context.Context, emailVerification types.EmailVerification) error
+	UpdateMailVerified(ctx context.Context, email string) error
 }
 
 // Service is an mail service

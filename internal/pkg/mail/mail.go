@@ -28,7 +28,6 @@ func Sendmail(content Mail, mails []string, conf *config.Configs) error {
 	auth := smtp.PlainAuth("", email, password, HostMail)
 
 	t, err := template.ParseFiles(conf.Mail.SrcTemplate)
-	fmt.Println(t, err)
 	if err != nil {
 		return err
 	}

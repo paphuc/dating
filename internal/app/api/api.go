@@ -79,7 +79,7 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 	}
 
 	userLogger := logger.WithField("package", "user")
-	userSrv := userService.NewService(conns, &em, userRepo, userLogger)
+	userSrv := userService.NewService(conns, &em, userRepo, mailRepo, userLogger)
 	userHandler := userhandler.New(conns, &em, userSrv, userLogger)
 
 	matchLogger := logger.WithField("package", "match")
