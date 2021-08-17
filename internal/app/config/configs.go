@@ -93,6 +93,12 @@ type (
 			ConfirmTimeout time.Duration `mapstructure:"confirm_timeout"`
 			SrcTemplate    string        `mapstructure:"src_template"`
 		} `mapstructure:"mail"`
+		Notification struct {
+			Firebase struct {
+				Url string `mapstructure:"url"`
+				Key string `mapstructure:"key"`
+			} `mapstructure:"firebase"`
+		} `mapstructure:"notification"`
 	}
 
 	// Config hold MongoDB configuration information
@@ -119,7 +125,8 @@ func Dial(conf *MongoDB, logger glog.Logger) (*mongo.Client, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 	// Set client options
-	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb+srv://%s", conf.Address))
+	// clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb+srv://%s", conf.Address))
+	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
 	// Connect to MongoDB
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
