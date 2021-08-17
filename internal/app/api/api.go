@@ -15,6 +15,10 @@ import (
 	message "dating/internal/app/api/repositories/message"
 	messageService "dating/internal/app/api/services/message"
 
+	mailhandler "dating/internal/app/api/handler/mail"
+	mail "dating/internal/app/api/repositories/mail"
+	mailService "dating/internal/app/api/services/mail"
+
 	"dating/internal/app/config"
 	"dating/internal/app/db"
 	"dating/internal/pkg/glog"
@@ -56,6 +60,7 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 	var matchRepo matchService.Repository
 
 	var messageRepo messageService.Repository
+	var mailRepo mailService.Repository
 
 	switch conns.Database.Type {
 	case db.TypeMongoDB:
@@ -67,13 +72,14 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 		matchRepo = match.NewMongoRepository(s)
 
 		messageRepo = message.NewMongoRepository(s)
+		mailRepo = mail.NewMongoRepository(s)
 
 	default:
 		panic("database type not supported: " + conns.Database.Type)
 	}
 
 	userLogger := logger.WithField("package", "user")
-	userSrv := userService.NewService(conns, &em, userRepo, userLogger)
+	userSrv := userService.NewService(conns, &em, userRepo, mailRepo, userLogger)
 	userHandler := userhandler.New(conns, &em, userSrv, userLogger)
 
 	matchLogger := logger.WithField("package", "match")
@@ -83,6 +89,10 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 	messageLogger := logger.WithField("package", "chat")
 	messageSrv := messageService.NewService(conns, &em, messageRepo, messageLogger)
 	messageHandler := messagehandler.New(conns, &em, messageSrv, messageLogger)
+
+	mailLogger := logger.WithField("package", "mail")
+	mailSrv := mailService.NewService(conns, &em, mailRepo, mailLogger)
+	mailHandler := mailhandler.New(conns, &em, mailSrv, mailLogger)
 
 	routes := []route{
 		// infra
@@ -167,6 +177,17 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			path:    "/ws",
 			method:  get,
 			handler: messageHandler.ServeWs,
+		},
+		// MailVerified
+		route{
+			path:    "/emails",
+			method:  get,
+			handler: mailHandler.SendMail,
+		},
+		route{
+			path:    "/confirmation",
+			method:  get,
+			handler: mailHandler.MailVerified,
 		},
 	}
 

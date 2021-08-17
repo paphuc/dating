@@ -84,7 +84,8 @@ func TestServeWs(t *testing.T) {
 		mockRepo,
 		glog.New(),
 	)
-	testService.ServeWs(wsServer, conn, "60e3b5d2e1ab4c388ce2d04a", "60e3b5d2e1ab4c388ce2d04a")
-	testService.ServeWs(wsServer, conn, "60e3b5d2e1ab4c388ce2d04a", "60e3b5d2e1ab4c388ce2d0422")
+	go testService.ServeWs(wsServer, conn, "60e3b5d2e1ab4c388ce2d04a", "60e3b5d2e1ab4c388ce2d04a")
+	go testService.ServeWs(wsServer, conn, "60e3b5d2e1ab4c388ce2d04a", "60e3b5d2e1ab4c388ce2d042s")
+	go testService.ServeWs(wsServer, conn, "60e3b5d2e1ab4c388ce2ds04a", "60e3b5d2e1ab4c388ce2d042s")
 
 }
