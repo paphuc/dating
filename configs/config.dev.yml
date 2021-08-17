@@ -14,7 +14,10 @@ database:
     username: ""
     password: ""
     database: "dating"
-
+notification:
+  firebase:
+    url: ""
+    key: ""
 jwt:
   duration: 24h
 mail:

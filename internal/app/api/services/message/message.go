@@ -6,6 +6,7 @@ import (
 	"dating/internal/app/api/types"
 	"dating/internal/app/config"
 	"dating/internal/pkg/glog"
+	notificationpkg "dating/internal/pkg/notification"
 	socket "dating/internal/pkg/socket"
 
 	"github.com/gorilla/websocket"
@@ -18,6 +19,9 @@ type Repository interface {
 	Insert(ctx context.Context, message types.Message) error
 	FindByIDRoom(ctx context.Context, id string) ([]*types.Message, error)
 }
+type NotificationService interface {
+	SendNotification(ctx context.Context, id primitive.ObjectID, data notificationpkg.Data) error
+}
 
 // Service is an message service
 type Service struct {
@@ -25,15 +29,17 @@ type Service struct {
 	em     *config.ErrorMessage
 	repo   Repository
 	logger glog.Logger
+	noti   NotificationService
 }
 
 // NewService returns a new message service
-func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.Logger) *Service {
+func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.Logger, n NotificationService) *Service {
 	return &Service{
 		conf:   c,
 		em:     e,
 		repo:   r,
 		logger: l,
+		noti:   n,
 	}
 }
 
