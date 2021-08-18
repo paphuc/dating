@@ -48,8 +48,8 @@ func NotiMock() *types.Notification {
 
 func TestInsert(t *testing.T) {
 
-	PushNotification = func(conf *config.Configs, payLoad []byte) {
-
+	PushNotification = func(conf *config.Configs, payLoad []byte, result chan<- error) {
+		result <- nil
 	}
 	mockRepo := new(RepositoryMock)
 	mockRepo.On("Insert").Return(nil).Once()
@@ -70,8 +70,8 @@ func TestInsert(t *testing.T) {
 
 func TestRemove(t *testing.T) {
 
-	PushNotification = func(conf *config.Configs, payLoad []byte) {
-
+	PushNotification = func(conf *config.Configs, payLoad []byte, result chan<- error) {
+		result <- nil
 	}
 	mockRepo := new(RepositoryMock)
 	mockRepo.On("Delete").Return(nil).Once()
@@ -92,8 +92,8 @@ func TestRemove(t *testing.T) {
 
 func TestSendNotification(t *testing.T) {
 	a, _ := primitive.ObjectIDFromHex("611a1ef8998cb50ada22d162")
-	PushNotification = func(conf *config.Configs, payLoad []byte) {
-
+	PushNotification = func(conf *config.Configs, payLoad []byte, result chan<- error) {
+		result <- nil
 	}
 	mockRepo := new(RepositoryMock)
 	noti := NotiMock()
@@ -118,9 +118,9 @@ func TestSendNotification(t *testing.T) {
 		mockRepo,
 		glog.New(),
 	)
-	err := testService.SendNotification(context.Background(), a, notification.Data{})
-	err1 := testService.SendNotification(context.Background(), a, notification.Data{})
-	err2 := testService.SendNotification(context.Background(), a, notification.Data{})
+	err := testService.SendNotification(context.Background(), a, notification.Data{}, notification.Notification{})
+	err1 := testService.SendNotification(context.Background(), a, notification.Data{}, notification.Notification{})
+	err2 := testService.SendNotification(context.Background(), a, notification.Data{}, notification.Notification{})
 
 	mockRepo.AssertExpectations(t)
 	assert.Equal(t, nil, err)
@@ -129,8 +129,8 @@ func TestSendNotification(t *testing.T) {
 }
 
 func TestTestSend(t *testing.T) {
-	PushNotification = func(conf *config.Configs, payLoad []byte) {
-
+	PushNotification = func(conf *config.Configs, payLoad []byte, result chan<- error) {
+		result <- nil
 	}
 	mockRepo := new(RepositoryMock)
 	noti := NotiMock()

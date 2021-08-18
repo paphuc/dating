@@ -3,7 +3,6 @@ package notificationservices
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"dating/internal/app/api/types"
@@ -14,7 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Repository is an interface of a message repository
+// Repository is an interface of a notification repository
 type Repository interface {
 	Insert(ctx context.Context, noti types.Notification) error
 	Delete(ctx context.Context, noti types.Notification) error
@@ -66,6 +65,7 @@ func (s *Service) RemoveDevice(ctx context.Context, noti types.Notification) err
 	return nil
 }
 
+// method help test send notification
 func (s *Service) TestSend(ctx context.Context, id string) error {
 	ID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -82,28 +82,41 @@ func (s *Service) TestSend(ctx context.Context, id string) error {
 			err := s.repo.Delete(context.Background(), notification)
 			if err != nil {
 				s.logger.Errorf("Can't remove notification: %v", err)
-				fmt.Println("can't remove notification")
 				return err
 			}
+			s.logger.Errorf("Remove token devices completed: %v", notification)
 		} else {
 			payLoad := notificationpkg.NotificationPayLoad{
 				RegistrationIds: []string{notification.TokenDevice},
 				Data: notificationpkg.Data{
-					Feature: "notification",
-					Body:    "test",
+					Content: "Test push notification",
+				},
+				Foreground: true,
+				Notification: notificationpkg.Notification{
+					Title: "notification",
+					Body:  "test notification body",
 				},
 			}
-			fmt.Println(notification)
 			plByte, _ := json.Marshal(payLoad)
-			PushNotification(s.conf, plByte)
+			result := make(chan error, 1)
+
+			PushNotification(s.conf, plByte, result)
+
+			value, ok := <-result
+			if ok {
+				if value != nil {
+					s.logger.Errorf("Can't send notification: %v", value)
+				}
+			}
+			defer close(result)
 		}
 	}
 	s.logger.Infof("send notification completed")
 	return nil
 }
 
-// method help join client into room message server
-func (s *Service) SendNotification(ctx context.Context, id primitive.ObjectID, data notificationpkg.Data) error {
+// method help send notification
+func (s *Service) SendNotification(ctx context.Context, id primitive.ObjectID, data notificationpkg.Data, noti notificationpkg.Notification) error {
 	list, err := s.repo.Find(context.Background(), id)
 	if err != nil {
 		s.logger.Errorf("Find notification failed: %v", err)
@@ -115,16 +128,28 @@ func (s *Service) SendNotification(ctx context.Context, id primitive.ObjectID, d
 			err := s.repo.Delete(context.Background(), notification)
 			if err != nil {
 				s.logger.Errorf("Can't remove notification: %v", err)
-				fmt.Println("can't remove notification")
 				return err
 			}
+			s.logger.Errorf("Remove token devices completed: %v", notification)
 		} else {
 			payLoad := notificationpkg.NotificationPayLoad{
 				RegistrationIds: []string{notification.TokenDevice},
 				Data:            data,
+				Notification:    noti,
+				Foreground:      true,
 			}
 			plByte, _ := json.Marshal(payLoad)
-			go PushNotification(s.conf, plByte)
+			result := make(chan error, 1)
+
+			PushNotification(s.conf, plByte, result)
+
+			value, ok := <-result
+			if ok {
+				if value != nil {
+					s.logger.Errorf("Can't send notification: %v", value)
+				}
+			}
+			defer close(result)
 		}
 	}
 	s.logger.Infof("send notification completed")
