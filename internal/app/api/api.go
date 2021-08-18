@@ -15,13 +15,10 @@ import (
 	message "dating/internal/app/api/repositories/message"
 	messageService "dating/internal/app/api/services/message"
 
-<<<<<<< HEAD
 	mailhandler "dating/internal/app/api/handler/mail"
 	mail "dating/internal/app/api/repositories/mail"
 	mailService "dating/internal/app/api/services/mail"
 
-=======
->>>>>>> db27fac227c2bfc1bbc8a284fc03d0185149f19b
 	mediahandler "dating/internal/app/api/handler/media"
 	media "dating/internal/app/api/repositories/media"
 	mediaService "dating/internal/app/api/services/media"
@@ -66,10 +63,7 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 	var userRepo userService.Repository
 	var matchRepo matchService.Repository
 	var messageRepo messageService.Repository
-<<<<<<< HEAD
 	var mailRepo mailService.Repository
-=======
->>>>>>> db27fac227c2bfc1bbc8a284fc03d0185149f19b
 	var imageRepo mediaService.Repository
 
 	switch conns.Database.Type {
@@ -82,10 +76,7 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 		matchRepo = match.NewMongoRepository(s)
 
 		messageRepo = message.NewMongoRepository(s)
-<<<<<<< HEAD
 		mailRepo = mail.NewMongoRepository(s)
-=======
->>>>>>> db27fac227c2bfc1bbc8a284fc03d0185149f19b
 		imageRepo = media.NewMongoRepository(s)
 	default:
 		panic("database type not supported: " + conns.Database.Type)
@@ -103,7 +94,6 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 	messageSrv := messageService.NewService(conns, &em, messageRepo, messageLogger)
 	messageHandler := messagehandler.New(conns, &em, messageSrv, messageLogger)
 
-<<<<<<< HEAD
 	mailLogger := logger.WithField("package", "mail")
 	mailSrv := mailService.NewService(conns, &em, mailRepo, mailLogger)
 	mailHandler := mailhandler.New(conns, &em, mailSrv, mailLogger)
@@ -111,11 +101,6 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 	mediaLogger := logger.WithField("package", "media")
 	mediaSrv := mediaService.NewService(conns, &em, imageRepo, mediaLogger)
 	mediaHandler := mediahandler.New(conns, &em, mediaSrv, mediaLogger)
-=======
-	imageLogger := logger.WithField("package", "chat")
-	imageSrv := mediaService.NewService(conns, &em, imageRepo, imageLogger)
-	imageHandler := mediahandler.New(conns, &em, imageSrv, messageLogger)
->>>>>>> db27fac227c2bfc1bbc8a284fc03d0185149f19b
 
 	routes := []route{
 		// infra
