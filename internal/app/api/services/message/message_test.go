@@ -25,7 +25,7 @@ type NotificationServiceMock struct {
 	mock.Mock
 }
 
-func (mock *NotificationServiceMock) SendNotification(ctx context.Context, id primitive.ObjectID, data notificationpkg.Data) error {
+func (mock *NotificationServiceMock) SendNotification(ctx context.Context, id primitive.ObjectID, data notificationpkg.Data, noti notificationpkg.Notification) error {
 	args := mock.Called()
 	return args.Error(0)
 }

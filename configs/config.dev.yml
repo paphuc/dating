@@ -16,7 +16,7 @@ database:
     database: "dating"
 notification:
   firebase:
-    url: ""
+    url: "https://fcm.googleapis.com/fcm/send"
     key: ""
 jwt:
   duration: 24h

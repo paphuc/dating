@@ -20,7 +20,7 @@ type Repository interface {
 	FindByIDRoom(ctx context.Context, id string) ([]*types.Message, error)
 }
 type NotificationService interface {
-	SendNotification(ctx context.Context, id primitive.ObjectID, data notificationpkg.Data) error
+	SendNotification(ctx context.Context, id primitive.ObjectID, data notificationpkg.Data, noti notificationpkg.Notification) error
 }
 
 // Service is an message service
@@ -46,7 +46,7 @@ func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.
 // method help join client into room message server
 func (s *Service) ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoom, idUser string) {
 
-	saveMessagesChan := socket.NewSaveMessageChan(s.repo)
+	saveMessagesChan := socket.NewSaveMessageChan(s.repo, s.noti)
 	idRoomHex, error := primitive.ObjectIDFromHex(idRoom)
 
 	if error != nil {
