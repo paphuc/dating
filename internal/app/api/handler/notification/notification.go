@@ -37,6 +37,8 @@ func New(c *config.Configs, e *config.ErrorMessage, s service, l glog.Logger) *H
 		logger: l,
 	}
 }
+
+// Post handler add token device
 func (h *Handler) AddDevice(w http.ResponseWriter, r *http.Request) {
 
 	var noti types.Notification
@@ -53,7 +55,7 @@ func (h *Handler) AddDevice(w http.ResponseWriter, r *http.Request) {
 	respond.JSON(w, http.StatusOK, h.em.Success)
 }
 
-// Put handler get list message of room
+// Del handler remove token device
 func (h *Handler) RemoveDevice(w http.ResponseWriter, r *http.Request) {
 
 	var noti types.Notification
@@ -70,7 +72,7 @@ func (h *Handler) RemoveDevice(w http.ResponseWriter, r *http.Request) {
 	respond.JSON(w, http.StatusOK, h.em.Success)
 }
 
-// Put handler get list message of room
+// Get handler to test push noti
 func (h *Handler) TestSend(w http.ResponseWriter, r *http.Request) {
 
 	err := h.srv.TestSend(r.Context(), mux.Vars(r)["id"])
