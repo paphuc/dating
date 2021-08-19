@@ -42,14 +42,14 @@ func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.
 }
 
 // Post upload media
-func (s *Service) Upload(ctx context.Context, fileBytes []byte) (*types.ImageResponse, error) {
+func (s *Service) Upload(ctx context.Context, fileBytes []byte) (*types.MediaResponse, error) {
 
 	src, err := s.cloud.UploadFile(ctx, fileBytes, uuid.New())
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.ImageResponse{Url: src}, nil
+	return &types.MediaResponse{Url: src}, nil
 }
 
 // Post del media
@@ -59,10 +59,10 @@ func (s *Service) Destroy(ctx context.Context, url string) error {
 }
 
 // Post get media
-func (s *Service) Asset(ctx context.Context, url string) (*types.ImageResponse, error) {
+func (s *Service) Asset(ctx context.Context, url string) (*types.MediaResponse, error) {
 	src, err := s.cloud.AssetFile(ctx, url)
 	if err != nil {
 		return nil, err
 	}
-	return &types.ImageResponse{Url: src}, nil
+	return &types.MediaResponse{Url: src}, nil
 }

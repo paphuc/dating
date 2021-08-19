@@ -85,6 +85,6 @@ func TestServeWs(t *testing.T) {
 		glog.New(),
 	)
 	go testService.ServeWs(wsServer, conn, "60e3b5d2e1ab4c388ce2d04a", "60e3b5d2e1ab4c388ce2d04a")
-	go testService.ServeWs(wsServer, conn, "60e3b5d2e1ab4c388ce2d04a", "60e3b5d2e1ab4c388ce2d042a")
+	go testService.ServeWs(wsServer, conn, "60e3b5d2e1ab4c388ce2ds04a", "60e3b5d2e1ab4c388ce2d042")
 
 }

@@ -15,9 +15,9 @@ import (
 
 type (
 	service interface {
-		Upload(ctx context.Context, fileBytes []byte) (*types.ImageResponse, error)
+		Upload(ctx context.Context, fileBytes []byte) (*types.MediaResponse, error)
 		Destroy(ctx context.Context, url string) error
-		Asset(ctx context.Context, url string) (*types.ImageResponse, error)
+		Asset(ctx context.Context, url string) (*types.MediaResponse, error)
 	}
 	// Handler is media web handler
 	Handler struct {

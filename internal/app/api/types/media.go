@@ -1,5 +1,5 @@
 package types
 
-type ImageResponse struct {
+type MediaResponse struct {
 	Url string `json:"url,omitempty"`
 }

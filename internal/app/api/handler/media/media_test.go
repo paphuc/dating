@@ -21,31 +21,31 @@ type ServiceMock struct {
 	mock.Mock
 }
 
-func (mock *ServiceMock) Upload(ctx context.Context, fileBytes []byte) (*types.ImageResponse, error) {
+func (mock *ServiceMock) Upload(ctx context.Context, fileBytes []byte) (*types.MediaResponse, error) {
 	args := mock.Called()
 	result := args.Get(0)
 	if result == nil {
 		return nil, args.Error(1)
 	}
-	return result.(*types.ImageResponse), args.Error(1)
+	return result.(*types.MediaResponse), args.Error(1)
 }
 func (mock *ServiceMock) Destroy(ctx context.Context, url string) error {
 	args := mock.Called()
 	return args.Error(0)
 }
-func (mock *ServiceMock) Asset(ctx context.Context, url string) (*types.ImageResponse, error) {
+func (mock *ServiceMock) Asset(ctx context.Context, url string) (*types.MediaResponse, error) {
 	args := mock.Called()
 	result := args.Get(0)
 	if result == nil {
 		return nil, args.Error(1)
 	}
-	return result.(*types.ImageResponse), args.Error(1)
+	return result.(*types.MediaResponse), args.Error(1)
 }
 
 func TestUpload(t *testing.T) {
 	mockService := new(ServiceMock)
 
-	mockService.On("Upload").Return(&types.ImageResponse{Url: "a.jpg"}, nil).Once()
+	mockService.On("Upload").Return(&types.MediaResponse{Url: "a.jpg"}, nil).Once()
 	mockService.On("Upload").Return(nil, errors.New("Cant not upload"))
 
 	testHandler := New(
@@ -108,7 +108,7 @@ func TestAsset(t *testing.T) {
 	mockService := new(ServiceMock)
 
 	mockService.On("Asset").Return(nil, errors.New("Cant not asset")).Once()
-	mockService.On("Asset").Return(&types.ImageResponse{Url: "a.jpg"}, nil)
+	mockService.On("Asset").Return(&types.MediaResponse{Url: "a.jpg"}, nil)
 
 	testHandler := New(
 		&config.Configs{},
