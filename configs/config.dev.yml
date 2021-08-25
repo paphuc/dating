@@ -14,21 +14,15 @@ database:
     username: ""
     password: ""
     database: "dating"
-<<<<<<< HEAD
     
 cloudinary:
   url: ""
 
-=======
->>>>>>> b9eb778853d055d867b0cba1633b41fe917d9af1
 notification:
   firebase:
     url: "https://fcm.googleapis.com/fcm/send"
     key: ""
-<<<<<<< HEAD
 
-=======
->>>>>>> b9eb778853d055d867b0cba1633b41fe917d9af1
 jwt:
   duration: 24h
   

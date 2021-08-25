@@ -68,10 +68,7 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 	var matchRepo matchService.Repository
 	var messageRepo messageService.Repository
 	var mailRepo mailService.Repository
-<<<<<<< HEAD
 	var imageRepo mediaService.Repository
-=======
->>>>>>> b9eb778853d055d867b0cba1633b41fe917d9af1
 	var notificationRepo notificationService.Repository
 
 	switch conns.Database.Type {
