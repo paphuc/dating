@@ -9,7 +9,7 @@ info:
   license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "https://dating-tma.herokuapp.com/"
+host: "localhost:8080"
 tags:
 - name: "user"
   description: "Operations about user"
@@ -17,17 +17,14 @@ tags:
   description: "Operations about match"
 - name: "messages"
   description: "Operations about messages"
-<<<<<<< HEAD
 - name: "media"
   description: "Operations about media"
-=======
 - name: "emails"
   description: "Operations about emails"
 - name: "notification"
   description: "Operations about notification"
->>>>>>> db831d3 (add swagger")
 schemes:
-- "https"
+- "http"
 securityDefinitions:
   Bearer:
     type: apiKey
@@ -629,9 +626,7 @@ paths:
       responses:
         "200":
           schema:
-            type: array
-            items:
-              $ref: "#/definitions/MediaResponse"
+            $ref: "#/definitions/MediaResponse"
           description: "Bad Request"
         "400":
           description: "Bad Request"
@@ -882,6 +877,7 @@ definitions:
     type: "object"
     properties:
       url: 
+        type: "string"
   NotificationRequest:
     type: "object"
     properties:
