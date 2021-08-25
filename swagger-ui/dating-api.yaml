@@ -9,7 +9,7 @@ info:
   license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "dating-tma.herokuapp.com"
+host: "https://dating-tma.herokuapp.com/"
 tags:
 - name: "user"
   description: "Operations about user"
@@ -17,6 +17,8 @@ tags:
   description: "Operations about match"
 - name: "messages"
   description: "Operations about messages"
+- name: "media"
+  description: "Operations about media"
 schemes:
 - "https"
 securityDefinitions:
@@ -174,7 +176,7 @@ paths:
       - "user"
       summary: "get list users"
       description: "This can only be done by the logged in user."
-      operationId: "Get list users"
+      operationId: "Get list users available"
       parameters:
       - name: "idUsers"
         in: "path"
@@ -434,7 +436,89 @@ paths:
             $ref: "#/definitions/ErrorResponse"
         "404":
           description: "Not Found"          
-
+  /media:
+    post:
+      security:
+        - Bearer: []
+      tags:
+      - "media"
+      consumes:
+         - multipart/form-data
+      parameters:
+        - in: formData
+          name: file
+          type: file
+          description: The file to upload.
+      responses:
+        "200":
+          schema:
+            $ref: "#/definitions/MediaResponse"
+          description: "upload completed"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "not found"
+  /media/{idMedia}:
+    get: 
+      security:
+        - Bearer: []
+      tags:
+      - "media"
+      summary: "Get url get media"
+      description: "Get url get media"
+      operationId: "Get url get media"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "idMedia"
+        in: "path"
+        description: "The idMedia for get"
+        required: true
+        type: "string" 
+      responses:
+        "200":
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/MediaResponse"
+          description: "Bad Request"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "Not Found"
+    delete: 
+      security:
+        - Bearer: []
+      tags:
+      - "media"
+      summary: "del media"
+      description: "del media"
+      operationId: "del media"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "idMedia"
+        in: "path"
+        description: "The idMedia for del"
+        required: true
+        type: "string" 
+      responses:
+        "200":
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/SuccessResponse"
+          description: "Bad Request"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "Not Found"
 definitions:
   RegisterUserRequest:
     type: "object"
@@ -645,6 +729,11 @@ definitions:
       created_at:
         type: "string"
         format: "date-time"
+  MediaResponse:
+    type: "object"
+    properties:
+      url: 
+        type: "string"
   SuccessResponse:
     type: "object"
     properties:

@@ -19,6 +19,10 @@ import (
 	mail "dating/internal/app/api/repositories/mail"
 	mailService "dating/internal/app/api/services/mail"
 
+	mediahandler "dating/internal/app/api/handler/media"
+	media "dating/internal/app/api/repositories/media"
+	mediaService "dating/internal/app/api/services/media"
+
 	"dating/internal/app/config"
 	"dating/internal/app/db"
 	"dating/internal/pkg/glog"
@@ -58,9 +62,9 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 
 	var userRepo userService.Repository
 	var matchRepo matchService.Repository
-
 	var messageRepo messageService.Repository
 	var mailRepo mailService.Repository
+	var imageRepo mediaService.Repository
 
 	switch conns.Database.Type {
 	case db.TypeMongoDB:
@@ -73,7 +77,7 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 
 		messageRepo = message.NewMongoRepository(s)
 		mailRepo = mail.NewMongoRepository(s)
-
+		imageRepo = media.NewMongoRepository(s)
 	default:
 		panic("database type not supported: " + conns.Database.Type)
 	}
@@ -93,6 +97,10 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 	mailLogger := logger.WithField("package", "mail")
 	mailSrv := mailService.NewService(conns, &em, mailRepo, mailLogger)
 	mailHandler := mailhandler.New(conns, &em, mailSrv, mailLogger)
+
+	mediaLogger := logger.WithField("package", "media")
+	mediaSrv := mediaService.NewService(conns, &em, imageRepo, mediaLogger)
+	mediaHandler := mediahandler.New(conns, &em, mediaSrv, mediaLogger)
 
 	routes := []route{
 		// infra
@@ -171,6 +179,25 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			method:      get,
 			middlewares: []middlewareFunc{middleware.Auth},
 			handler:     messageHandler.GetMessagesByIdRoom,
+		},
+
+		route{
+			path:        "/media",
+			method:      post,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     mediaHandler.Upload,
+		},
+		route{
+			path:        "/media/{id:[a-z0-9-\\-]+}",
+			method:      get,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     mediaHandler.Asset,
+		},
+		route{
+			path:        "/media/{id:[a-z0-9-\\-]+}",
+			method:      delete,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     mediaHandler.Destroy,
 		},
 
 		route{
