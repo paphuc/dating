@@ -155,9 +155,9 @@ func TestTestSend(t *testing.T) {
 		mockRepo,
 		glog.New(),
 	)
-	err := testService.TestSend(context.Background(), "611a1ef8998cb50ada22d162")
-	err1 := testService.TestSend(context.Background(), "611a1ef8998cb50ada22d162")
-	err2 := testService.TestSend(context.Background(), "611a1ef8998cb50ada22d162")
+	err := testService.SendTest(context.Background(), "611a1ef8998cb50ada22d162")
+	err1 := testService.SendTest(context.Background(), "611a1ef8998cb50ada22d162")
+	err2 := testService.SendTest(context.Background(), "611a1ef8998cb50ada22d162")
 
 	mockRepo.AssertExpectations(t)
 	assert.Equal(t, nil, err)

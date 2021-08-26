@@ -227,7 +227,7 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			path:        "/notification/{id:[a-z0-9-\\-]+}",
 			method:      get,
 			middlewares: []middlewareFunc{middleware.Auth},
-			handler:     notificationHandler.TestSend,
+			handler:     notificationHandler.SendTest,
 		},
 
 		route{

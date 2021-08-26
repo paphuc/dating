@@ -28,13 +28,13 @@ type ServiceMock struct {
 func (mock *ServiceMock) ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoom, idUser string) {
 
 }
-func (mock *ServiceMock) GetMessagesByIdRoom(ctx context.Context, id string) ([]types.Message, error) {
+func (mock *ServiceMock) GetMessagesByIdRoom(ctx context.Context, id string) ([]*types.Message, error) {
 	args := mock.Called()
 	result := args.Get(0)
 	if result == nil {
 		return nil, args.Error(1)
 	}
-	return result.([]types.Message), args.Error(1)
+	return result.([]*types.Message), args.Error(1)
 }
 func listMessagesMock() *types.Message {
 	return &types.Message{
@@ -50,8 +50,8 @@ func listMessagesMock() *types.Message {
 func TestGetMessagesByIdRoom(t *testing.T) {
 	mockService := new(ServiceMock)
 	message := listMessagesMock()
-	mockService.On("GetMessagesByIdRoom").Return([]types.Message{*message, *message, *message}, nil).Once()
-	mockService.On("GetMessagesByIdRoom").Return([]types.Message{}, errors.New("Can't like or match"))
+	mockService.On("GetMessagesByIdRoom").Return([]*types.Message{message, message, message}, nil).Once()
+	mockService.On("GetMessagesByIdRoom").Return([]*types.Message{}, errors.New("Can't like or match"))
 
 	testHandler := New(
 		&config.Configs{},

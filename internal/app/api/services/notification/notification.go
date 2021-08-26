@@ -66,7 +66,7 @@ func (s *Service) RemoveDevice(ctx context.Context, noti types.Notification) err
 }
 
 // method help test send notification
-func (s *Service) TestSend(ctx context.Context, id string) error {
+func (s *Service) SendTest(ctx context.Context, id string) error {
 	ID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
@@ -76,10 +76,9 @@ func (s *Service) TestSend(ctx context.Context, id string) error {
 		s.logger.Errorf("Find notification failed: %v", err)
 		return err
 	}
-	listN := s.convertPointerArrayToArrayNotification(list)
-	for _, noti := range listN {
+	for _, noti := range list {
 		if time.Now().Sub(noti.CreateAt) > s.conf.Jwt.Duration {
-			err := s.repo.Delete(context.Background(), noti)
+			err := s.repo.Delete(context.Background(), *noti)
 			if err != nil {
 				s.logger.Errorf("Can't remove notification: %v", err)
 				return err
@@ -122,10 +121,9 @@ func (s *Service) SendNotification(ctx context.Context, id primitive.ObjectID, d
 		s.logger.Errorf("Find notification failed: %v", err)
 		return err
 	}
-	listN := s.convertPointerArrayToArrayNotification(list)
-	for _, noti := range listN {
+	for _, noti := range list {
 		if time.Now().Sub(noti.CreateAt) > s.conf.Jwt.Duration {
-			err := s.repo.Delete(context.Background(), noti)
+			err := s.repo.Delete(context.Background(), *noti)
 			if err != nil {
 				s.logger.Errorf("Can't remove notification: %v", err)
 				return err
@@ -154,13 +152,4 @@ func (s *Service) SendNotification(ctx context.Context, id primitive.ObjectID, d
 	}
 	s.logger.Infof("send notification completed")
 	return nil
-}
-
-// convert []*types.Notification to []types.Notification - if empty return []
-func (s *Service) convertPointerArrayToArrayNotification(list []*types.Notification) []types.Notification {
-	listN := []types.Notification{}
-	for _, mgs := range list {
-		listN = append(listN, *mgs)
-	}
-	return listN
 }

@@ -17,7 +17,7 @@ import (
 type (
 	service interface {
 		ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoom, idUser string)
-		GetMessagesByIdRoom(ctx context.Context, id string) ([]types.Message, error)
+		GetMessagesByIdRoom(ctx context.Context, id string) ([]*types.Message, error)
 	}
 	// Handler is message web handler
 	Handler struct {

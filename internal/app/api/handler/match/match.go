@@ -18,7 +18,7 @@ type (
 	service interface {
 		InsertMatch(ctx context.Context, Match types.MatchRequest) (*types.Match, error)
 		DeleteMatch(ctx context.Context, matchreq types.MatchRequest) error
-		FindRoomsByUserId(ctx context.Context, id string) ([]types.MatchRoomResponse, error)
+		FindRoomsByUserId(ctx context.Context, id string) ([]*types.MatchRoomResponse, error)
 	}
 	// Handler is match web handler
 	Handler struct {

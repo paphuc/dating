@@ -29,7 +29,7 @@ func (mock *ServiceMock) RemoveDevice(ctx context.Context, noti types.Notificati
 	args := mock.Called()
 	return args.Error(0)
 }
-func (mock *ServiceMock) TestSend(ctx context.Context, id string) error {
+func (mock *ServiceMock) SendTest(ctx context.Context, id string) error {
 	args := mock.Called()
 	return args.Error(0)
 }
@@ -110,8 +110,8 @@ func TestRemoveDevice(t *testing.T) {
 
 func TestTestSend(t *testing.T) {
 	mockService := new(ServiceMock)
-	mockService.On("TestSend").Return(nil).Once()
-	mockService.On("TestSend").Return(errors.New("TestSend error"))
+	mockService.On("SendTest").Return(nil).Once()
+	mockService.On("SendTest").Return(errors.New("SendTest error"))
 
 	testHandler := New(
 		&config.Configs{},
@@ -121,7 +121,7 @@ func TestTestSend(t *testing.T) {
 	)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		testHandler.TestSend(w, r)
+		testHandler.SendTest(w, r)
 	}))
 
 	defer func() { ts.Close() }()

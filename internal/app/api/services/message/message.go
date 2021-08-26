@@ -70,7 +70,7 @@ func (s *Service) ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoo
 }
 
 // method help join client into room message server
-func (s *Service) GetMessagesByIdRoom(ctx context.Context, id string) ([]types.Message, error) {
+func (s *Service) GetMessagesByIdRoom(ctx context.Context, id string) ([]*types.Message, error) {
 
 	listMessages, err := s.repo.FindByIDRoom(ctx, id)
 	if err != nil {
@@ -79,15 +79,9 @@ func (s *Service) GetMessagesByIdRoom(ctx context.Context, id string) ([]types.M
 	}
 	s.logger.Infof("Get list message by id room successfull")
 
-	return s.convertPointerArrayToArrayMessage(listMessages), nil
-}
-
-// convert []*types.Message to []types.Message - if empty return []
-func (s *Service) convertPointerArrayToArrayMessage(list []*types.Message) []types.Message {
-
-	listMessages := []types.Message{}
-	for _, mgs := range list {
-		listMessages = append(listMessages, *mgs)
+	if listMessages == nil {
+		return []*types.Message{}, nil
 	}
-	return listMessages
+
+	return listMessages, nil
 }

@@ -35,13 +35,13 @@ func (mock *ServiceMock) DeleteMatch(ctx context.Context, matchreq types.MatchRe
 	args := mock.Called()
 	return args.Error(0)
 }
-func (mock *ServiceMock) FindRoomsByUserId(ctx context.Context, id string) ([]types.MatchRoomResponse, error) {
+func (mock *ServiceMock) FindRoomsByUserId(ctx context.Context, id string) ([]*types.MatchRoomResponse, error) {
 	args := mock.Called()
 	result := args.Get(0)
 	if result == nil {
 		return nil, args.Error(1)
 	}
-	return result.([]types.MatchRoomResponse), args.Error(1)
+	return result.([]*types.MatchRoomResponse), args.Error(1)
 }
 
 func matchMock() (*types.Match, error) {
@@ -165,7 +165,7 @@ func TestGetRoomsByUserId(t *testing.T) {
 	usersID1 := primitive.NewObjectID()
 	usersID2 := primitive.NewObjectID()
 
-	rooms := types.MatchRoomResponse{
+	rooms := &types.MatchRoomResponse{
 		ID: primitive.NewObjectID(),
 		User: []types.UserResGetInfoInRoom{
 			{
@@ -193,8 +193,8 @@ func TestGetRoomsByUserId(t *testing.T) {
 	}
 
 	mockService := new(ServiceMock)
-	mockService.On("FindRoomsByUserId").Return([]types.MatchRoomResponse{rooms, rooms, rooms}, nil).Once()
-	mockService.On("FindRoomsByUserId").Return([]types.MatchRoomResponse{}, errors.New("Can't like or match"))
+	mockService.On("FindRoomsByUserId").Return([]*types.MatchRoomResponse{rooms, rooms, rooms}, nil).Once()
+	mockService.On("FindRoomsByUserId").Return([]*types.MatchRoomResponse{}, errors.New("Can't like or match"))
 
 	testHandler := New(
 		&config.Configs{},

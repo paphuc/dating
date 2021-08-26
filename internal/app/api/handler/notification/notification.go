@@ -17,7 +17,7 @@ type (
 	service interface {
 		AddDevice(ctx context.Context, noti types.Notification) error
 		RemoveDevice(ctx context.Context, noti types.Notification) error
-		TestSend(ctx context.Context, id string) error
+		SendTest(ctx context.Context, id string) error
 	}
 	// Handler is message web handler
 	Handler struct {
@@ -73,9 +73,9 @@ func (h *Handler) RemoveDevice(w http.ResponseWriter, r *http.Request) {
 }
 
 // Get handler to test push noti
-func (h *Handler) TestSend(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) SendTest(w http.ResponseWriter, r *http.Request) {
 
-	err := h.srv.TestSend(r.Context(), mux.Vars(r)["id"])
+	err := h.srv.SendTest(r.Context(), mux.Vars(r)["id"])
 	if err != nil {
 		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.ValidationFailed)
 		return
