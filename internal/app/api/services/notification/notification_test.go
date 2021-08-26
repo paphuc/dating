@@ -38,9 +38,9 @@ func (mock RepositoryMock) Find(ctx context.Context, id primitive.ObjectID) ([]*
 }
 
 func NotiMock() *types.Notification {
-	a, _ := primitive.ObjectIDFromHex("611a1ef8998cb50ada22d162")
+	id, _ := primitive.ObjectIDFromHex("611a1ef8998cb50ada22d162")
 	return &types.Notification{
-		UserID:      a,
+		UserID:      id,
 		TokenDevice: "eddndyarQPyVNciA4h_Lj9:APA91bGFEPFwIep3OnUp0zc8DHSesF2QoTauyRsO0YFHPYMqGV1UrbaEX9i-OhgilguQNltvnNLs3iJtrUaaDpz6YwGWAqi5MQQoEN1EgzJU99acSqmGDFrzjyDnKi-kUYRbSi2l03Pa",
 		CreateAt:    time.Now(),
 	}

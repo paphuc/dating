@@ -9,7 +9,7 @@ info:
   license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "https://dating-tma.herokuapp.com/"
+host: "dating-tma.herokuapp.com"
 tags:
 - name: "user"
   description: "Operations about user"
@@ -452,7 +452,7 @@ paths:
       parameters:
       - name: "email"
         in: "query"
-        description: "mail user"
+        description: "mail user, example: nguoigiaumat100@gmail.com"
         required: true
         type: "string" 
       responses:
@@ -478,12 +478,12 @@ paths:
       parameters:
       - name: "email"
         in: "query"
-        description: "mail user"
+        description: "mail user, example: nguoigiaumat100@gmail.com"
         required: true
         type: "string"
       - name: "code"
         in: "query"
-        description: "mail user"
+        description: "example: HNI8HJ"
         required: true
         type: "string" 
       responses:
@@ -515,6 +515,9 @@ paths:
         required: true
         schema:
           $ref: "#/definitions/NotificationRequest"
+          example: 
+            user_id: 611a1ef8998cb50ada22d162
+            token_device: fwVUPtBVQqSxvuyslLaEOo:APA91bFR1Bs3sWGT9vYTMf_nLZ27TnvTXflSrslc4hOyLk1GxOpJSuoV1Shatrhs7oOuPHP01FJc93hUsJjqGC7v1pJhbwYw1v8v4o-LAHn82laq2JVlAKfMTUun2htoqFVi7-pzztCA
       responses:
         "200":
           schema:
@@ -543,6 +546,9 @@ paths:
         required: true
         schema:
           $ref: "#/definitions/NotificationRequest"
+          example: 
+            user_id: 611a1ef8998cb50ada22d162
+            token_device: fwVUPtBVQqSxvuyslLaEOo:APA91bFR1Bs3sWGT9vYTMf_nLZ27TnvTXflSrslc4hOyLk1GxOpJSuoV1Shatrhs7oOuPHP01FJc93hUsJjqGC7v1pJhbwYw1v8v4o-LAHn82laq2JVlAKfMTUun2htoqFVi7-pzztCA
       responses:
         "200":
           schema:
@@ -568,7 +574,7 @@ paths:
       parameters:
       - name: "iduser"
         in: "path"
-        description: "The id user for get"
+        description: "The id user for get, example: 611a1ef8998cb50ada22d162"
         required: true
         type: "string"  
       responses:
@@ -620,7 +626,7 @@ paths:
       parameters:
       - name: "idMedia"
         in: "path"
-        description: "The idMedia for get"
+        description: "The idMedia for get, example: bbeacbb4-c0ec-4104-afd4-196d3476f056"
         required: true
         type: "string" 
       responses:
@@ -653,9 +659,7 @@ paths:
       responses:
         "200":
           schema:
-            type: array
-            items:
-              $ref: "#/definitions/SuccessResponse"
+            $ref: "#/definitions/SuccessResponse"
           description: "Bad Request"
         "400":
           description: "Bad Request"
@@ -670,10 +674,13 @@ definitions:
     properties:
       name:
         type: "string"
+        example: Phuc
       email:
         type: "string"
+        example: tphuc@gmail.com
       password:
         type: "string"
+        example: 12345678
     xml:
       name: "User"
   LoginUserRequest:
@@ -681,8 +688,10 @@ definitions:
     properties:
       email:
         type: "string"
+        example: tphuc@gmail.com
       password:
         type: "string"
+        example: 12345678
     xml:
       name: "User"
   RegisterLoginUserResponse:
@@ -883,8 +892,10 @@ definitions:
     properties:
       user_id: 
         type: "string"
+        example: 611a1ef8998cb50ada22d162
       token_device: 
         type: "string"
+        example: fwVUPtBVQqSxvuyslLaEOo:APA91bFR1Bs3sWGT9vYTMf_nLZ27TnvTXflSrslc4hOyLk1GxOpJSuoV1Shatrhs7oOuPHP01FJc93hUsJjqGC7v1pJhbwYw1v8v4o-LAHn82laq2JVlAKfMTUun2htoqFVi7-pzztCA
   SuccessResponse:
     type: "object"
     properties:

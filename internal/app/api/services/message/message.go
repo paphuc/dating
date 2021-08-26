@@ -6,7 +6,7 @@ import (
 	"dating/internal/app/api/types"
 	"dating/internal/app/config"
 	"dating/internal/pkg/glog"
-	notificationpkg "dating/internal/pkg/notification"
+	notification "dating/internal/pkg/notification"
 	socket "dating/internal/pkg/socket"
 
 	"github.com/gorilla/websocket"
@@ -20,7 +20,7 @@ type Repository interface {
 	FindByIDRoom(ctx context.Context, id string) ([]*types.Message, error)
 }
 type NotificationService interface {
-	SendNotification(ctx context.Context, id primitive.ObjectID, data notificationpkg.Data, noti notificationpkg.Notification) error
+	SendNotification(ctx context.Context, id primitive.ObjectID, data notification.Data, noti notification.Notification) error
 }
 
 // Service is an message service

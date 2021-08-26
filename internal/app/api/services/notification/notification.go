@@ -8,7 +8,7 @@ import (
 	"dating/internal/app/api/types"
 	"dating/internal/app/config"
 	"dating/internal/pkg/glog"
-	notificationpkg "dating/internal/pkg/notification"
+	notification "dating/internal/pkg/notification"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -39,7 +39,7 @@ func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.
 }
 
 var (
-	PushNotification = notificationpkg.PushNotification
+	PushNotification = notification.PushNotification
 )
 
 // method help add Device in notification
@@ -77,22 +77,22 @@ func (s *Service) TestSend(ctx context.Context, id string) error {
 		return err
 	}
 	listN := s.convertPointerArrayToArrayNotification(list)
-	for _, notification := range listN {
-		if time.Now().Sub(notification.CreateAt) > s.conf.Jwt.Duration {
-			err := s.repo.Delete(context.Background(), notification)
+	for _, noti := range listN {
+		if time.Now().Sub(noti.CreateAt) > s.conf.Jwt.Duration {
+			err := s.repo.Delete(context.Background(), noti)
 			if err != nil {
 				s.logger.Errorf("Can't remove notification: %v", err)
 				return err
 			}
-			s.logger.Errorf("Remove token devices completed: %v", notification)
+			s.logger.Errorf("Remove token devices completed: %v", noti)
 		} else {
-			payLoad := notificationpkg.NotificationPayLoad{
-				RegistrationIds: []string{notification.TokenDevice},
-				Data: notificationpkg.Data{
+			payLoad := notification.NotificationPayLoad{
+				RegistrationIds: []string{noti.TokenDevice},
+				Data: notification.Data{
 					Content: "Test push notification",
 				},
 				Foreground: true,
-				Notification: notificationpkg.Notification{
+				Notification: notification.Notification{
 					Title: "notification",
 					Body:  "test notification body",
 				},
@@ -116,26 +116,26 @@ func (s *Service) TestSend(ctx context.Context, id string) error {
 }
 
 // method help send notification
-func (s *Service) SendNotification(ctx context.Context, id primitive.ObjectID, data notificationpkg.Data, noti notificationpkg.Notification) error {
+func (s *Service) SendNotification(ctx context.Context, id primitive.ObjectID, dataPayLoad notification.Data, notiPayLoad notification.Notification) error {
 	list, err := s.repo.Find(context.Background(), id)
 	if err != nil {
 		s.logger.Errorf("Find notification failed: %v", err)
 		return err
 	}
 	listN := s.convertPointerArrayToArrayNotification(list)
-	for _, notification := range listN {
-		if time.Now().Sub(notification.CreateAt) > s.conf.Jwt.Duration {
-			err := s.repo.Delete(context.Background(), notification)
+	for _, noti := range listN {
+		if time.Now().Sub(noti.CreateAt) > s.conf.Jwt.Duration {
+			err := s.repo.Delete(context.Background(), noti)
 			if err != nil {
 				s.logger.Errorf("Can't remove notification: %v", err)
 				return err
 			}
-			s.logger.Errorf("Remove token devices completed: %v", notification)
+			s.logger.Errorf("Remove token devices completed: %v", noti)
 		} else {
-			payLoad := notificationpkg.NotificationPayLoad{
-				RegistrationIds: []string{notification.TokenDevice},
-				Data:            data,
-				Notification:    noti,
+			payLoad := notification.NotificationPayLoad{
+				RegistrationIds: []string{noti.TokenDevice},
+				Data:            dataPayLoad,
+				Notification:    notiPayLoad,
 				Foreground:      true,
 			}
 			plByte, _ := json.Marshal(payLoad)
