@@ -9,6 +9,7 @@ import (
 	"dating/internal/app/api/types"
 	"dating/internal/app/config"
 	"dating/internal/pkg/glog"
+	notificationpkg "dating/internal/pkg/notification"
 	"dating/internal/pkg/socket"
 
 	"github.com/gorilla/websocket"
@@ -19,6 +20,14 @@ import (
 
 type RepositoryMock struct {
 	mock.Mock
+}
+type NotificationServiceMock struct {
+	mock.Mock
+}
+
+func (mock *NotificationServiceMock) SendNotification(ctx context.Context, id primitive.ObjectID, data notificationpkg.Data, noti notificationpkg.Notification) error {
+	args := mock.Called()
+	return args.Error(0)
 }
 
 func (mock *RepositoryMock) Insert(ctx context.Context, message types.Message) error {
@@ -50,7 +59,9 @@ func TestGetMessagesByIdRoom(t *testing.T) {
 	messages := listMessagesMock()
 
 	mockRepo := new(RepositoryMock)
+	mockNotiService := new(NotificationServiceMock)
 
+	mockNotiService.On("SendNotification").Return(nil)
 	mockRepo.On("FindByIDRoom").Return([]*types.Message{messages, messages}, nil).Once()
 	mockRepo.On("FindByIDRoom").Return(nil, errors.New("Failed when get list message by id room"))
 
@@ -59,6 +70,7 @@ func TestGetMessagesByIdRoom(t *testing.T) {
 		&config.ErrorMessage{},
 		mockRepo,
 		glog.New(),
+		mockNotiService,
 	)
 
 	listRooms, err := testService.GetMessagesByIdRoom(context.Background(), "60e3f9a7e1ab4c3dfc8fe4c1")
@@ -74,6 +86,7 @@ func TestGetMessagesByIdRoom(t *testing.T) {
 }
 func TestServeWs(t *testing.T) {
 	mockRepo := new(RepositoryMock)
+	mockNotiService := new(NotificationServiceMock)
 
 	wsServer := socket.NewWebsocketServer()
 	go wsServer.Run()
@@ -83,6 +96,7 @@ func TestServeWs(t *testing.T) {
 		&config.ErrorMessage{},
 		mockRepo,
 		glog.New(),
+		mockNotiService,
 	)
 	go testService.ServeWs(wsServer, conn, "60e3b5d2e1ab4c388ce2d04a", "60e3b5d2e1ab4c388ce2d04a")
 	go testService.ServeWs(wsServer, conn, "60e3b5d2e1ab4c388ce2ds04a", "60e3b5d2e1ab4c388ce2d042")

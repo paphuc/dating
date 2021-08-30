@@ -9,7 +9,7 @@ info:
   license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "https://dating-tma.herokuapp.com/"
+host: "dating-tma.herokuapp.com"
 tags:
 - name: "user"
   description: "Operations about user"
@@ -19,6 +19,10 @@ tags:
   description: "Operations about messages"
 - name: "media"
   description: "Operations about media"
+- name: "emails"
+  description: "Operations about emails"
+- name: "notification"
+  description: "Operations about notification"
 schemes:
 - "https"
 securityDefinitions:
@@ -436,6 +440,154 @@ paths:
             $ref: "#/definitions/ErrorResponse"
         "404":
           description: "Not Found"          
+  /emails:
+    get: 
+      tags:
+      - "emails"
+      summary: "send code to mail"
+      description: "send code to mail"
+      operationId: "send code to mail"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "email"
+        in: "query"
+        description: "mail user, example: nguoigiaumat100@gmail.com"
+        required: true
+        type: "string" 
+      responses:
+        "200":
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+          description: "SuccessResponse"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "Not Found"
+  /confirmation:
+    get: 
+      tags:
+      - "emails"
+      summary: "help verify mail users"
+      description: "help verify mail users"
+      operationId: "help verify mail users"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "email"
+        in: "query"
+        description: "mail user, example: nguoigiaumat100@gmail.com"
+        required: true
+        type: "string"
+      - name: "code"
+        in: "query"
+        description: "example: HNI8HJ"
+        required: true
+        type: "string" 
+      responses:
+        "200":
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+          description: "SuccessResponse"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "Not Found"
+  /notification:
+    post:
+      security:
+        - Bearer: []
+      tags:
+      - "notification"
+      summary: "add token devices to db"
+      description: "add token devices to db"
+      operationId: "add token devices to db"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "match object"
+        required: true
+        schema:
+          $ref: "#/definitions/NotificationRequest"
+          example: 
+            user_id: 611a1ef8998cb50ada22d162
+            token_device: fwVUPtBVQqSxvuyslLaEOo:APA91bFR1Bs3sWGT9vYTMf_nLZ27TnvTXflSrslc4hOyLk1GxOpJSuoV1Shatrhs7oOuPHP01FJc93hUsJjqGC7v1pJhbwYw1v8v4o-LAHn82laq2JVlAKfMTUun2htoqFVi7-pzztCA
+      responses:
+        "200":
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+          description: "SuccessResponse"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "not found"
+    delete:
+      security:
+        - Bearer: []
+      tags:
+      - "notification"
+      summary: "del token devices to db"
+      description: "del token devices to db"
+      operationId: "del token devices to db"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "match object"
+        required: true
+        schema:
+          $ref: "#/definitions/NotificationRequest"
+          example: 
+            user_id: 611a1ef8998cb50ada22d162
+            token_device: fwVUPtBVQqSxvuyslLaEOo:APA91bFR1Bs3sWGT9vYTMf_nLZ27TnvTXflSrslc4hOyLk1GxOpJSuoV1Shatrhs7oOuPHP01FJc93hUsJjqGC7v1pJhbwYw1v8v4o-LAHn82laq2JVlAKfMTUun2htoqFVi7-pzztCA
+      responses:
+        "200":
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+          description: "SuccessResponse"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "not found"          
+  /notification/{iduser}:
+    get:
+      security:
+        - Bearer: []
+      tags:
+      - "notification"
+      summary: "test notification"
+      description: "test notification"
+      operationId: "test notification"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "iduser"
+        in: "path"
+        description: "The id user for get, example: 611a1ef8998cb50ada22d162"
+        required: true
+        type: "string"  
+      responses:
+        "200":
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+          description: "SuccessResponse"
+        "400":
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: "Not Found"    
   /media:
     post:
       security:
@@ -474,15 +626,13 @@ paths:
       parameters:
       - name: "idMedia"
         in: "path"
-        description: "The idMedia for get"
+        description: "The idMedia for get, example: bbeacbb4-c0ec-4104-afd4-196d3476f056"
         required: true
         type: "string" 
       responses:
         "200":
           schema:
-            type: array
-            items:
-              $ref: "#/definitions/MediaResponse"
+            $ref: "#/definitions/MediaResponse"
           description: "Bad Request"
         "400":
           description: "Bad Request"
@@ -509,26 +659,28 @@ paths:
       responses:
         "200":
           schema:
-            type: array
-            items:
-              $ref: "#/definitions/SuccessResponse"
+            $ref: "#/definitions/SuccessResponse"
           description: "Bad Request"
         "400":
           description: "Bad Request"
           schema:
             $ref: "#/definitions/ErrorResponse"
         "404":
-          description: "Not Found"
+          description: "Not Found"         
+
 definitions:
   RegisterUserRequest:
     type: "object"
     properties:
       name:
         type: "string"
+        example: Phuc
       email:
         type: "string"
+        example: tphuc@gmail.com
       password:
         type: "string"
+        example: 12345678
     xml:
       name: "User"
   LoginUserRequest:
@@ -536,8 +688,10 @@ definitions:
     properties:
       email:
         type: "string"
+        example: tphuc@gmail.com
       password:
         type: "string"
+        example: 12345678
     xml:
       name: "User"
   RegisterLoginUserResponse:
@@ -695,7 +849,6 @@ definitions:
         - "Male"
         - "Female"
         - "Both"
-      
   MatchesRoomResponse:
     type: "object"
     properties:
@@ -734,6 +887,15 @@ definitions:
     properties:
       url: 
         type: "string"
+  NotificationRequest:
+    type: "object"
+    properties:
+      user_id: 
+        type: "string"
+        example: 611a1ef8998cb50ada22d162
+      token_device: 
+        type: "string"
+        example: fwVUPtBVQqSxvuyslLaEOo:APA91bFR1Bs3sWGT9vYTMf_nLZ27TnvTXflSrslc4hOyLk1GxOpJSuoV1Shatrhs7oOuPHP01FJc93hUsJjqGC7v1pJhbwYw1v8v4o-LAHn82laq2JVlAKfMTUun2htoqFVi7-pzztCA
   SuccessResponse:
     type: "object"
     properties:

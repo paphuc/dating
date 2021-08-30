@@ -18,8 +18,14 @@ database:
 cloudinary:
   url: ""
 
+notification:
+  firebase:
+    url: "https://fcm.googleapis.com/fcm/send"
+    key: ""
+
 jwt:
   duration: 24h
+  
 mail:
   email: ""
   password: ""

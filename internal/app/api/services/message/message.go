@@ -6,6 +6,7 @@ import (
 	"dating/internal/app/api/types"
 	"dating/internal/app/config"
 	"dating/internal/pkg/glog"
+	notification "dating/internal/pkg/notification"
 	socket "dating/internal/pkg/socket"
 
 	"github.com/gorilla/websocket"
@@ -18,6 +19,9 @@ type Repository interface {
 	Insert(ctx context.Context, message types.Message) error
 	FindByIDRoom(ctx context.Context, id string) ([]*types.Message, error)
 }
+type NotificationService interface {
+	SendNotification(ctx context.Context, id primitive.ObjectID, data notification.Data, noti notification.Notification) error
+}
 
 // Service is an message service
 type Service struct {
@@ -25,22 +29,24 @@ type Service struct {
 	em     *config.ErrorMessage
 	repo   Repository
 	logger glog.Logger
+	noti   NotificationService
 }
 
 // NewService returns a new message service
-func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.Logger) *Service {
+func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.Logger, n NotificationService) *Service {
 	return &Service{
 		conf:   c,
 		em:     e,
 		repo:   r,
 		logger: l,
+		noti:   n,
 	}
 }
 
 // method help join client into room message server
 func (s *Service) ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoom, idUser string) {
 
-	saveMessagesChan := socket.NewSaveMessageChan(s.repo)
+	saveMessagesChan := socket.NewSaveMessageChan(s.repo, s.noti)
 	idRoomHex, error := primitive.ObjectIDFromHex(idRoom)
 
 	if error != nil {
@@ -64,7 +70,7 @@ func (s *Service) ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoo
 }
 
 // method help join client into room message server
-func (s *Service) GetMessagesByIdRoom(ctx context.Context, id string) ([]types.Message, error) {
+func (s *Service) GetMessagesByIdRoom(ctx context.Context, id string) ([]*types.Message, error) {
 
 	listMessages, err := s.repo.FindByIDRoom(ctx, id)
 	if err != nil {
@@ -73,15 +79,9 @@ func (s *Service) GetMessagesByIdRoom(ctx context.Context, id string) ([]types.M
 	}
 	s.logger.Infof("Get list message by id room successfull")
 
-	return s.convertPointerArrayToArrayMessage(listMessages), nil
-}
-
-// convert []*types.Message to []types.Message - if empty return []
-func (s *Service) convertPointerArrayToArrayMessage(list []*types.Message) []types.Message {
-
-	listMessages := []types.Message{}
-	for _, mgs := range list {
-		listMessages = append(listMessages, *mgs)
+	if listMessages == nil {
+		return []*types.Message{}, nil
 	}
-	return listMessages
+
+	return listMessages, nil
 }

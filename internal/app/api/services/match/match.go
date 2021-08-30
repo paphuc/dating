@@ -125,7 +125,7 @@ func (s *Service) DeleteMatch(ctx context.Context, matchreq types.MatchRequest) 
 }
 
 // method help get room chat server
-func (s *Service) FindRoomsByUserId(ctx context.Context, id string) ([]types.MatchRoomResponse, error) {
+func (s *Service) FindRoomsByUserId(ctx context.Context, id string) ([]*types.MatchRoomResponse, error) {
 
 	listRooms, err := s.repo.FindRoomsByUserId(ctx, id)
 	if err != nil {
@@ -134,15 +134,9 @@ func (s *Service) FindRoomsByUserId(ctx context.Context, id string) ([]types.Mat
 	}
 	s.logger.Infof("Get list message by id room successfull")
 
-	return s.convertPointerArrayToArrayRooms(listRooms), nil
-}
-
-// convert []*types.Rooms to []types.Rooms - if empty return []
-func (s *Service) convertPointerArrayToArrayRooms(list []*types.MatchRoomResponse) []types.MatchRoomResponse {
-
-	listRooms := []types.MatchRoomResponse{}
-	for _, room := range list {
-		listRooms = append(listRooms, *room)
+	if listRooms == nil {
+		return []*types.MatchRoomResponse{}, nil
 	}
-	return listRooms
+
+	return listRooms, nil
 }

@@ -23,6 +23,10 @@ import (
 	media "dating/internal/app/api/repositories/media"
 	mediaService "dating/internal/app/api/services/media"
 
+	notificationhandler "dating/internal/app/api/handler/notification"
+	notification "dating/internal/app/api/repositories/notification"
+	notificationService "dating/internal/app/api/services/notification"
+
 	"dating/internal/app/config"
 	"dating/internal/app/db"
 	"dating/internal/pkg/glog"
@@ -65,6 +69,7 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 	var messageRepo messageService.Repository
 	var mailRepo mailService.Repository
 	var imageRepo mediaService.Repository
+	var notificationRepo notificationService.Repository
 
 	switch conns.Database.Type {
 	case db.TypeMongoDB:
@@ -78,6 +83,8 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 		messageRepo = message.NewMongoRepository(s)
 		mailRepo = mail.NewMongoRepository(s)
 		imageRepo = media.NewMongoRepository(s)
+		notificationRepo = notification.NewMongoRepository(s)
+
 	default:
 		panic("database type not supported: " + conns.Database.Type)
 	}
@@ -90,8 +97,12 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 	matchSrv := matchService.NewService(conns, &em, matchRepo, matchLogger)
 	matchHandler := matchhandler.New(conns, &em, matchSrv, matchLogger)
 
+	notificationLogger := logger.WithField("package", "notification")
+	notificationSrv := notificationService.NewService(conns, &em, notificationRepo, notificationLogger)
+	notificationHandler := notificationhandler.New(conns, &em, notificationSrv, notificationLogger)
+
 	messageLogger := logger.WithField("package", "chat")
-	messageSrv := messageService.NewService(conns, &em, messageRepo, messageLogger)
+	messageSrv := messageService.NewService(conns, &em, messageRepo, messageLogger, notificationSrv)
 	messageHandler := messagehandler.New(conns, &em, messageSrv, messageLogger)
 
 	mailLogger := logger.WithField("package", "mail")
@@ -198,6 +209,25 @@ func Init(conns *config.Configs, em config.ErrorMessage) (http.Handler, error) {
 			method:      delete,
 			middlewares: []middlewareFunc{middleware.Auth},
 			handler:     mediaHandler.Destroy,
+		},
+
+		route{
+			path:        "/notification",
+			method:      post,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     notificationHandler.AddDevice,
+		},
+		route{
+			path:        "/notification",
+			method:      delete,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     notificationHandler.RemoveDevice,
+		},
+		route{
+			path:        "/notification/{id:[a-z0-9-\\-]+}",
+			method:      get,
+			middlewares: []middlewareFunc{middleware.Auth},
+			handler:     notificationHandler.SendTest,
 		},
 
 		route{

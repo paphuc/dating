@@ -39,7 +39,7 @@ func (h *Handler) SendMail(w http.ResponseWriter, r *http.Request) {
 
 	err := h.srv.SendMail(r.Context(), mail)
 	if err != nil {
-		respond.JSON(w, http.StatusNotFound, err)
+		respond.JSON(w, http.StatusNotFound, h.em.InvalidValue.Request)
 		return
 	}
 	respond.JSON(w, http.StatusOK, h.em.Success)
@@ -53,7 +53,7 @@ func (h *Handler) MailVerified(w http.ResponseWriter, r *http.Request) {
 
 	err := h.srv.MailVerified(r.Context(), mail, code)
 	if err != nil {
-		respond.JSON(w, http.StatusNotFound, err)
+		respond.JSON(w, http.StatusNotFound, h.em.InvalidValue.ValidationFailed)
 		return
 	}
 	respond.JSON(w, http.StatusOK, h.em.Success)

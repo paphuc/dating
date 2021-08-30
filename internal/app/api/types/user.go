@@ -59,7 +59,7 @@ type UserResponseSignUp struct {
 	Token string `json:"token"`
 }
 type ListUsersResponse struct {
-	Content []UserResGetInfo `json:"content"`
+	Content []*UserResGetInfo `json:"content"`
 }
 type GetListUsersResponse struct {
 	Pagination

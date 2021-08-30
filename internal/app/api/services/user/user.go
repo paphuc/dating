@@ -200,7 +200,11 @@ func (s *Service) GetListUsers(ctx context.Context, page, size, minAge, maxAge, 
 		return nil, errors.Wrap(err, "Failed when get list users by page")
 	}
 
-	listUsersResponse.Content = append(listUsersResponse.Content, s.convertPointerArrayToArray(listUsers)...)
+	listUsersResponse.Content = append(listUsersResponse.Content, listUsers...)
+	if listUsers == nil {
+		listUsersResponse.Content = []*types.UserResGetInfo{}
+	}
+
 	listUsersResponse.Filter = pagingNSorting.Filter
 	s.logger.Infof("get list users by page is completed, page:  %v", pagingNSorting)
 
@@ -208,21 +212,27 @@ func (s *Service) GetListUsers(ctx context.Context, page, size, minAge, maxAge, 
 }
 
 // get list user liked
-func (s *Service) listLiked(ctx context.Context, userID string) ([]types.UserResGetInfo, error) {
+func (s *Service) listLiked(ctx context.Context, userID string) ([]*types.UserResGetInfo, error) {
 	list, err := s.repo.GetListlikedInfo(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-	return s.convertPointerArrayToArray(list), err
+	if list == nil {
+		return []*types.UserResGetInfo{}, nil
+	}
+	return list, err
 }
 
 // get list user matched
-func (s *Service) listMatched(ctx context.Context, userID string) ([]types.UserResGetInfo, error) {
+func (s *Service) listMatched(ctx context.Context, userID string) ([]*types.UserResGetInfo, error) {
 	list, err := s.repo.GetListMatchedInfo(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-	return s.convertPointerArrayToArray(list), err
+	if list == nil {
+		return []*types.UserResGetInfo{}, nil
+	}
+	return list, err
 }
 
 // get list matched or liked
@@ -244,16 +254,6 @@ func (s *Service) GetMatchedUsersByID(ctx context.Context, idUser, matchedParame
 	list, err := s.listLiked(ctx, idUser)
 	s.logger.Infof("Get list liked completed  %v", idUser)
 	return types.ListUsersResponse{Content: list}, err
-}
-
-// convert []*types.UserResGetInfo to []types.UserResGetInfo - if empty return []
-func (s *Service) convertPointerArrayToArray(list []*types.UserResGetInfo) []types.UserResGetInfo {
-
-	listUsers := []types.UserResGetInfo{}
-	for _, user := range list {
-		listUsers = append(listUsers, *user)
-	}
-	return listUsers
 }
 
 // helps Enable/Disable account
@@ -312,7 +312,11 @@ func (s *Service) GetListUsersAvailable(ctx context.Context, id, page, size, min
 		return nil, errors.Wrap(err, "Failed when get list users by page")
 	}
 
-	listUsersResponse.Content = append(listUsersResponse.Content, s.convertPointerArrayToArray(listUsers)...)
+	listUsersResponse.Content = append(listUsersResponse.Content, listUsers...)
+	if listUsers == nil {
+		listUsersResponse.Content = []*types.UserResGetInfo{}
+	}
+
 	listUsersResponse.Filter = pagingNSorting.Filter
 	s.logger.Infof("get list users by page is completed, page:  %v", pagingNSorting)
 

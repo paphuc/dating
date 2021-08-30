@@ -93,6 +93,12 @@ type (
 			ConfirmTimeout time.Duration `mapstructure:"confirm_timeout"`
 			SrcTemplate    string        `mapstructure:"src_template"`
 		} `mapstructure:"mail"`
+		Notification struct {
+			Firebase struct {
+				Url string `mapstructure:"url"`
+				Key string `mapstructure:"key"`
+			} `mapstructure:"firebase"`
+		} `mapstructure:"notification"`
 	}
 
 	// Config hold MongoDB configuration information

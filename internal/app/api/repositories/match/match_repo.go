@@ -253,7 +253,7 @@ func (r *MongoRepository) FindRoomsByUserId(ctx context.Context, idUser string) 
 			"as": "users",
 		}},
 		{"$lookup": bson.M{
-			"from": "message",
+			"from": "messages",
 			"let":  bson.M{"matches_id": "$_id"},
 			"pipeline": []bson.M{
 				{"$match": bson.M{

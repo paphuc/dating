@@ -410,9 +410,9 @@ func TestGetListUsers(t *testing.T) {
 			},
 		},
 		ListUsersResponse: types.ListUsersResponse{
-			Content: []types.UserResGetInfo{
-				*userInfo, *userInfo,
-				*userInfo, *userInfo,
+			Content: []*types.UserResGetInfo{
+				userInfo, userInfo,
+				userInfo, userInfo,
 			},
 		},
 	}
@@ -454,12 +454,12 @@ func TestGetMatchedUsersByID(t *testing.T) {
 	mockService := new(ServiceMock)
 
 	resultMock := types.ListUsersResponse{
-		Content: []types.UserResGetInfo{
-			*userInfo, *userInfo,
-			*userInfo, *userInfo,
+		Content: []*types.UserResGetInfo{
+			userInfo, userInfo,
+			userInfo, userInfo,
 		}}
 	mockService.On("GetMatchedUsersByID").Return(resultMock, nil).Once()
-	mockService.On("GetMatchedUsersByID").Return(types.ListUsersResponse{Content: []types.UserResGetInfo{}}, errors.New("Can't get")).Once()
+	mockService.On("GetMatchedUsersByID").Return(types.ListUsersResponse{Content: []*types.UserResGetInfo{}}, errors.New("Can't get")).Once()
 
 	testHandler := New(
 		&config.Configs{},
@@ -565,9 +565,9 @@ func TestGetListUsersAvailable(t *testing.T) {
 			},
 		},
 		ListUsersResponse: types.ListUsersResponse{
-			Content: []types.UserResGetInfo{
-				*userInfo, *userInfo,
-				*userInfo, *userInfo,
+			Content: []*types.UserResGetInfo{
+				userInfo, userInfo,
+				userInfo, userInfo,
 			},
 		},
 	}
