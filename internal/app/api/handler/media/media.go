@@ -68,7 +68,7 @@ func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.JSON(w, http.StatusOK, media)
+	respond.JSON(w, http.StatusCreated, media)
 }
 
 // Del handler delete media

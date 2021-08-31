@@ -71,7 +71,7 @@ func TestUpload(t *testing.T) {
 	assert.NoError(t, err)
 	res, err := http.DefaultClient.Do(req)
 	assert.NoError(t, err)
-	assert.Equal(t, 200, res.StatusCode)
+	assert.Equal(t, 201, res.StatusCode)
 
 	req, err = http.NewRequest("POST", ts.URL, body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
