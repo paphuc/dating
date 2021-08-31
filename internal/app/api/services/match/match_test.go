@@ -253,9 +253,13 @@ func TestFindRoomsByUserId(t *testing.T) {
 			},
 		},
 		LastMessage: &types.Message{
-			ID:          primitive.NewObjectID(),
-			RoomID:      primitive.NewObjectID(),
-			SenderID:    usersID1,
+			ID:     primitive.NewObjectID(),
+			RoomID: primitive.NewObjectID(),
+			Sender: types.Sender{
+				ID:     usersID1,
+				Name:   "Huynh",
+				Avatar: "src",
+			},
 			ReceiverID:  usersID2,
 			Content:     "Hi",
 			Attachments: []string{},
