@@ -48,24 +48,24 @@ func (s *Service) MailVerified(ctx context.Context, mail, code string) error {
 
 	emailExists, err := s.repo.FindByEmail(ctx, mail)
 	if err != nil {
-		s.logger.Errorf("Email not found %v", err)
+		s.logger.Errorc(ctx, "Email not found %v", err)
 		return errors.Wrap(err, "Email not found")
 	}
 
 	if emailExists.Verified {
-		s.logger.Errorf("MailVerified has true")
+		s.logger.Errorc(ctx, "MailVerified has true")
 		return errors.Wrap(errors.New("MailVerified failed"), "Email has confirmed")
 	}
 
 	if time.Now().Sub(emailExists.CreatedTime) > s.conf.Mail.ConfirmTimeout {
-		s.logger.Errorf("Code expired")
+		s.logger.Errorc(ctx, "Code expired")
 		return errors.Wrap(errors.New("MailVerified failed"), "Code expired")
 	}
 	if emailExists.Code != code {
-		s.logger.Errorf("Code incorrect")
+		s.logger.Errorc(ctx, "Code incorrect")
 		return errors.Wrap(errors.New("MailVerified failed"), "Code incorrect")
 	}
-	s.logger.Infof("MailVerified has completed")
+	s.logger.Infoc(ctx, "MailVerified has completed")
 	return nil
 
 }
@@ -77,7 +77,7 @@ func (s *Service) SendMail(ctx context.Context, email string) error {
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			if err := s.GenNumberSendAndUpsert(ctx, email); err != nil {
-				s.logger.Errorf("Error when gen code %v", err)
+				s.logger.Errorc(ctx, "Error when gen code %v", err)
 				return err
 			}
 			return nil
@@ -85,15 +85,15 @@ func (s *Service) SendMail(ctx context.Context, email string) error {
 	}
 
 	if emailExists.Verified {
-		s.logger.Errorf("Send mail fail. Email had confirm")
+		s.logger.Errorc(ctx, "Send mail fail. Email had confirm")
 		return errors.Wrap(errors.New("Send mail fail"), "Email had confirm")
 	}
 
 	if err := s.GenNumberSendAndUpsert(ctx, email); err != nil {
-		s.logger.Errorf("Error when gen code %v", err)
+		s.logger.Errorc(ctx, "Error when gen code %v", err)
 		return err
 	}
-	s.logger.Infof("Send email completed")
+	s.logger.Infoc(ctx, "Send email completed")
 	return nil
 }
 
@@ -119,6 +119,6 @@ func (s *Service) GenNumberSendAndUpsert(ctx context.Context, mail string) error
 		return errors.Wrap(err, "Send mail fail")
 	}
 
-	s.logger.Infof("Send email completed %v", mail)
+	s.logger.Infoc(ctx, "Send email completed %v", mail)
 	return nil
 }

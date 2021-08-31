@@ -16,7 +16,7 @@ import (
 
 type (
 	service interface {
-		ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoom, idUser string)
+		ServeWs(ctx context.Context, wsServer *socket.WsServer, conn *websocket.Conn, idRoom, idUser string)
 		GetMessagesByIdRoom(ctx context.Context, id string) ([]*types.Message, error)
 	}
 	// Handler is message web handler
@@ -63,13 +63,13 @@ func (h *Handler) ServeWs(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 
 	if err != nil {
-		h.logger.Errorf("Can't create ServeWs for client", err.Error())
+		h.logger.Errorc(r.Context(), "Can't create ServeWs for client %v", err.Error())
 		return
 	}
 
-	h.srv.ServeWs(wsServer, conn, idRoom, idUser)
+	h.srv.ServeWs(r.Context(), wsServer, conn, idRoom, idUser)
 
-	h.logger.Infof("New Client joined the room!" + idRoom)
+	h.logger.Infoc(r.Context(), "New Client joined the room! %v", idRoom)
 }
 
 // Put handler get list message of room

@@ -2,6 +2,7 @@ package notification
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -46,10 +47,10 @@ func PushNotification(conf *config.Configs, payLoad []byte, result chan<- error)
 
 	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logger.Errorf("Failed when push notification to firebase: %v", err)
+		logger.Errorc(context.Background(), "Failed when push notification to firebase: %v", err)
 	}
 
-	logger.Infof("Push notification to completed: %v", string(bytes))
+	logger.Infoc(context.Background(), "Push notification to completed: %v", string(bytes))
 	defer resp.Body.Close()
 	result <- nil
 	return

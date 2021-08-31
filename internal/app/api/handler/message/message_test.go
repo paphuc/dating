@@ -25,7 +25,7 @@ type ServiceMock struct {
 	mock.Mock
 }
 
-func (mock *ServiceMock) ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoom, idUser string) {
+func (mock *ServiceMock) ServeWs(ctx context.Context, wsServer *socket.WsServer, conn *websocket.Conn, idRoom, idUser string) {
 
 }
 func (mock *ServiceMock) GetMessagesByIdRoom(ctx context.Context, id string) ([]*types.Message, error) {

@@ -46,15 +46,17 @@ func (s *Service) Upload(ctx context.Context, fileBytes []byte) (*types.MediaRes
 
 	src, err := s.cloud.UploadFile(ctx, fileBytes, uuid.New())
 	if err != nil {
+		s.logger.Errorc(ctx, "Failed when upload %v", err)
 		return nil, err
 	}
-
+	s.logger.Infoc(ctx, "Upload successfully %v", src)
 	return &types.MediaResponse{Url: src}, nil
 }
 
 // Post del media
 func (s *Service) Destroy(ctx context.Context, url string) error {
 	_, error := s.cloud.DestroyFile(ctx, url)
+	s.logger.Infoc(ctx, "Destroy with err: %v", error)
 	return error
 }
 
@@ -62,7 +64,9 @@ func (s *Service) Destroy(ctx context.Context, url string) error {
 func (s *Service) Asset(ctx context.Context, url string) (*types.MediaResponse, error) {
 	src, err := s.cloud.AssetFile(ctx, url)
 	if err != nil {
+		s.logger.Errorc(ctx, "Asset when upload %v", err)
 		return nil, err
 	}
+	s.logger.Infoc(ctx, "Asset successfully %v", src)
 	return &types.MediaResponse{Url: src}, nil
 }

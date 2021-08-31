@@ -44,19 +44,19 @@ func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, l glog.
 }
 
 // method help join client into room message server
-func (s *Service) ServeWs(wsServer *socket.WsServer, conn *websocket.Conn, idRoom, idUser string) {
+func (s *Service) ServeWs(ctx context.Context, wsServer *socket.WsServer, conn *websocket.Conn, idRoom, idUser string) {
 
 	saveMessagesChan := socket.NewSaveMessageChan(s.repo, s.noti)
 	idRoomHex, error := primitive.ObjectIDFromHex(idRoom)
 
 	if error != nil {
-		s.logger.Errorf("Id room incorrect,it isn't ObjectIdHex %v", error)
+		s.logger.Errorc(ctx, "Id room incorrect,it isn't ObjectIdHex %v", error)
 		return
 	}
 
 	idUserHex, error := primitive.ObjectIDFromHex(idUser)
 	if error != nil {
-		s.logger.Errorf("Id user incorrect,it isn't ObjectIdHex %v", error)
+		s.logger.Errorc(ctx, "Id user incorrect,it isn't ObjectIdHex %v", error)
 		return
 	}
 
@@ -74,10 +74,10 @@ func (s *Service) GetMessagesByIdRoom(ctx context.Context, id string) ([]*types.
 
 	listMessages, err := s.repo.FindByIDRoom(ctx, id)
 	if err != nil {
-		s.logger.Errorf("Failed when get list message by id room", err)
+		s.logger.Errorc(ctx, "Failed when get list message by id room", err)
 		return nil, errors.Wrap(err, "Failed when get list message by id room")
 	}
-	s.logger.Infof("Get list message by id room successfull")
+	s.logger.Infoc(ctx, "Get list message by id room successfull")
 
 	if listMessages == nil {
 		return []*types.Message{}, nil
