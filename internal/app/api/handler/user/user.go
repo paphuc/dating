@@ -70,7 +70,7 @@ func (h *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.JSON(w, http.StatusOK, user)
+	respond.JSON(w, http.StatusCreated, user)
 }
 
 // Post handler  login HTTP request
@@ -128,7 +128,7 @@ func (h *Handler) UpdateUserByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if error := h.srv.UpdateUserByID(r.Context(), user); error != nil {
-		respond.JSON(w, http.StatusInternalServerError, h.em.InvalidValue.Request)
+		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
 		return
 	}
 

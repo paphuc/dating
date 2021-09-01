@@ -384,7 +384,7 @@ func TestUpdateUserByID(t *testing.T) {
 	assert.NoError(t, err)
 	res, err = http.DefaultClient.Do(req)
 	assert.NoError(t, err)
-	assert.Equal(t, 500, res.StatusCode)
+	assert.Equal(t, 400, res.StatusCode)
 }
 
 func TestGetListUsers(t *testing.T) {
