@@ -12,15 +12,10 @@ import (
 
 type Data struct {
 	Content string `json:"content"`
-}
-
-type Android struct {
-	Icon string `json:"icon"`
+	Avatar  string `json:"avatar"`
 }
 type Notification struct {
-	// Android Android `json:"android"`
 	Body  string `json:"body"`
-	Icon  string `json:"icon"`
 	Title string `json:"title"`
 }
 type NotificationPayLoad struct {

@@ -38,10 +38,6 @@ func saveMessages(sm *chan SaveMessage, r Repository, noti NotificationService) 
 		noti.SendNotification(context.Background(), sm.message.ReceiverID, notificationpkg.Data{}, notificationpkg.Notification{
 			Body:  sm.message.Content,
 			Title: sm.message.Sender.Name,
-			// Android: notificationpkg.Android{
-			// : sm.message.Sender.Avatar,
-			Icon: sm.message.Sender.Avatar,
-			// },
 		})
 	}
 }

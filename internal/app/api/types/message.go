@@ -7,9 +7,8 @@ import (
 )
 
 type Sender struct {
-	ID     primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
-	Name   string             `json:"name" bson:"name"`
-	Avatar string             `json:"avatar" bson:"avatar"` // arr path media
+	ID   primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	Name string             `json:"name" bson:"name"`
 }
 type Message struct {
 	ID          primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
