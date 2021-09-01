@@ -119,7 +119,7 @@ func (client *Client) handleNewMessage(jsonMessage *MessageSocket) {
 					Sender:      jsonMessage.Sender,
 					Content:     jsonMessage.Content,
 					Attachments: jsonMessage.Attachments,
-					CreateAt:    jsonMessage.CreateAt,
+					CreatedAt:   jsonMessage.CreatedAt,
 				},
 			}
 

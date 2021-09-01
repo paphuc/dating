@@ -262,7 +262,7 @@ func TestFindRoomsByUserId(t *testing.T) {
 			ReceiverID:  usersID2,
 			Content:     "Hi",
 			Attachments: []string{},
-			CreateAt:    time.Now(),
+			CreatedAt:   time.Now(),
 		},
 	}
 

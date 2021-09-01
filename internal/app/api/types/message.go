@@ -17,5 +17,5 @@ type Message struct {
 	ReceiverID  primitive.ObjectID `json:"receiver_id" bson:"receiver_id"`
 	Content     string             `json:"content" bson:"content"`
 	Attachments []string           `json:"attachments" bson:"attachments"`
-	CreateAt    time.Time          `json:"created_at" bson:"created_at"`
+	CreatedAt   time.Time          `json:"created_at" bson:"created_at"`
 }

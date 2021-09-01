@@ -51,7 +51,7 @@ func listMessagesMock() *types.Message {
 		ReceiverID:  primitive.NewObjectID(),
 		Content:     "hi",
 		Attachments: []string{},
-		CreateAt:    time.Now(),
+		CreatedAt:   time.Now(),
 	}
 }
 
