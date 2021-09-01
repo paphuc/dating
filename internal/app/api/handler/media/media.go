@@ -48,7 +48,7 @@ func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 	// the Header and the size of the file
 	file, _, err := r.FormFile("file")
 	if err != nil {
-		h.logger.Errorf("file failed: %v", err)
+		h.logger.Errorc(r.Context(), "file failed: %v", err)
 		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
 		return
 	}
@@ -57,7 +57,7 @@ func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 	// a particular naming pattern
 	fileBytes, err := ioutil.ReadAll(file)
 	if err != nil {
-		h.logger.Errorf("ReadAll file: %v", err)
+		h.logger.Errorc(r.Context(), "ReadAll file: %v", err)
 		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
 		return
 	}

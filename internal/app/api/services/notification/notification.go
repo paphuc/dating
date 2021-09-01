@@ -47,10 +47,10 @@ func (s *Service) AddDevice(ctx context.Context, noti types.Notification) error 
 
 	err := s.repo.Insert(context.Background(), noti)
 	if err != nil {
-		s.logger.Errorf("Can't AddDevice: %v", err)
+		s.logger.Errorc(ctx, "Can't AddDevice: %v", err)
 		return err
 	}
-	s.logger.Errorf("AddDevice completed %v", noti)
+	s.logger.Errorc(ctx, "AddDevice completed %v", noti)
 	return nil
 }
 
@@ -58,10 +58,10 @@ func (s *Service) AddDevice(ctx context.Context, noti types.Notification) error 
 func (s *Service) RemoveDevice(ctx context.Context, noti types.Notification) error {
 	err := s.repo.Delete(context.Background(), noti)
 	if err != nil {
-		s.logger.Errorf("Can't RemoveDevice: %v", err)
+		s.logger.Errorc(ctx, "Can't RemoveDevice: %v", err)
 		return err
 	}
-	s.logger.Errorf("RemoveDevice completed %v", noti)
+	s.logger.Errorc(ctx, "RemoveDevice completed %v", noti)
 	return nil
 }
 
@@ -73,17 +73,17 @@ func (s *Service) SendTest(ctx context.Context, id string) error {
 	}
 	list, err := s.repo.Find(context.Background(), ID)
 	if err != nil {
-		s.logger.Errorf("Find notification failed: %v", err)
+		s.logger.Errorc(ctx, "Find notification failed: %v", err)
 		return err
 	}
 	for _, noti := range list {
 		if time.Now().Sub(noti.CreateAt) > s.conf.Jwt.Duration {
 			err := s.repo.Delete(context.Background(), *noti)
 			if err != nil {
-				s.logger.Errorf("Can't remove notification: %v", err)
+				s.logger.Errorc(ctx, "Can't remove notification: %v", err)
 				return err
 			}
-			s.logger.Errorf("Remove token devices completed: %v", noti)
+			s.logger.Errorc(ctx, "Remove token devices completed: %v", noti)
 		} else {
 			payLoad := notification.NotificationPayLoad{
 				RegistrationIds: []string{noti.TokenDevice},
@@ -104,13 +104,13 @@ func (s *Service) SendTest(ctx context.Context, id string) error {
 			value, ok := <-result
 			if ok {
 				if value != nil {
-					s.logger.Errorf("Can't send notification: %v", value)
+					s.logger.Errorc(ctx, "Can't send notification: %v", value)
 				}
 			}
 			defer close(result)
 		}
 	}
-	s.logger.Infof("send notification completed")
+	s.logger.Infoc(ctx, "send notification completed")
 	return nil
 }
 
@@ -118,17 +118,17 @@ func (s *Service) SendTest(ctx context.Context, id string) error {
 func (s *Service) SendNotification(ctx context.Context, id primitive.ObjectID, dataPayLoad notification.Data, notiPayLoad notification.Notification) error {
 	list, err := s.repo.Find(context.Background(), id)
 	if err != nil {
-		s.logger.Errorf("Find notification failed: %v", err)
+		s.logger.Errorc(ctx, "Find notification failed: %v", err)
 		return err
 	}
 	for _, noti := range list {
 		if time.Now().Sub(noti.CreateAt) > s.conf.Jwt.Duration {
 			err := s.repo.Delete(context.Background(), *noti)
 			if err != nil {
-				s.logger.Errorf("Can't remove notification: %v", err)
+				s.logger.Errorc(ctx, "Can't remove notification: %v", err)
 				return err
 			}
-			s.logger.Errorf("Remove token devices completed: %v", noti)
+			s.logger.Errorc(ctx, "Remove token devices completed: %v", noti)
 		} else {
 			payLoad := notification.NotificationPayLoad{
 				RegistrationIds: []string{noti.TokenDevice},
@@ -144,12 +144,12 @@ func (s *Service) SendNotification(ctx context.Context, id primitive.ObjectID, d
 			value, ok := <-result
 			if ok {
 				if value != nil {
-					s.logger.Errorf("Can't send notification: %v", value)
+					s.logger.Errorc(ctx, "Can't send notification: %v", value)
 				}
 			}
 			defer close(result)
 		}
 	}
-	s.logger.Infof("send notification completed")
+	s.logger.Infoc(ctx, "send notification completed")
 	return nil
 }

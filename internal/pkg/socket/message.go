@@ -26,12 +26,12 @@ func saveMessages(sm *chan SaveMessage, r Repository, noti NotificationService) 
 	for {
 		sm, ok := <-*sm
 		if !ok {
-			logger.Errorf("Error when receiving message to save")
+			logger.Errorc(context.Background(), "Error when receiving message to save")
 			return
 		}
 		err := r.Insert(context.Background(), *sm.message)
 		if err != nil {
-			logger.Errorf("Error when insert message to db %v", err)
+			logger.Errorc(context.Background(), "Error when insert message to db %v", err)
 		}
 		noti.SendNotification(context.Background(), sm.message.ReceiverID, notificationpkg.Data{}, notificationpkg.Notification{
 			Body:  sm.message.Content,

@@ -57,7 +57,7 @@ func NewService(c *config.Configs, e *config.ErrorMessage, r Repository, m MailR
 func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*types.UserResponseSignUp, error) {
 
 	if _, err := s.repo.FindByEmail(ctx, UserSignUp.Email); err == nil {
-		s.logger.Errorf("Email email exits %v", err)
+		s.logger.Errorc(ctx, "Email email exits %v", err)
 		return nil, errors.Wrap(errors.New("Email email exits"), "Email exits, can't insert user")
 	}
 
@@ -75,7 +75,7 @@ func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*typ
 		UpdateAt: time.Now()}
 
 	if err := s.repo.Insert(ctx, user); err != nil {
-		s.logger.Errorf("Can't insert user %v", err)
+		s.logger.Errorc(ctx, "Can't insert user %v", err)
 		return nil, errors.Wrap(err, "Can't insert user")
 	}
 
@@ -87,16 +87,16 @@ func (s *Service) SignUp(ctx context.Context, UserSignUp types.UserSignUp) (*typ
 	}, s.conf.Jwt.Duration)
 
 	if err != nil {
-		s.logger.Errorf("Can't gen token after insert %v", err)
+		s.logger.Errorc(ctx, "Can't gen token after insert %v", err)
 		return nil, errors.Wrap(err, "Can't insert user")
 	}
 
 	if err := s.mail.UpdateMailVerified(ctx, user.Email); err != nil {
-		s.logger.Errorf("Can't UpdateMailVerified", err)
+		s.logger.Errorc(ctx, "Can't UpdateMailVerified %v", err)
 		return nil, errors.Wrap(err, "Can't UpdateMailVerified")
 	}
 
-	s.logger.Infof("Register completed", UserSignUp)
+	s.logger.Infoc(ctx, "Register completed %v", UserSignUp)
 	return &types.UserResponseSignUp{
 		Name:  UserSignUp.Name,
 		Email: UserSignUp.Email,
@@ -109,12 +109,12 @@ func (s *Service) Login(ctx context.Context, UserLogin types.UserLogin) (*types.
 
 	user, err := s.repo.FindByEmail(ctx, UserLogin.Email)
 	if err != nil {
-		s.logger.Errorf("Not found email exits %v", err)
+		s.logger.Errorc(ctx, "Not found email exits %v", err)
 		return nil, errors.Wrap(errors.New("Not found email exits"), "Email not exists, can't find user")
 	}
 
 	if !jwt.IsCorrectPassword(UserLogin.Password, user.Password) {
-		s.logger.Errorf("Password incorrect %v", UserLogin.Email)
+		s.logger.Errorc(ctx, "Password incorrect %v", UserLogin.Email)
 		return nil, errors.Wrap(errors.New("Password isn't like password from database"), "Password incorrect")
 	}
 
@@ -125,10 +125,10 @@ func (s *Service) Login(ctx context.Context, UserLogin types.UserLogin) (*types.
 		Email: user.Email}, s.conf.Jwt.Duration)
 
 	if error != nil {
-		s.logger.Errorf("Can not gen token %v", error)
+		s.logger.Errorc(ctx, "Can not gen token %v", error)
 		return nil, errors.Wrap(error, "Can't gen token")
 	}
-	s.logger.Infof("Login completed %v", user.Email)
+	s.logger.Infoc(ctx, "Login completed %v", user.Email)
 	return &types.UserResponseSignUp{
 		Name:  user.Name,
 		Email: user.Email,
@@ -142,10 +142,10 @@ func (s *Service) FindUserById(ctx context.Context, id string) (*types.UserResGe
 	user, err := s.repo.FindByID(ctx, id)
 
 	if err != nil {
-		s.logger.Errorf("Not found id user %v", err)
+		s.logger.Errorc(ctx, "Not found id user %v", err)
 		return nil, errors.Wrap(err, "Failed to find id user from database")
 	}
-	s.logger.Infof("Find id completed %v", id)
+	s.logger.Infoc(ctx, "Find id completed %v", id)
 	return user, nil
 }
 
@@ -155,10 +155,10 @@ func (s *Service) UpdateUserByID(ctx context.Context, user types.User) error {
 	err := s.repo.UpdateUserByID(ctx, user)
 
 	if err != nil {
-		s.logger.Errorf("failed when update user by id %v", err)
+		s.logger.Errorc(ctx, "failed when update user by id %v", err)
 		return err
 	}
-	s.logger.Infof("updated user is completed ")
+	s.logger.Infoc(ctx, "updated user is completed ")
 	return err
 }
 
@@ -168,7 +168,7 @@ func (s *Service) GetListUsers(ctx context.Context, page, size, minAge, maxAge, 
 	var pagingNSorting types.PagingNSorting
 
 	if err := pagingNSorting.Init(page, size, minAge, maxAge, gender); err != nil {
-		s.logger.Errorf("Failed url parameters when get list users %v", err)
+		s.logger.Errorc(ctx, "Failed url parameters when get list users %v", err)
 		return nil, errors.Wrap(err, "Failed url parameters when get list users")
 	}
 
@@ -176,7 +176,7 @@ func (s *Service) GetListUsers(ctx context.Context, page, size, minAge, maxAge, 
 
 	total, err := s.repo.CountUser(ctx, pagingNSorting)
 	if err != nil {
-		s.logger.Errorf("Failed when get number users %v", err)
+		s.logger.Errorc(ctx, "Failed when get number users %v", err)
 		return nil, errors.Wrap(err, "Failed when get number users")
 	}
 	numberUsers := int(total)
@@ -196,7 +196,7 @@ func (s *Service) GetListUsers(ctx context.Context, page, size, minAge, maxAge, 
 	listUsers, err := s.repo.GetListUsers(ctx, pagingNSorting)
 
 	if err != nil {
-		s.logger.Errorf("Failed when get list users by page  %v", err)
+		s.logger.Errorc(ctx, "Failed when get list users by page  %v", err)
 		return nil, errors.Wrap(err, "Failed when get list users by page")
 	}
 
@@ -206,7 +206,7 @@ func (s *Service) GetListUsers(ctx context.Context, page, size, minAge, maxAge, 
 	}
 
 	listUsersResponse.Filter = pagingNSorting.Filter
-	s.logger.Infof("get list users by page is completed, page:  %v", pagingNSorting)
+	s.logger.Infoc(ctx, "get list users by page is completed, page:  %v", pagingNSorting)
 
 	return &listUsersResponse, nil
 }
@@ -241,18 +241,18 @@ func (s *Service) GetMatchedUsersByID(ctx context.Context, idUser, matchedParame
 	matched, err := strconv.ParseBool(matchedParameter)
 
 	if err != nil {
-		s.logger.Errorf("Failed url parameters when get list matched or like  %v", err)
+		s.logger.Errorc(ctx, "Failed url parameters when get list matched or like  %v", err)
 		return types.ListUsersResponse{}, errors.Wrap(err, "Failed url parameters when get list users")
 	}
 
 	if matched {
 		list, err := s.listMatched(ctx, idUser)
-		s.logger.Infof("Get list matched completed  %v", idUser)
+		s.logger.Infoc(ctx, "Get list matched completed  %v", idUser)
 		return types.ListUsersResponse{Content: list}, err
 	}
 
 	list, err := s.listLiked(ctx, idUser)
-	s.logger.Infof("Get list liked completed  %v", idUser)
+	s.logger.Infoc(ctx, "Get list liked completed  %v", idUser)
 	return types.ListUsersResponse{Content: list}, err
 }
 
@@ -260,11 +260,11 @@ func (s *Service) GetMatchedUsersByID(ctx context.Context, idUser, matchedParame
 func (s *Service) DisableUserByID(ctx context.Context, idUser string, disable bool) error {
 
 	if err := s.repo.DisableUserByID(ctx, idUser, disable); err != nil {
-		s.logger.Errorf("Set disable to %d for user %s failed %v", disable, idUser, err)
+		s.logger.Errorc(ctx, "Set disable to %d for user %s failed %v", disable, idUser, err)
 		return err
 	}
 
-	s.logger.Infof("Set disable to %d for user %s completed %v", disable, idUser)
+	s.logger.Infoc(ctx, "Set disable to %d for user %s completed", disable, idUser)
 	return nil
 
 }
@@ -275,13 +275,13 @@ func (s *Service) GetListUsersAvailable(ctx context.Context, id, page, size, min
 	var pagingNSorting types.PagingNSorting
 
 	if err := pagingNSorting.Init(page, size, minAge, maxAge, gender); err != nil {
-		s.logger.Errorf("Failed url parameters when get list users  %v", err)
+		s.logger.Errorc(ctx, "Failed url parameters when get list users  %v", err)
 		return nil, errors.Wrap(err, "Failed url parameters when get list users")
 	}
 
 	ignoreIds, err := s.repo.IgnoreIdUsers(ctx, id)
 	if err != nil {
-		s.logger.Errorf("Failed when get ignoreIds users %v", err)
+		s.logger.Errorc(ctx, "Failed when get ignoreIds users %v", err)
 		return nil, errors.Wrap(err, "Failed when get ignoreIds users")
 	}
 
@@ -289,7 +289,7 @@ func (s *Service) GetListUsersAvailable(ctx context.Context, id, page, size, min
 
 	total, err := s.repo.CountUserUsersAvailable(ctx, ignoreIds, pagingNSorting)
 	if err != nil {
-		s.logger.Errorf("Failed when get number users  %v", err)
+		s.logger.Errorc(ctx, "Failed when get number users  %v", err)
 		return nil, errors.Wrap(err, "Failed when get number users")
 	}
 	numberUsers := int(total)
@@ -308,7 +308,7 @@ func (s *Service) GetListUsersAvailable(ctx context.Context, id, page, size, min
 
 	listUsers, err := s.repo.GetListUsersAvailable(ctx, ignoreIds, pagingNSorting)
 	if err != nil {
-		s.logger.Errorf("Failed when get list users by page  %v", err)
+		s.logger.Errorc(ctx, "Failed when get list users by page  %v", err)
 		return nil, errors.Wrap(err, "Failed when get list users by page")
 	}
 
@@ -318,7 +318,7 @@ func (s *Service) GetListUsersAvailable(ctx context.Context, id, page, size, min
 	}
 
 	listUsersResponse.Filter = pagingNSorting.Filter
-	s.logger.Infof("get list users by page is completed, page:  %v", pagingNSorting)
+	s.logger.Infoc(ctx, "get list users by page is completed, page:  %v", pagingNSorting)
 
 	return &listUsersResponse, nil
 }

@@ -59,7 +59,7 @@ func (h *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := validate.Struct(userSignup); err != nil {
-		h.logger.Errorf("Failed when validate field userSignup", err)
+		h.logger.Errorc(r.Context(), "Failed when validate field userSignup %v", err)
 		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.ValidationFailed)
 		return
 	}
@@ -84,7 +84,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := validate.Struct(UserLogin); err != nil {
-		h.logger.Errorf("Failed when validate field UserLogin", err)
+		h.logger.Errorc(r.Context(), "Failed when validate field UserLogin %v", err)
 		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
 		return
 	}
@@ -116,13 +116,13 @@ func (h *Handler) UpdateUserByID(w http.ResponseWriter, r *http.Request) {
 	var user types.User
 
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		h.logger.Errorf("Failed when validate field in method UpdateUserByID", err)
+		h.logger.Errorc(r.Context(), "Failed when validate field in method UpdateUserByID %v", err)
 		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.Request)
 		return
 	}
 
 	if err := validate.Struct(user); err != nil {
-		h.logger.Errorf("Failed when validate field in method UpdateUserByID", err)
+		h.logger.Errorc(r.Context(), "Failed when validate field in method UpdateUserByID %v", err)
 		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.ValidationFailed)
 		return
 	}
@@ -178,7 +178,7 @@ func (h *Handler) DisableUsersByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := validate.Struct(disable); err != nil {
-		h.logger.Errorf("Failed when validate field in method DisableUsersByID", err)
+		h.logger.Errorc(r.Context(), "Failed when validate field in method DisableUsersByID %v", err)
 		respond.JSON(w, http.StatusBadRequest, h.em.InvalidValue.ValidationFailed)
 		return
 	}

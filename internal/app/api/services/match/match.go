@@ -59,26 +59,26 @@ func (s *Service) InsertMatch(ctx context.Context, matchreq types.MatchRequest) 
 
 		err := s.repo.UpsertMatch(ctx, match)
 		if err != nil {
-			s.logger.Errorf("Can't update match %v", err)
+			s.logger.Errorc(ctx, "Can't update match %v", err)
 			return nil, errors.Wrap(err, "Can't update match")
 		}
 
-		s.logger.Infof("A liked B before %v", matchreq)
+		s.logger.Infoc(ctx, "A liked B before %v", matchreq)
 		return &match, nil
 	}
 	// B liked A
 	if matchcheckBA.Matched {
-		s.logger.Infof("B, A matched before %v", matchreq)
+		s.logger.Infoc(ctx, "B, A matched before %v", matchreq)
 		return matchcheckBA, nil
 	}
 	if err := s.repo.UpdateMatchByID(ctx, matchcheckBA.ID.Hex()); err != nil {
-		s.logger.Errorf("Can't update match %v", err)
+		s.logger.Errorc(ctx, "Can't update match %v", err)
 		return nil, errors.Wrap(err, "Can't update match")
 	}
 
 	matchcheckBA.Matched = true
 
-	s.logger.Infof("Match completed %v", matchreq)
+	s.logger.Infoc(ctx, "Match completed %v", matchreq)
 	return matchcheckBA, nil
 }
 
@@ -87,15 +87,15 @@ func (s *Service) unlike(ctx context.Context, matchreq types.MatchRequest) error
 	// check user A like user B
 	matchcheckAB, err := s.repo.CheckAB(ctx, matchreq.UserID.Hex(), matchreq.TargetUserID.Hex(), false)
 	if err != nil {
-		s.logger.Errorf("UserA haven't liked B %v", err)
+		s.logger.Errorc(ctx, "UserA haven't liked B %v", err)
 		return err
 	}
 	if err := s.repo.DeleteMatch(ctx, matchcheckAB.ID.Hex()); err != nil {
-		s.logger.Errorf("Can't del like %v", err)
+		s.logger.Errorc(ctx, "Can't del like %v", err)
 		return err
 	}
 
-	s.logger.Infof("Unlike completed %v", matchreq)
+	s.logger.Infoc(ctx, "Unlike completed %v", matchreq)
 	return nil
 }
 
@@ -104,15 +104,15 @@ func (s *Service) unmatched(ctx context.Context, matchreq types.MatchRequest) er
 	// check user A matched user B
 	matchcheckAB, err := s.repo.FindAMatchB(ctx, matchreq.UserID.Hex(), matchreq.TargetUserID.Hex())
 	if err != nil {
-		s.logger.Errorf("A B have not matched before %v", err)
+		s.logger.Errorc(ctx, "A B have not matched before %v", err)
 		return err
 	}
 	if err := s.repo.DeleteMatch(ctx, matchcheckAB.ID.Hex()); err != nil {
-		s.logger.Errorf("Can't del match %v", err)
+		s.logger.Errorc(ctx, "Can't del match %v", err)
 		return err
 	}
 
-	s.logger.Infof("Unmatched completed %v", matchreq)
+	s.logger.Infoc(ctx, "Unmatched completed %v", matchreq)
 	return nil
 }
 
@@ -129,10 +129,10 @@ func (s *Service) FindRoomsByUserId(ctx context.Context, id string) ([]*types.Ma
 
 	listRooms, err := s.repo.FindRoomsByUserId(ctx, id)
 	if err != nil {
-		s.logger.Errorf("Failed when get list message by id room", err)
+		s.logger.Errorc(ctx, "Failed when get list message by id room", err)
 		return nil, errors.Wrap(err, "Failed when get list message by id room")
 	}
-	s.logger.Infof("Get list message by id room successfull")
+	s.logger.Infoc(ctx, "Get list message by id room successfull")
 
 	if listRooms == nil {
 		return []*types.MatchRoomResponse{}, nil

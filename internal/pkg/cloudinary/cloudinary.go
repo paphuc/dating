@@ -3,7 +3,6 @@ package cloudinary
 import (
 	"bytes"
 	"context"
-	"fmt"
 
 	cloudinary "github.com/cloudinary/cloudinary-go"
 	"github.com/cloudinary/cloudinary-go/api"
@@ -36,7 +35,6 @@ func (c *Cloudinary) DestroyFile(ctx context.Context, name string) (string, erro
 	destroyResult, err := c.Upload.Destroy(
 		context.Background(),
 		uploader.DestroyParams{PublicID: name, Invalidate: true})
-	fmt.Println(destroyResult)
 	if destroyResult.Result == "not found" {
 		//Find video
 		destroyResult, err := c.Upload.Destroy(
