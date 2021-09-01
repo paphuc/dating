@@ -2,7 +2,6 @@ package socket
 
 import (
 	"context"
-	"fmt"
 
 	"dating/internal/app/api/types"
 	"dating/internal/pkg/glog"
@@ -34,7 +33,7 @@ func saveMessages(sm *chan SaveMessage, r Repository, noti NotificationService) 
 		if err != nil {
 			logger.Errorf("Error when insert message to db %v", err)
 		}
-		fmt.Println(sm.message.Sender)
+
 		noti.SendNotification(context.Background(), sm.message.ReceiverID, notificationpkg.Data{}, notificationpkg.Notification{
 			Body:  sm.message.Content,
 			Title: sm.message.Sender.Name,
