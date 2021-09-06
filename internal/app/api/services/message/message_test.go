@@ -34,13 +34,18 @@ func (mock *RepositoryMock) Insert(ctx context.Context, message types.Message) e
 	args := mock.Called()
 	return args.Error(0)
 }
-func (mock *RepositoryMock) FindByIDRoom(ctx context.Context, id string) ([]*types.Message, error) {
+func (mock *RepositoryMock) FindByIDRoom(ctx context.Context, id string, ps types.PagingNSortingMess) ([]*types.Message, error) {
 	args := mock.Called()
 	result := args.Get(0)
 	if result == nil {
 		return nil, args.Error(1)
 	}
 	return result.([]*types.Message), args.Error(1)
+}
+func (mock *RepositoryMock) CountMessage(ctx context.Context, id string) (int64, error) {
+	args := mock.Called()
+	result := args.Get(0)
+	return result.(int64), args.Error(1)
 }
 
 func listMessagesMock() *types.Message {
@@ -64,7 +69,8 @@ func TestGetMessagesByIdRoom(t *testing.T) {
 	mockNotiService.On("SendNotification").Return(nil)
 	mockRepo.On("FindByIDRoom").Return([]*types.Message{messages, messages}, nil).Once()
 	mockRepo.On("FindByIDRoom").Return(nil, errors.New("Failed when get list message by id room"))
-
+	mockRepo.On("CountMessage").Return(int64(94), nil).Once()
+	mockRepo.On("CountMessage").Return(int64(0), errors.New("Failed when count"))
 	testService := NewService(
 		&config.Configs{},
 		&config.ErrorMessage{},
@@ -73,15 +79,20 @@ func TestGetMessagesByIdRoom(t *testing.T) {
 		mockNotiService,
 	)
 
-	listRooms, err := testService.GetMessagesByIdRoom(context.Background(), "60e3f9a7e1ab4c3dfc8fe4c1")
+	listRooms, err := testService.GetMessagesByIdRoom(context.Background(), "60e3f9a7e1ab4c3dfc8fe4c1", "2", "2")
 	if err != nil {
 		assert.Error(t, err)
 	}
-	_, err = testService.GetMessagesByIdRoom(context.Background(), "60e3f9a7e1ab4c3dfc8fe4c1")
+	_, err = testService.GetMessagesByIdRoom(context.Background(), "60e3f9a7e1ab4c3dfc8fe4c1", "2", "2")
 	if err != nil {
 		assert.Error(t, err)
 	}
-	assert.Equal(t, 2, len(listRooms))
+	assert.Equal(t, 2, len(listRooms.Content))
+
+	_, err = testService.GetMessagesByIdRoom(context.Background(), "60e3f9a7e1ab4c3dfc8fe4c1", "2", "2")
+	if err != nil {
+		assert.Error(t, err)
+	}
 
 }
 func TestServeWs(t *testing.T) {

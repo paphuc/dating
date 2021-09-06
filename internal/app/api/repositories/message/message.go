@@ -33,7 +33,7 @@ func (r *MongoRepository) Insert(ctx context.Context, message types.Message) err
 }
 
 // This method helps get message by id room
-func (r *MongoRepository) FindByIDRoom(ctx context.Context, id string) ([]*types.Message, error) {
+func (r *MongoRepository) FindByIDRoom(ctx context.Context, id string, ps types.PagingNSortingMess) ([]*types.Message, error) {
 
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -46,6 +46,9 @@ func (r *MongoRepository) FindByIDRoom(ctx context.Context, id string) ([]*types
 
 	var result []*types.Message
 	opts := options.Find()
+	opts.SetSort(bson.M{"$natural": -1})
+	opts.SetSkip(int64((ps.Page - 1) * ps.Size))
+	opts.SetLimit(int64(ps.Size))
 
 	cursor, err := r.collection().Find(ctx, query, opts)
 	if err != nil {
@@ -57,6 +60,20 @@ func (r *MongoRepository) FindByIDRoom(ctx context.Context, id string) ([]*types
 	}
 
 	return result, err
+}
+
+// This method helps count number message of room in collection
+func (r *MongoRepository) CountMessage(ctx context.Context, id string) (int64, error) {
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return 0, err
+	}
+
+	query := bson.M{
+		"room_id": objectID,
+	}
+
+	return r.collection().CountDocuments(ctx, query)
 }
 
 func (r *MongoRepository) collection() *mongo.Collection {

@@ -1,6 +1,7 @@
 package types
 
 import (
+	"strconv"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -14,4 +15,50 @@ type Message struct {
 	Content     string             `json:"content" bson:"content"`
 	Attachments []string           `json:"attachments" bson:"attachments"`
 	CreateAt    time.Time          `json:"created_at" bson:"created_at"`
+}
+type PaginationMessage struct {
+	TotalItems      int `json:"totalItems"`
+	TotalPages      int `json:"totalPages"`
+	CurrentPage     int `json:"currentPage"`
+	MaxItemsPerPage int `json:"maxItemsPerPage"`
+}
+type ListMessageRes struct {
+	Content []*Message `json:"content"`
+}
+type GetListMessageRes struct {
+	PaginationMessage
+	ListMessageRes
+}
+
+type PagingNSortingMess struct {
+	Size int `json:"size" default:"100"`
+	Page int `json:"page" default:"1"`
+}
+
+func (ps *PagingNSortingMess) Init(page, size string) error {
+
+	if size == "" && page == "" {
+		ps.Size = 100
+		ps.Page = 1
+		return nil
+	}
+
+	sizeInt, err := strconv.ParseInt(size, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	if page == "" {
+		page = "1" // default page = 1
+	}
+
+	pageInt, err := strconv.ParseInt(page, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	ps.Page = int(pageInt)
+	ps.Size = int(sizeInt)
+
+	return nil
 }
