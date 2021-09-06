@@ -426,13 +426,21 @@ paths:
         in: "path"
         description: "The id Room for get"
         required: true
-        type: "string" 
+        type: "string"
+      - name: "page"
+        in: "query"
+        description: "page number"
+        type: "integer" 
+      - name: "size"
+        in: "query"
+        description: "number message in a page"
+        type: "integer"
       responses:
         "200":
           schema:
             type: array
             items:
-              $ref: "#/definitions/MessageResponse"
+              $ref: "#/definitions/ListMessageResponse"
           description: "Bad Request"
         "400":
           description: "Bad Request"
@@ -882,6 +890,21 @@ definitions:
       created_at:
         type: "string"
         format: "date-time"
+  ListMessageResponse:
+    type: "object"
+    properties:
+      totalItems: 
+        type: "integer"
+      totalPages: 
+        type: "integer"
+      currentPage: 
+        type: "integer"
+      maxItemsPerPage: 
+        type: "integer"
+      content: 
+        type: array
+        items:
+          $ref: "#/definitions/MessageResponse"
   MediaResponse:
     type: "object"
     properties:
