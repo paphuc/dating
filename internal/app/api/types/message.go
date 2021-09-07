@@ -43,6 +43,10 @@ func (ps *PagingNSortingMess) Init(page, size string) error {
 		return nil
 	}
 
+	if size == "" {
+		size = "100" // default size = 1
+	}
+
 	sizeInt, err := strconv.ParseInt(size, 10, 64)
 	if err != nil {
 		return err
