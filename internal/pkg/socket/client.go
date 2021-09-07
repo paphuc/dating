@@ -84,7 +84,9 @@ func (client *Client) handleErrorMessage(err error) {
 		Message: types.Message{
 			Attachments: []string{},
 			Content:     err.Error(),
-			SenderID:    client.UserID,
+			Sender: types.Sender{
+				ID: client.ID,
+			},
 		},
 	}
 	if room := client.wsServer.findRoomByID(roomID); room != nil {
@@ -114,10 +116,10 @@ func (client *Client) handleNewMessage(jsonMessage *MessageSocket) {
 					ID:          jsonMessage.ID,
 					RoomID:      roomID,
 					ReceiverID:  jsonMessage.ReceiverID,
-					SenderID:    jsonMessage.SenderID,
+					Sender:      jsonMessage.Sender,
 					Content:     jsonMessage.Content,
 					Attachments: jsonMessage.Attachments,
-					CreateAt:    jsonMessage.CreateAt,
+					CreatedAt:   jsonMessage.CreatedAt,
 				},
 			}
 

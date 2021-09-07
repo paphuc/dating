@@ -13,8 +13,8 @@ import (
 
 type Data struct {
 	Content string `json:"content"`
+	Avatar  string `json:"avatar"`
 }
-
 type Notification struct {
 	Body  string `json:"body"`
 	Title string `json:"title"`

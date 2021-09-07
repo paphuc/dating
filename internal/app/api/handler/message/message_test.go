@@ -40,7 +40,7 @@ func listMessagesMock() *types.Message {
 	return &types.Message{
 		ID:          primitive.NewObjectID(),
 		RoomID:      primitive.NewObjectID(),
-		SenderID:    primitive.NewObjectID(),
+		Sender:      types.Sender{ID: primitive.NewObjectID()},
 		ReceiverID:  primitive.NewObjectID(),
 		Content:     "hi",
 		Attachments: []string{},
