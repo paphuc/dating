@@ -17,7 +17,8 @@ import (
 // Repository is an interface of a message repository
 type Repository interface {
 	Insert(ctx context.Context, message types.Message) error
-	FindByIDRoom(ctx context.Context, id string) ([]*types.Message, error)
+	FindByIDRoom(ctx context.Context, id string, ps types.PagingNSortingMess) ([]*types.Message, error)
+	CountMessage(ctx context.Context, id string) (int64, error)
 }
 type NotificationService interface {
 	SendNotification(ctx context.Context, id primitive.ObjectID, data notification.Data, noti notification.Notification) error
@@ -70,18 +71,49 @@ func (s *Service) ServeWs(ctx context.Context, wsServer *socket.WsServer, conn *
 }
 
 // method help join client into room message server
-func (s *Service) GetMessagesByIdRoom(ctx context.Context, id string) ([]*types.Message, error) {
+func (s *Service) GetMessagesByIdRoom(ctx context.Context, id string, page, size string) (*types.GetListMessageRes, error) {
 
-	listMessages, err := s.repo.FindByIDRoom(ctx, id)
+	var pagingNSorting types.PagingNSortingMess
+
+	if err := pagingNSorting.Init(page, size); err != nil {
+		s.logger.Errorc(ctx, "Failed url parameters when get list mess %v", err)
+		return nil, err
+	}
+
+	count, err := s.repo.CountMessage(ctx, id)
+	if err := pagingNSorting.Init(page, size); err != nil {
+		s.logger.Errorc(ctx, "Failed when count mess %v", err)
+		return nil, err
+	}
+
+	listMessages, err := s.repo.FindByIDRoom(ctx, id, pagingNSorting)
 	if err != nil {
 		s.logger.Errorc(ctx, "Failed when get list message by id room", err)
 		return nil, errors.Wrap(err, "Failed when get list message by id room")
 	}
-	s.logger.Infoc(ctx, "Get list message by id room successfull")
 
-	if listMessages == nil {
-		return []*types.Message{}, nil
+	var listMessageRes types.GetListMessageRes
+
+	numberMess := int(count)
+	listMessageRes.CurrentPage = pagingNSorting.Page
+	listMessageRes.MaxItemsPerPage = int(pagingNSorting.Size)
+	listMessageRes.TotalItems = numberMess
+	listMessageRes.TotalPages = int(numberMess / pagingNSorting.Size)
+	// ex: total: 5, size: 2 => 3 page
+	if numberMess%pagingNSorting.Size != 0 {
+		listMessageRes.TotalPages += 1
 	}
 
-	return listMessages, nil
+	if pagingNSorting.Size > numberMess {
+		listMessageRes.MaxItemsPerPage = numberMess
+	}
+
+	listMessageRes.Content = append(listMessageRes.Content, listMessages...)
+	if listMessages == nil {
+		listMessageRes.Content = []*types.Message{}
+	}
+
+	s.logger.Infoc(ctx, "Get list message by id room successfull")
+
+	return &listMessageRes, nil
 }

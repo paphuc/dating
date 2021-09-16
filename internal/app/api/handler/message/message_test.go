@@ -28,13 +28,13 @@ type ServiceMock struct {
 func (mock *ServiceMock) ServeWs(ctx context.Context, wsServer *socket.WsServer, conn *websocket.Conn, idRoom, idUser string) {
 
 }
-func (mock *ServiceMock) GetMessagesByIdRoom(ctx context.Context, id string) ([]*types.Message, error) {
+func (mock *ServiceMock) GetMessagesByIdRoom(ctx context.Context, id string, page, size string) (*types.GetListMessageRes, error) {
 	args := mock.Called()
 	result := args.Get(0)
 	if result == nil {
 		return nil, args.Error(1)
 	}
-	return result.([]*types.Message), args.Error(1)
+	return result.(*types.GetListMessageRes), args.Error(1)
 }
 func listMessagesMock() *types.Message {
 	return &types.Message{
@@ -50,8 +50,18 @@ func listMessagesMock() *types.Message {
 func TestGetMessagesByIdRoom(t *testing.T) {
 	mockService := new(ServiceMock)
 	message := listMessagesMock()
-	mockService.On("GetMessagesByIdRoom").Return([]*types.Message{message, message, message}, nil).Once()
-	mockService.On("GetMessagesByIdRoom").Return([]*types.Message{}, errors.New("Can't like or match"))
+	mockService.On("GetMessagesByIdRoom").Return(&types.GetListMessageRes{
+		types.PaginationMessage{
+			TotalItems:      95,
+			TotalPages:      24,
+			CurrentPage:     2,
+			MaxItemsPerPage: 4,
+		},
+		types.ListMessageRes{
+			Content: []*types.Message{message, message, message},
+		},
+	}, nil).Once()
+	mockService.On("GetMessagesByIdRoom").Return(&types.GetListMessageRes{}, errors.New("Can't like or match"))
 
 	testHandler := New(
 		&config.Configs{},
@@ -71,9 +81,9 @@ func TestGetMessagesByIdRoom(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 200, res.StatusCode)
 	body_res, _ := io.ReadAll(res.Body)
-	var body_mock []types.Message
+	var body_mock *types.GetListMessageRes
 	json.Unmarshal([]byte(body_res), &body_mock)
-	assert.Equal(t, 3, len(body_mock))
+	assert.Equal(t, 3, len(body_mock.Content))
 
 	req, err = http.NewRequest("GET", ts.URL, nil)
 	assert.NoError(t, err)

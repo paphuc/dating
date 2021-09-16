@@ -17,7 +17,7 @@ import (
 type (
 	service interface {
 		ServeWs(ctx context.Context, wsServer *socket.WsServer, conn *websocket.Conn, idRoom, idUser string)
-		GetMessagesByIdRoom(ctx context.Context, id string) ([]*types.Message, error)
+		GetMessagesByIdRoom(ctx context.Context, id string, page, size string) (*types.GetListMessageRes, error)
 	}
 	// Handler is message web handler
 	Handler struct {
@@ -75,7 +75,10 @@ func (h *Handler) ServeWs(w http.ResponseWriter, r *http.Request) {
 // Put handler get list message of room
 func (h *Handler) GetMessagesByIdRoom(w http.ResponseWriter, r *http.Request) {
 
-	messagesList, err := h.srv.GetMessagesByIdRoom(r.Context(), mux.Vars(r)["id"])
+	page := r.URL.Query().Get("page")
+	size := r.URL.Query().Get("size")
+
+	messagesList, err := h.srv.GetMessagesByIdRoom(r.Context(), mux.Vars(r)["id"], page, size)
 	if err != nil {
 		respond.JSON(w, http.StatusInternalServerError, h.em.InvalidValue.Request)
 		return
